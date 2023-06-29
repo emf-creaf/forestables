@@ -13,5 +13,10 @@ RoxygenNote: 7.2.3
 Imports: 
     assertthat,
     cli,
+    dplyr,
     fs,
-    furrr
+    furrr,
+    glue
+Depends: 
+    data.table,
+    dtplyr

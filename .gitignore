@@ -2,3 +2,4 @@
 .Renviron
 .Rprofile
 *.Rproj
+.Rhistory
