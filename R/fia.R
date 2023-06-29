@@ -1219,6 +1219,7 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
     dplyr::select(
       PLOT,
       COUNTYCD,
+      STATECD,
       INVYR,
       # SUBP,
       # VEG_SUBP_STATUS_CD,
@@ -1354,12 +1355,12 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
 
   # combining data
   soils_loc_combined <- dplyr::left_join(
-    data_soils_loc, data_veg_subplot, by = c("PLOT", "INVYR", "COUNTYCD")
+    data_soils_loc, data_veg_subplot, by = c("PLOT", "INVYR", "COUNTYCD", "STATECD")
   ) |>
     # we add id cariable
     dplyr::mutate(
       ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
-    )|>
+    ) |>
     dplyr::select(
       ID_UNIQUE_PLOT,
       INVYR,
