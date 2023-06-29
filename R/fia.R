@@ -215,6 +215,7 @@ fia_tables_process <- function(
     purrr::list_rbind()
 }
 
+#' @importFrom dplyr desc
 fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot,county, year) {
 
   ## Debug

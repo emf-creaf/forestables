@@ -16,7 +16,12 @@ Imports:
     dplyr,
     fs,
     furrr,
-    glue
+    glue,
+    sf,
+    stringr,
+    tidyr
 Depends: 
     data.table,
     dtplyr
+Suggests: 
+    future
