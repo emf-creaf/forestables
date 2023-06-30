@@ -1,3 +1,19 @@
+#' Function to read the FIA files
+#'
+#' Read FIA csv file
+#'
+#' This function uses internally \code{\link[data.table]{fread}} to read the csv files. This way
+#' we can leverage the options of \code{fread} to execute \code{grep} system tool to prefilter the
+#' rows and others.
+#'
+#' @param input character vector as provided by \code{\link{.build_fia_file_path}}. See there for
+#'   details about the \code{grep} usage.
+#' @params ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
+#'   a list of columns to read with the \code{select} argument.
+#'
+#' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shaenningans
+#'   with parallel)
+#' @noRd
 .read_fia_data <- function(input, ...) {
 
   # check if special input is provided
@@ -16,7 +32,20 @@
   return(res)
 }
 
-
+#' Build the input dataframe to interate by plots for the year
+#'
+#' Build the input dataframe
+#'
+#' This function takes the user input (year, states, plots and folder) and build the input to be
+#' able to iterate by plots in a year. If no plots filter list is provided, this function uses
+#' \code{\link{.get_plots_from_state}} and \code{\link{.trasnsform_plot_summary}} to create a
+#' \code{filter_list} with all plots for each state for that year.
+#'
+#' @inheritParams fia_tables_process
+#'
+#' @return A data frame with state, county, plot and table file names
+#'
+#' @norRd
 .build_fia_input_with <- function(
   year, states, filter_list, folder, .verbose
 ) {
@@ -100,6 +129,8 @@
     )
 }
 
+#' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
+#' @noRd
 .get_plots_from_state <- function(state, folder) {
   res <- .build_fia_file_path(state, "plot", folder) |>
     .read_fia_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
@@ -117,6 +148,9 @@
     )
 }
 
+#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
+#' filter_list object
+#' @noRd
 .transform_plot_summary <- function(plot_summary, years, state) {
 
   filter_list <- plot_summary |>
@@ -133,6 +167,7 @@
   return(filter_list)
 }
 
+#'
 .build_fia_file_path <- function(
   state, type, folder = ".",
   .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE
