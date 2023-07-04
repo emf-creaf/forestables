@@ -105,6 +105,9 @@ fia_to_tibble <- function(
   ## TODO
   # Check counties and plots??
 
+  ## TODO
+  # Check ancillary data is present!!
+
   # parallel options
   assertthat::assert_that(
     inherits(.parallel_options, "furrr_options"),

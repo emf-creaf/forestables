@@ -4,6 +4,14 @@
 #'
 #' @noRd
 verbose_msg <- function(msg, .verbose) {
+
+  # assertions
+  assertthat::assert_that(
+    assertthat::is.flag(.verbose),
+    msg = cli::cli_abort(".verbose must be logical (TRUE/FALSE)")
+  )
+
+  # show message if needed
   if (.verbose) {
     msg
   }
