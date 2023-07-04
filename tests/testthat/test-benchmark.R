@@ -1,3 +1,5 @@
+testthat::skip()
+
 test_plots <- list(
   "MN", "CA", "AL", "MO", "OH", "OR"
 ) |> purrr::set_names()
@@ -101,3 +103,58 @@ test_fia <- bench::mark(
 )
 
 
+# parallel ------------------------------------------------------------------------------------
+
+library(esus)
+library(sf)
+
+filter_list <- show_plots_from(
+  "FIA",
+  folder = "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023",
+  states = c("OR", "CA", "WA")
+) |>
+  dplyr::filter(INVYR %in% c(2005, 2015)) |>
+  dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
+  dplyr::filter(length(INVYR) > 1) |>
+  dplyr::group_by(INVYR, STATECD, COUNTYCD) |>
+  dplyr::slice_sample(prop = 0.1) |>
+  dplyr::group_by(STATECD) |>
+  dplyr::group_split() |>
+  purrr::set_names("CA", "OR", "WA") |>
+  purrr::imap(
+    .f = \(state_data, state_name) {esus:::.transform_plot_summary(state_data, c(2005, 2015), state_name)}
+  ) |>
+  purrr::flatten()
+
+# tictoc::tic()
+# future::plan(future.callr::callr, workers = 6)
+# west_usa_study_data <- fia_to_tibble(
+#     years = c(2005, 2015),
+#     states = c("OR", "CA", "WA"),
+#     filter_list = filter_list,
+#     folder = "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023/",
+#     .parallel_options = furrr::furrr_options(scheduling = 2L, stdout = TRUE),
+#     .verbose = TRUE
+# )
+# tictoc::toc()
+
+bench_press_parallel <- bench::press(
+  workers = c(3,6,12),
+  scheduling = c(1L,2L),
+  {
+    future::plan(future.callr::callr, workers = workers)
+    opt <- furrr::furrr_options(scheduling = scheduling, stdout = TRUE)
+    bench::mark(
+      iterations = 1,
+      check = FALSE,
+      fia_to_tibble(
+        years = c(2005, 2015),
+        states = c("OR", "CA", "WA"),
+        filter_list = filter_list,
+        folder = "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023/",
+        .parallel_options = opt,
+        .verbose = TRUE
+      )
+    )
+  }
+)

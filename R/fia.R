@@ -309,7 +309,8 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(plot_data, survey_data, cond_data) == "")
+    !any(is.na(c(plot_data, survey_data, cond_data)))
+    # !any(c(plot_data, survey_data, cond_data) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -500,7 +501,8 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(tree_data) == "")
+    !any(is.na(c(tree_data)))
+    # !any(c(tree_data) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -604,7 +606,8 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(understory_data) == "")
+    !any(is.na(c(understory_data)))
+    # !any(c(understory_data) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -759,7 +762,8 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(understory_p2) == "")
+    !any(is.na(c(understory_p2)))
+    # !any(c(understory_p2) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -918,7 +922,8 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(seedling_data) == "")
+    !any(is.na(c(seedling_data)))
+    # !any(c(seedling_data) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -1032,7 +1037,8 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(subplot_data) == "")
+    !any(is.na(c(subplot_data)))
+    # !any(c(subplot_data) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -1115,7 +1121,8 @@ fia_soils_lab_table_process <- function(soils_lab, plot, county, state, year) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(soils_lab) == "")
+    !any(is.na(c(soils_lab)))
+    # !any(c(soils_lab) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??
@@ -1261,7 +1268,8 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
-    !any(c(soils_loc, veg_subplot) == "")
+    !any(is.na(c(soils_loc, veg_subplot)))
+    # !any(c(soils_loc, veg_subplot) == NA_character_)
   )
 
   # If any file is missing abort and return an empty tibble??

@@ -8,7 +8,7 @@
 #'
 #' @param input character vector as provided by \code{\link{.build_fia_file_path}}. See there for
 #'   details about the \code{grep} usage.
-#' @params ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
+#' @param ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
 #'   a list of columns to read with the \code{select} argument.
 #'
 #' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shaenningans
@@ -45,7 +45,7 @@
 #'
 #' @return A data frame with state, county, plot and table file names
 #'
-#' @norRd
+#' @noRd
 .build_fia_input_with <- function(
   year, states, filter_list, folder, .verbose
 ) {
@@ -131,22 +131,80 @@
 
 #' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
 #' @noRd
-.get_plots_from_state <- function(state, folder) {
-  res <- .build_fia_file_path(state, "plot", folder) |>
-    .read_fia_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
-    dplyr::as_tibble()
+.get_plots_from_state <- function(state, folder, .call = rlang::caller_env()) {
 
-  epgs <- 4326
-  if (res[["STATECD"]] |> unique() %in%  c(60,64,66,68,69,70)) {
-    epgs <- 4269
+  ## TODO Assertion to ensure PLOT.csv file exists, because .build_fia_file_path is fail
+  ## resistant, returning always a result (NA_character) to allow its use in loops.
+  ## .get_plots_from_state is only called from .build_fia_input_with or show_plots_from_fia,
+  ## that can not check for file existence (this is done in the individual plot functions)
+
+  plot_path <- .build_fia_file_path(state, "plot", folder)
+
+  if (is.na(plot_path)) {
+    cli::cli_abort(c(
+      "{.path {folder}} folder doesn't contain a {.path {state}_PLOT.csv}, aborting."
+    ), call = .call)
   }
 
-  res |>
+  # If file exists, business as usual:
+  plot_data <- plot_path |>
+    .read_fia_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
+    # we need to weed out some plots that have all NAs in coordinates in some states
+    # (i.e. CA or WA)
+    dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
+    dplyr::filter(!all(is.na(LAT))) |>
+    dplyr::arrange(INVYR) |>
+    tidyr::fill(
+      c(LAT, LON), .direction = "updown"
+    ) |>
+    dplyr::as_tibble()
+
+
+  # For some states CRS is different so we use the correct crs to build the sf and transform
+  # to 4326 to have all in the same coordinate system.
+  if (plot_data[["STATECD"]] |> unique() %in%  c(60,64,66,68,69,70)) {
+    epgs <- 4269
+    res <- plot_data |>
+      sf::st_as_sf(
+        coords = c("LON", "LAT"),
+        crs = sf::st_crs(epgs)
+      ) |>
+      sf::st_transform(crs = 4326)
+
+    return(res)
+  }
+
+  # For most of the states, 4326 and return
+  epgs <- 4326
+  res <- plot_data |>
     sf::st_as_sf(
       coords = c("LON", "LAT"),
       crs = sf::st_crs(epgs)
     )
+  return(res)
 }
+
+#' show plots from fia helper
+#'
+#' Iterate for states and retrieve all the plots
+#'
+#' @param folder Character, path to folder containing FIA csv files
+#' @param states Character vector with two-letter code for states
+#' @noRd
+show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
+  withCallingHandlers(
+    purrr::map(
+      states, .f = .get_plots_from_state, folder = folder, .call = .call
+    ) |>
+      purrr::list_rbind() |>
+      sf::st_as_sf(),
+    purrr_error_indexed = function(err) {
+      rlang::cnd_signal(err$parent)
+    }
+  )
+}
+
+
 
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
 #' filter_list object
@@ -167,7 +225,48 @@
   return(filter_list)
 }
 
+#' Create the path and system call for reading FIA csv's
 #'
+#' Create FIA csv file path with extra sugar
+#'
+#' This function builds the path to FIA table csv files based on the state and type of table.
+#' Also, using the type, we add the system call to \code{grep} in those tables which it can
+#' be used to avoid loading the whole table.
+#'
+#' @section \code{grep} system call:
+#' \code{grep} system library allows to find patterns in text files. This can be used prior
+#' to read the file to feed \code{fread} only with the rows we need. For this we build a
+#' regular expresion that matches the county and plot code, as well as year in the case of
+#' some tables. This way we avoid loading the whole table and only the rows we need.
+#' In this case, the regular expresion used is:
+#' \preformatted{
+#' ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),'
+#' }
+#' \code{",INVYR,"} matches the first row in all tables, because all tables have the Inventory
+#' year variable.
+#' \code{"|"} means \code{OR} as in R code. This way we match the first row with the previous
+#' part, \emph{OR} the rows with the data as per the next part.
+#' \code{,{.year},.*,{county},({plot}|{plot}.0)} part matches any row with the values for
+#' year, county and plot in an especific order. First year between commas, after that an
+#' unnespecified number of characters (\code{".*"}), and county and plot together between
+#' commas and separated by a comma.
+#' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
+#' because some states have this as a double variable.
+#'
+#' @param state Character vector with two-letter code for states.
+#' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
+#'   "p3_understory",  "seedling", "soils_loc", "soils_lab", "veg_subplot", "p2_veg_subplot".
+#' @param folder Character, path to the folder with the FIA csv files.
+#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
+#' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
+#'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
+#' @param .year Numeric value (length one) with the year to build the \code{grep} command
+#'   if \code{.custom} is \code{TRUE}.
+#'
+#' @return Character vector with the paths (or custom command with path) to use with
+#'   \code{\link{.read_fia_data}}.
+#'
+#' @noRd
 .build_fia_file_path <- function(
   state, type, folder = ".",
   .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE
@@ -226,7 +325,30 @@
   )
 }
 
+#' Helper function to extract plot and soil metadata from from tables
+#'
+#' Extract year and most recent metadata for plot
+#'
+#' This function extracts the metadata for a plot in a year, creating two values for
+#' each especified variable in \code{vars}. One with the value for the year selected
+#' (\code{VAR_ORIG}) and another with the most recent value (\code{VAR}).
+#' This function is intended exclusively to be called by the individual table process
+#' functions that needs this functionality (plot and soil tables).
+#'
+#' @param data_processed Table data after reading and processing.
+#' @param vars Character, names of variables to be extracted.
+#' @param county,plot Numeric, codes for county or plot to be processed
+#' @param year Numeric with the year to process
+#' @param .soil_mode Logical. If \code{TRUE}, \code{.extract_fia_metadata} is run on soil mode,
+#'   which means that no NAs are filtered before returning most recent data, to allow for
+#'   different layers to be retrieved. If \code{FALSE}, then years with \code{NA} for \code{VAR}
+#'   are removed prior to find the most recent value.
+#'
+#' @return A data frame with variables in \code{var} values for the desired year and for the
+#'   most recent year with value.
+#'
 #' @importFrom rlang `:=`
+#' @noRd
 .extract_fia_metadata <- function(data_processed, vars, county, plot, year, .soil_mode = TRUE) {
 
   # ORIGINAL names
