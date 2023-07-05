@@ -88,7 +88,7 @@
       ),
       plot_table = .build_fia_file_path(
         state, "plot", folder,
-        .county = county, .plot = plots, .year = year, .custom = FALSE
+        .county = county, .plot = plots, .year = year, .custom = TRUE
       ),
       survey_table = .build_fia_file_path(
         state, "survey", folder,
@@ -96,7 +96,7 @@
       ),
       cond_table = .build_fia_file_path(
         state, "cond", folder,
-        .county = county, .plot = plots, .year = year, .custom = FALSE
+        .county = county, .plot = plots, .year = year, .custom = TRUE
       ),
       subplot_table = .build_fia_file_path(
         state, "subplot", folder,
@@ -236,22 +236,22 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 #' @section \code{grep} system call:
 #' \code{grep} system library allows to find patterns in text files. This can be used prior
 #' to read the file to feed \code{fread} only with the rows we need. For this we build a
-#' regular expresion that matches the county and plot code, as well as year in the case of
+#' regular expression that matches the county and plot code, as well as year in the case of
 #' some tables. This way we avoid loading the whole table and only the rows we need.
-#' In this case, the regular expresion used is:
+#' In this case, the regular expression used is:
 #' \preformatted{
 #' ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),'
 #' }
 #' \code{",INVYR,"} matches the first row in all tables, because all tables have the Inventory
 #' year variable.
-#' \code{"|"} means \code{OR} as in R code. This way we match the first row with the previous
-#' part, \emph{OR} the rows with the data as per the next part.
+#' \code{"|"} means \code{OR} as in R code. This way we match the first row with the part before
+#' "|", \emph{OR} the rows with the data as per the part after "|".
 #' \code{,{.year},.*,{county},({plot}|{plot}.0)} part matches any row with the values for
-#' year, county and plot in an especific order. First year between commas, after that an
-#' unnespecified number of characters (\code{".*"}), and county and plot together between
+#' year, county and plot in an specific order. First year between commas, after that an
+#' unspecified number of characters (\code{".*"}), and county and plot together between
 #' commas and separated by a comma.
 #' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
-#' because some states have this as a double variable.
+#' because some states have this variable as a double value.
 #'
 #' @param state Character vector with two-letter code for states.
 #' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
@@ -276,7 +276,7 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
     .l = list(state, .county, .plot),
     .f = \(state, county, plot) {
 
-      # file ending (beggining will be the state)
+      # file ending (beginning will be the state)
       ending <- switch(
         type,
         "tree" = "_TREE.csv",
