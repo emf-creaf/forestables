@@ -78,3 +78,4 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 
   show_plots_function(folder, ...)
 }
+

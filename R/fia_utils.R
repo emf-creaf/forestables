@@ -32,7 +32,7 @@
   return(res)
 }
 
-#' Build the input dataframe to interate by plots for the year
+#' Build the input dataframe to iterate by plots for the year
 #'
 #' Build the input dataframe
 #'
@@ -194,7 +194,7 @@
 show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   withCallingHandlers(
     purrr::map(
-      states, .f = .get_plots_from_state, folder = folder, .call = .call
+      states, .f = .get_plots_from_state, folder = folder
     ) |>
       purrr::list_rbind() |>
       sf::st_as_sf(),
