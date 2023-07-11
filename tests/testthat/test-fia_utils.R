@@ -97,6 +97,11 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # .build_fia_file_path
   # a correct one
   expect_identical(
+    test_res[["survey_table"]][1],
+    test_folder, names(test_plots)[1], "_SURVEY.csv"
+  )
+  # a correct custom one
+  expect_identical(
     test_res[["plot_table"]][1],
     paste0("grep -E ',INVYR,|,137,(29396|29396.0),' ", test_folder, names(test_plots)[1], "_PLOT.csv")
   )
@@ -104,6 +109,4 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   expect_identical(
     test_res[["plot_table"]][31], NA_character_
   )
-
-  ## TODO test .build_fia_file_path for customized paths with grep
 })

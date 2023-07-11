@@ -11,8 +11,8 @@
 #' @param ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
 #'   a list of columns to read with the \code{select} argument.
 #'
-#' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shaenningans
-#'   with parallel)
+#' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shenanigans
+#'   with caching if used)
 #' @noRd
 .read_fia_data <- function(input, ...) {
 
@@ -47,7 +47,7 @@
 #'
 #' @noRd
 .build_fia_input_with <- function(
-  year, states, filter_list, folder, .verbose
+  year, states, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
 
   # first, if is null filter list, create it
@@ -55,7 +55,7 @@
     filter_list <- purrr::map(
       states,
       .f = \(state) {
-        .get_plots_from_state(state, folder) |>
+        .get_plots_from_state(state, folder, .call = .call) |>
           .transform_plot_summary(year, state)
       }
     ) |>
@@ -84,47 +84,47 @@
     dplyr::mutate(
       tree_table = .build_fia_file_path(
         state, "tree", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       plot_table = .build_fia_file_path(
         state, "plot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       survey_table = .build_fia_file_path(
         state, "survey", folder,
-        .county = county, .plot = plots, .year = year, .custom = FALSE
+        .county = county, .plot = plots, .year = year, .custom = FALSE, .call = .call
       ),
       cond_table = .build_fia_file_path(
         state, "cond", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       subplot_table = .build_fia_file_path(
         state, "subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       p3_understory_table = .build_fia_file_path(
         state, "p3_understory", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       seedling_table = .build_fia_file_path(
         state, "seedling", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       soils_loc_table = .build_fia_file_path(
         state, "soils_loc", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       soils_lab_table = .build_fia_file_path(
         state, "soils_lab", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       veg_subplot_table = .build_fia_file_path(
         state, "veg_subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
       p2_veg_subplot_table = .build_fia_file_path(
         state, "p2_veg_subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE
+        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       )
     )
 }
@@ -269,7 +269,8 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 #' @noRd
 .build_fia_file_path <- function(
   state, type, folder = ".",
-  .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE
+  .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
+  .call = rlang::caller_env()
 ) {
 
   purrr::pmap_chr(
@@ -301,7 +302,7 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
           "{.path {table_path}} file doesn't exists",
           "!" = "Please check if {.path {folder}} is the correct path",
           "i" = "Skipping {.path {table_path}}"
-        ))
+        ), call = .call)
         return(NA_character_)
       }
 
