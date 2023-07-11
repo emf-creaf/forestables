@@ -33,6 +33,57 @@
 }
 
 
+#' Build the input dataframe to iterate by plots for the year
+#'
+#' Build the input dataframe
+#'
+#' This function takes the user input (year, dep, plots and folder) and build the input to be
+#' able to iterate by plots in a year. If no plots filter list is provided, this function uses
+#' \code{\link{.get_plots_from_state}} and \code{\link{.trasnsform_plot_summary}} to create a
+#' \code{filter_list} with all plots for each state for that year.
+#'
+#' @inheritParams fia_tables_process
+#'
+#' @return A data frame with state, dep, plot and table file names
+#'
+#' @noRd
+.build_ffi_input_with <- function(
+    year,  filter_list, folder, .verbose
+) {
+  
+  # # first, if is null filter list, create it
+  # if (is.null(filter_list)) {
+  #   blabalabalabañlb
+  # }
+  # 
+  # # inform the user about the amount of plots for this year
+  # verbose_msg(
+  #   cli::cli_inform(c(
+  #     "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {year}}"
+  #   )), .verbose
+  # )
+  
+
+  dep_list<-filter_list
+  
+      dep_list |>
+        tibble::enframe() |>
+        tidyr::unnest(cols = value) |>
+        purrr::set_names(c("dep", "plots")) |>
+        dplyr::select(dep, plots)|>
+   
+    dplyr::mutate(
+      tree_table = paste0(folder,"ARBRE.CSV"),
+      plot_table = paste0(folder,"PLACETTE.CSV"),
+      shrub_table = paste0(folder,"FLORE.CSV"),
+      soils_table =paste0(folder,"ECOLOGIE.CSV")
+      
+    )
+}
+
+
+
+
 #' Helper function to extract plot and soil metadata from from tables
 #'
 #' Extract year and most recent metadata for plot
@@ -45,7 +96,7 @@
 #'
 #' @param data_processed Table data after reading and processing.
 #' @param vars Character, names of variables to be extracted.
-#' @param plot Numeric, codes for county or plot to be processed
+#' @param plot Numeric, codes for dep or plot to be processed
 #' @param year Numeric with the year to process
 #' @param .soil_mode Logical. If \code{TRUE}, \code{.extract_ffi_metadata} is run on soil mode,
 #'   which means that no NAs are filtered before returning most recent data, to allow for

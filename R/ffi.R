@@ -181,17 +181,24 @@ ffi_tables_process <- function(
   
   # Create input df for year
   
-  input_df <- .build_ffi_input_with(year, deps, filter_list, folder, .verbose)
+  input_df <- .build_ffi_input_with(year,  filter_list, folder, .verbose)
   
   # Get needed ancillary data (changed for excel)
   
   espar_cdref13 <-  readxl::read_excel(fs::path(folder, "espar-cdref13.xlsx")) |> dplyr::as_tibble()
-  cdref13 <-  readxl::read_excel(fs::path(folder, "CD_REF.xlsx")) |> dplyr::as_tibble()
-  ESPAR_REF <-  readxl::read_excel(fs::path(folder, "ESPAR_REF.xlsx")) |> dplyr::as_tibble()
+  cd_ref <-  readxl::read_excel(fs::path(folder, "CD_REF.xlsx")) |> dplyr::as_tibble()
+  espar_ref <-  readxl::read_excel(fs::path(folder, "ESPAR_REF.xlsx")) |> dplyr::as_tibble()
   def_metadonnes <- readxl::read_excel(fs::path(folder, "def_metadonnes.xlsx")) |> dplyr::as_tibble()
-  
+  idp_dep_ref<-readr::read_delim(paste0(folder, "PLACETTE.csv"), 
+                                   delim = ";", escape_double = FALSE, trim_ws = TRUE)|>
+    tibble::tibble()|>
+    dplyr::select(
+      IDP,
+      DEP
+    )|>
+    unique()
   #revise  path!!!!
-  growth_form_lignified_france<-load(paste0(folder,"/growth_form_lignified_france.RData"))
+ load(paste0(folder,"/growth_form_lignified_france.RData"))
   
   
   furrr::future_pmap(
@@ -203,14 +210,14 @@ ffi_tables_process <- function(
       dep, plots, tree_table_file, plot_table_file, shrub_table_file, soil_table_file
     ) {
       
-      plot_info <- ffi_fr_plot_table_process(plot_table_file, soil_table_file, plot, year)
+      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plot, year)
       
-      tree <- ffi_fr_tree_table_process(tree_table_file, plot, year,espar_cdref13, espar_ref)
+      tree <- ffi_tree_table_process(tree_table_file, plot, year,espar_cdref13, espar_ref)
       
-      shrub <- ffi_fr_shrub_table_process(shrub_table_file, plot, year, cd_ref, growth_form_lignified_france)
-      
-      soil <- ffi_fr_soil_table_process(soil_table_file, plot, year, def_metadonnes)
-      
+      # shrub <- ffi_shrub_table_process(shrub_table_file, plot, year, cd_ref, growth_form_lignified_france)
+
+      # soil <- ffi_soil_table_process(soil_table_file, plot, year, def_metadonnes)
+      # 
       
       #we select herbs
       herbs <- plot_info|>
@@ -222,9 +229,9 @@ ffi_tables_process <- function(
           YEAR,
           HERB
         )
-      
-      
-      #we create understory with herbs and shrub
+      # 
+      # 
+      # #we create understory with herbs and shrub
       understory <- plot_info|>
         dplyr::select(
           ID_UNIQUE_PLOT,
@@ -235,14 +242,14 @@ ffi_tables_process <- function(
           LIGN2,
           YEAR
         )|>
-        
+
         dplyr::mutate(
           shrub= list(shrub),
           herbs=list(herbs)
-          
+
         )
-      
-      
+      # 
+      # 
       
       # we put together all tables in a data frame
       
@@ -250,10 +257,11 @@ ffi_tables_process <- function(
         dplyr::mutate(
           crs = 2154,
           tree = list(tree),
-          understory = list(understory),
-          soil = list(soil),
-          #añado esto vacio
-          regen = list(tibble()))|>
+           understory = list(understory),
+          # soil = list(soil),
+          # #añado esto vacio
+          # regen = list(tibble())
+          )|>
         dplyr::select(
           ID_UNIQUE_PLOT,
           PLOT,
@@ -274,8 +282,8 @@ ffi_tables_process <- function(
           COORD_SYS,
           tree,
           understory,
-          regen,
-          soil
+          # regen,
+          # soil
         ) |>
         
         # #HARMONIZATION OF NAMES
@@ -285,7 +293,7 @@ ffi_tables_process <- function(
           ASPECT_ORIGINAL = EXPO_ORIGINAL,
           SLOPE = PENT2,
           SLOPE_ORIGINAL = PENT2_ORIGINAL,
-          soils = soil
+          #soils = soil
         )
       
       
@@ -295,6 +303,7 @@ ffi_tables_process <- function(
   ) |>
     purrr::list_rbind()
 }
+
 
 
 #' Data tables process
@@ -350,14 +359,15 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
     "IDP",
     "XL",
     "YL",
-    "DEP",
-    #CSA : Couverture du sol
-    "CSA",
-    #TCAT10 : Taux de couvert total des arbres
-      "TCAT10",
-      #UTA1 et UTA2 : Première et deuxième utilisation du sol
-      "UTA1",
-      "UTA2")
+    "DEP"
+    # #CSA : Couverture du sol
+    # "CSA",
+    # #TCAT10 : Taux de couvert total des arbres
+    #   "TCAT10",
+    #   #UTA1 et UTA2 : Première et deuxième utilisation du sol
+    #   "UTA1",
+    #   "UTA2"
+    )
   ) |>
     #join with metadonnes
     dplyr::left_join(
@@ -395,17 +405,18 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
       
     )|> data.table::as.data.table() |>
     .extract_ffi_metadata(c("ID_UNIQUE_PLOT",
+                            "PLOT",
                             "DEP",
                             "DEP_NAME",
                             "VISITE",
                             "COORD_SYS",
                             "XL",
-                            "YL"), county, plot, year, .soil_mode = FALSE) |>
+                            "YL"), plot, year, .soil_mode = FALSE) |>
     dplyr::mutate(
       PLOT  = plot,
       YEAR  = year
-      # COUNTYCD   = county,
-    )
+      
+    )|> dplyr::as_tibble()
   
     
     
@@ -442,21 +453,27 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
                   HERB)|>
     dplyr::arrange(desc(YEAR))|>
     data.table::as.data.table() |>
-    .extract_ffi_metadata(c("EXPO",
+    .extract_ffi_metadata(c(
+                            "EXPO",
                             "PENT2", 
                             "LIGN1",
                             "LIGN2",
-                            "HERB"), county, plot, year, .soil_mode = FALSE) |>
+                            "HERB"), plot, year, .soil_mode = FALSE) |>
     dplyr::mutate(
       PLOT  = plot,
-      YEAR  = year
+      YEAR  = year,
+      
      
-    )
+    )|>
+    dplyr::as_tibble()
   
   
-  plot_info<- dplyr::bind_cols(
+  
+  plot_info<- dplyr::left_join( 
+    # dplyr::bind_cols(
     plot_processed,
-    eco_filtered_data
+    eco_filtered_data,
+    by = c("PLOT")
     
     
   )|>
@@ -487,7 +504,8 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
       LIGN1,
       LIGN2,
       HERB
-    )
+    )|>
+    dplyr::as_tibble()
   
   
   
@@ -502,7 +520,7 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
 
 
 #' @describeIn tables_processing Process to gather needed data from tree table
-fia_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_ref) {
+ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_ref) {
   
   ## Debug
   # browser()
@@ -550,21 +568,22 @@ fia_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
       IDP == plot,
       CAMPAGNE == year
       
-    )
+    )|>
+    dplyr::as_tibble()
   
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(tree_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "There is no tree data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+      "There is no tree data for that combination of plot and year",
+      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
     ))
     return(dplyr::tibble())
   }
   
   
-  tree_plot_data<-tree_raw_data|>
+  tree_plot_data<-tree_filtered_data|>
     
     # we  filter the data for plot/
     dplyr::filter(
@@ -665,8 +684,155 @@ fia_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
     
     # we  filter the data for year
     dplyr::filter(
-      YEAR == year)
+      YEAR == year)|>
+    dplyr::as_tibble()
   
+  
+  
+  
+}
+
+
+#' @describeIn tables_processing Process to gather needed data from veg subplot spp table
+ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_lignified_france) {
+  
+  ## Debug
+  # browser()
+  
+  # Assertions  and checks/validations
+  files_validation <- assertthat::validate_that(
+    !any(is.na(shrub_data))
+    # !any(c(understory_data) == NA_character_)
+  )
+  
+  
+  
+  # 2. col names
+  
+  shrub_filtered_data <- .read_fia_data(
+    shrub_data,
+    select = c(
+      "CAMPAGNE",
+      "IDP",
+      "CD_REF",
+      "ABOND"
+    )
+  )|>
+    
+  
+  # we  filtering the data for plot/year and status (alive)
+  
+  dplyr::filter(
+    IDP == plot,
+    CAMPAGNE == year
+    
+  ) |>
+    data.table::as.data.table()
+  
+  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  
+  if (nrow(shrub_filtered_data) < 1) {
+    # warn the user
+    cli::cli_warn(c(
+      "File {.file {shrub_data}} has no data for that combination of plot, dep and year", 
+      "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
+    ))
+    return(dplyr::tibble())
+  }
+  
+  
+  # transformations and filters
+  
+  shrub<-shrub_filtered_data|>
+    dplyr::mutate(
+      YEAR = CAMPAGNE,
+      # ID_UNIQUE_PLOT= (paste("FR", IDP, sep="_")),
+      cd_ref = CD_REF,
+      #conversion to percentage
+      ABOND = dplyr::case_when(
+        # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.				
+        ABOND == 1 ~ 5,
+        #présence nette	Taux de recouvrement de l'espèce inférieur à 25 % mais présence nette.		
+        ABOND == 	2	~ 12.5,
+        #Taux de recouvrement de l'espèce compris entre 25 et 50 %  		
+        ABOND	== 3 ~	37.5, 
+        #Taux de recouvrement de l'espèce compris entre 25 et 50 %  
+        #Taux de recouvrement de l'espèce compris entre 50% et 75 %.
+        ABOND	== 4 ~	62.5,
+        #	Taux de recouvrement de l'espèce supérieur à 75%.	
+        ABOND	== 5 ~	87.5			
+      ))|>
+    
+    dplyr::left_join(
+      y = cd_ref|>
+        dplyr::select(
+          cd_ref,
+          lib_cdref
+        ), 
+      by = "cd_ref"
+    ) |>
+    
+    dplyr::left_join(
+      y = idp_dep_ref,
+      by = "IDP"
+    )|>
+    
+    dplyr::mutate(
+      ID_UNIQUE_PLOT= (paste("FR", DEP, IDP, sep="_"))
+      # Hm = NA
+    )|>
+    
+    dplyr::rename(
+      PLOT = IDP,
+      SP_NAME = lib_cdref,
+      SP_CODE = cd_ref,
+      COVER = ABOND
+    )|>
+    dplyr::rename(
+      full_name = SP_NAME
+    )|>
+    dplyr::mutate(genus = stringr::str_extract(full_name, "\\b\\w+\\b"),
+                  species =  stringr::str_extract(full_name, "(?<=\\s)\\w+"),
+                  species = dplyr::if_else(stringr::str_detect(species, "^\\("), "", species),
+                  SP_NAME = ifelse(is.na(species) | species == "", genus, paste(genus, species, sep = " ")))|>
+    
+    #selection of final variables 
+    
+    dplyr::select( 
+      ID_UNIQUE_PLOT, 
+      PLOT,
+      DEP,
+      YEAR,
+      SP_CODE,
+      SP_NAME,
+      COVER,
+      #Hm
+    )|>
+    dplyr::as_tibble()
+  
+  #this is new
+  #to eliminate herbs i do a join with a database from try
+  
+  growth_form_lignified_france<-growth_form_lignified_france|>
+    dplyr::select(
+      AccSpeciesName,  
+      GrowthForm   
+    )|>
+    dplyr::mutate(SP_NAME = AccSpeciesName)
+  
+  shrub_no_herbs<-shrub|>
+    dplyr::left_join(
+      y = growth_form_lignified_france,
+      by = "SP_NAME"
+    )|>
+    dplyr::filter(
+      (grepl("tree|shrub", GrowthForm))
+      
+    )|>
+    dplyr::as_tibble()
+  
+  
+  return(shrub_no_herbs)
   
   
   
