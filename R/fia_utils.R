@@ -204,8 +204,6 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   )
 }
 
-
-
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
 #' filter_list object
 #' @noRd
