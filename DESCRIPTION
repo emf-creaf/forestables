@@ -22,7 +22,8 @@ Imports:
     tidyr
 Depends: 
     data.table,
-    dtplyr
+    dtplyr,
+    R (>= 2.10)
 Suggests: 
     future,
     testthat (>= 3.0.0)

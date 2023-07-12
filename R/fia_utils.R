@@ -223,6 +223,69 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   return(filter_list)
 }
 
+#' helper for translating numeric state codes to names
+#' @noRd
+.translate_fia_states <- function(states_numeric) {
+  fia_states_dictionary |>
+    dplyr::filter(VALUE %in% states_numeric) |>
+    dplyr::pull(ABBR) |>
+    unique()
+}
+
+#' Create the \code{filter_list} for FIA inventory
+#'
+create_filter_list_fia <- function(plots_info) {
+
+  ## assertions
+  # this process is independent from fia_to_tibble, and the user can modify plots_info to
+  # filter plots and counties. So we can not assume plots_info is going to have the str we
+  # need. So, we assert and inform the user if something is wrong
+
+  ## TODO
+  # assert class
+  assertthat::assert_that(
+    inherits(plots_info, c("tbl", "sf", "data.frame")),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must be a data.frame or something coercible to one, as the result of {.code show_plots_from()}"
+    ))
+  )
+  # assert col names
+  assertthat::assert_that(
+    all(names(plots_info) %in% c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry")),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} provided don't have the expected names",
+      "i" = "Expected names are {.value {c('INVYR', 'STATECD', 'COUNTYCD', 'PLOT', 'geometry')}}"
+    ))
+  )
+  # assert there is data
+  assertthat::assert_that(
+    nrow(plots_info) > 0,
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must have at least one row"
+    ))
+  )
+
+  # loop around states
+  plots_years <- plots_info[["INVYR"]] |>
+    unique()
+  states_names <- plots_info[["STATECD"]] |>
+    unique() |>
+    .translate_fia_states()
+
+  res <- plots_info |>
+    dplyr::group_by(STATECD) |>
+    dplyr::group_split() |>
+    purrr::set_names(states_names) |>
+    purrr::imap(
+      .f = \(state_data, state_name) {
+        .transform_plot_summary(state_data, plots_years, state_name)
+      }
+    ) |>
+    purrr::flatten()
+
+  return(res)
+}
+
 #' Create the path and system call for reading FIA csv's
 #'
 #' Create FIA csv file path with extra sugar

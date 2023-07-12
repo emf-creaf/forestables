@@ -157,7 +157,7 @@ test_that("show_plots_from_fia works as intended", {
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
-  expect_named(test_res_ok,c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  expect_named(test_res_ok, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
   # expect rows
   expect_true(
     nrow(test_res_ok) > 0
@@ -184,4 +184,35 @@ test_that(".transform_plot_summary works as intended", {
   # expect results
   expect_length(test_res_2005_OR, 1)
   expect_true(length(test_res_2005_OR[[1]]) > 1)
+})
+
+test_that("create_filter_lsit_fia works as inteded", {
+  # test data
+  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_states <- c("OR", "WA", "CA")
+  test_summary <- show_plots_from_fia(test_folder, test_states) |>
+    dplyr::filter(INVYR %in% c(2005, 2010, 2015))
+
+  # errors
+  # object error
+  expect_error(create_filter_list_fia("test_summary"), "data.frame")
+  expect_error(create_filter_list_fia(as.list(test_summary)), "data.frame")
+  # names error
+  expect_error(create_filter_list_fia(iris), "expected names")
+  # rows error
+  expect_error(create_filter_list_fia(test_summary |> dplyr::filter(INVYR == 1800)), "one row")
+
+  # correct object
+  expect_type(
+    test_res <- create_filter_list_fia(test_summary),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("CA", "OR", "WA"))
+  # expect results
+  expect_length(test_res, 3)
+  expect_true(length(test_res[[1]]) > 1)
+  expect_true(length(test_res[[2]]) > 1)
+  expect_true(length(test_res[[3]]) > 1)
+
 })
