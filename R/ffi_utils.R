@@ -170,3 +170,4 @@
     data.table::as.data.table() |>
     dtplyr::lazy_dt(immutable = TRUE)
 }
+
