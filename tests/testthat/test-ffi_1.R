@@ -15,39 +15,19 @@
 #   tibble::tibble()
 
 
+folder =  "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
 
 filter_list<-list(
-  "02" = list("932915", "1433309" ),
-  "50" = list("1422499","23087"),
-  "54" = list("973611",  "1415457"))
-
-# example_input
-
-# example_input <- tibble::tibble(
-#   
-#   
-#   plots = subset_ifn_fr$plot,
-#   
-#   department = subset_ifn_fr$department,
-#   
-#   plot_table = "data/export_dataifn_2005_2021/PLACETTE.csv",
-#   
-#   tree_table = "data/export_dataifn_2005_2021/ARBRE.csv",
-#   
-#   shrub_table =  "data/export_dataifn_2005_2021/FLORE.csv",
-#   
-#   soil_table = "data/export_dataifn_2005_2021/ECOLOGIE.csv"
-#   
-# )
-# 
-# fr_example_input<-unique(example_input)
-# 
-# #save(fr_example_input, file = "examples/fr_example_input.RData")
-# 
-# 
-# 
-# 
+  "02" = c("932915", "1433309"),
+  "50" = c("1422499","23087"),
+  "54" = c("973611",  "1415457"))
 
 
+input_df<-.build_ffi_input_with(2014,filter_list,folder,.verbose = TRUE)
 
 
+ffi_plot_table_process(plot_data = input_df[["plot_table"]][1], soil_data =input_df[["soils_table"]][1], plot =input_df[["plots"]][1],2010)
+
+ffi_tree_table_process(tree_data= input_df[["tree_table"]][1], plot, 2014, espar_cdref13 , espar_ref)
+
+ffi_shrub_table_process(shrub_data=input_df[["shrub_table"]][1], plot, 2014,cd_ref, growth_form_lignified_france)

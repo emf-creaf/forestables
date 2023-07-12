@@ -173,7 +173,7 @@ ffi_to_tibble <- function(
 #' @describeIn ffi_to_tibble Process one year
 #'
 ffi_tables_process <- function(
-    year, deps, filter_list, folder, .parallel_options, .verbose, ...
+    year, filter_list, folder, .parallel_options, .verbose, ...
 ) {
   
   # debug
@@ -201,22 +201,31 @@ ffi_tables_process <- function(
  load(paste0(folder,"/growth_form_lignified_france.RData"))
   
   
-  furrr::future_pmap(
-    # purrr::pmap(
+   furrr::future_pmap(
+  #   purrr::pmap(
     .progress = .verbose,
-    .l = input_df,
-    .f = \(
-      
-      dep, plots, tree_table_file, plot_table_file, shrub_table_file, soil_table_file
+    .l = list(
+      dep = input_df[["dep"]],
+      plot = input_df[["plots"]],
+      tree_table_file = input_df[["tree_table"]],
+      plot_table_file = input_df[["plot_table"]],
+      shrub_table_file = input_df[["shrub_table"]],
+      soil_table_file = input_df[["soils_table"]]),
+    .f = \(dep,
+           plots,
+           tree_table_file,
+           plot_table_file, 
+           shrub_table_file,
+           soil_table_file
     ) {
       
       plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plot, year)
       
       tree <- ffi_tree_table_process(tree_table_file, plot, year,espar_cdref13, espar_ref)
       
-      # shrub <- ffi_shrub_table_process(shrub_table_file, plot, year, cd_ref, growth_form_lignified_france)
+       shrub <- ffi_shrub_table_process(shrub_table_file, plot, year, cd_ref, growth_form_lignified_france)
 
-      # soil <- ffi_soil_table_process(soil_table_file, plot, year, def_metadonnes)
+       soil <- ffi_soil_table_process(soil_table_file, plot, year, def_metadonnes)
       # 
       
       #we select herbs
@@ -258,9 +267,8 @@ ffi_tables_process <- function(
           crs = 2154,
           tree = list(tree),
            understory = list(understory),
-          # soil = list(soil),
-          # #añado esto vacio
-          # regen = list(tibble())
+           soil = list(soil)
+      
           )|>
         dplyr::select(
           ID_UNIQUE_PLOT,
@@ -282,8 +290,7 @@ ffi_tables_process <- function(
           COORD_SYS,
           tree,
           understory,
-          # regen,
-          # soil
+          soil
         ) |>
         
         # #HARMONIZATION OF NAMES
@@ -293,15 +300,12 @@ ffi_tables_process <- function(
           ASPECT_ORIGINAL = EXPO_ORIGINAL,
           SLOPE = PENT2,
           SLOPE_ORIGINAL = PENT2_ORIGINAL,
-          #soils = soil
+          soils = soil
         )
       
-      
-      
-      
     }
-  ) |>
-    purrr::list_rbind()
+   )|>
+     purrr::list_rbind()
 }
 
 
@@ -569,7 +573,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
       CAMPAGNE == year
       
     )|>
-    dplyr::as_tibble()
+    as_tibble()
   
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -688,15 +692,16 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
     dplyr::as_tibble()
   
   
-  
+  return(tree)
   
 }
 
 
-#' @describeIn tables_processing Process to gather needed data from veg subplot spp table
+#' @describeIn tables_processing 
+#' Process to gather needed data from xxxxx
 ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_lignified_france) {
   
-  ## Debug
+  # Debug
   # browser()
   
   # Assertions  and checks/validations
@@ -709,7 +714,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
   
   # 2. col names
   
-  shrub_filtered_data <- .read_fia_data(
+  shrub_filtered_data <- .read_ffi_data(
     shrub_data,
     select = c(
       "CAMPAGNE",
@@ -727,7 +732,8 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     CAMPAGNE == year
     
   ) |>
-    data.table::as.data.table()
+    as_tibble()
+  
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   
@@ -826,9 +832,17 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
       by = "SP_NAME"
     )|>
     dplyr::filter(
-      (grepl("tree|shrub", GrowthForm))
-      
-    )|>
+      (grepl("tree|shrub", GrowthForm)))|>
+    dplyr::select(
+          ID_UNIQUE_PLOT,
+          PLOT,
+          DEP,    
+          YEAR, 
+          SP_CODE, 
+          SP_NAME,
+          COVER,
+          GrowthForm
+        )|>
     dplyr::as_tibble()
   
   
@@ -837,3 +851,179 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
   
   
 }
+
+
+ffi_soil_table_process <- function(soil_data, plot, year, def_metadonnes){
+  
+  # Assertions  and checks/validations
+  files_validation <- assertthat::validate_that(
+    !any(is.na(c(soil_data)))
+    # !any(c(soil_data) == NA_character_)
+  )
+  
+  # If any file is missing abort and return an empty tibble??
+  if (is.character(files_validation)) {
+    cli::cli_warn(c(
+      "Some files can't be found",
+      "i" = "Skipping plot info for plot {.var {plot}}  for {.var {year}}"
+    ))
+    
+    return(dplyr::tibble())
+  } 
+  
+  
+  soil_filtered_data<-.read_ffi_data(
+    soil_data,
+    select = c(
+    "CAMPAGNE",
+    "IDP",
+    "DATEECO",
+    "TSOL",
+    # in dm
+    #horizon superieur
+    "PROF1",
+    #horizon inferieur
+    "PROF2",
+    "TEXT1", 
+    "TEXT2",
+    "ROCHE",
+    
+    # dixiemes 
+    "AFFROC",
+    "CAI40",
+    "CAILLOUX",
+    "AFPLA"
+    
+  ))|>
+    
+    # we  filter the data for plot/year 
+    
+    dplyr::filter(
+      IDP == plot,
+      CAMPAGNE == year
+      
+    ) |>
+    dplyr::as_tibble()
+  
+  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  
+  if (nrow(soil_filtered_data) < 1) {
+    # warn the user
+    cli::cli_warn(c(
+      "File {.file {soil_data}} has no data for that combination of plot, dep and year", 
+      "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
+    ))
+    return(dplyr::tibble())
+  }
+  
+  
+  soil_meta<-def_metadonnes|>
+    dplyr::filter(
+      Unite  %in% c("TSOL", "TEXT1", "ROCHED0"))
+  
+  
+  
+  
+  soil<-soil_filtered_data|>
+    dplyr::mutate(
+      YEAR = CAMPAGNE,
+      TEXT1 = as.character(TEXT1),
+      ROCHE = as.character(ROCHE),
+      TSOL = as.character(TSOL),
+      #dm to cm
+      PROF1 = PROF1*10,
+      PROF2 = PROF2*10
+    )|>
+    
+    dplyr::left_join(
+      soil_meta|>
+        dplyr::filter(Unite =="TEXT1")|>
+        dplyr::rename(TEXT1 = Code,
+                      TEXT1_DES = Libelle)|>
+        dplyr::select(TEXT1,TEXT1_DES),
+      by = "TEXT1") |>
+    
+    dplyr::left_join(
+      soil_meta|>
+        dplyr::filter(Unite =="TEXT1")|>
+        dplyr::rename(TEXT2 = Code,
+                      TEXT2_DES = Libelle)|>
+        dplyr::select(TEXT2,TEXT2_DES),
+      
+      by = "TEXT2") |>
+    
+    dplyr::left_join(
+      soil_meta|>
+        dplyr::filter(Unite =="ROCHED0")|>
+        dplyr::rename(ROCHE = Code,
+                      ROCHE_DES = Libelle)|>
+        dplyr::select(ROCHE,ROCHE_DES),
+      
+      by = "ROCHE") |>
+    
+    dplyr::left_join(
+      soil_meta|>
+        dplyr::filter(Unite =="TSOL")|>
+        dplyr::rename(TSOL = Code,
+                      TSOL_DES = Libelle)|>
+        dplyr::select(TSOL,TSOL_DES),
+      
+      by = "TSOL") |>
+    
+    dplyr::left_join(
+      y = idp_dep_ref,
+      by = "IDP"
+    )|>
+    
+    dplyr::mutate(
+      ID_UNIQUE_PLOT= (paste("FR", DEP, IDP, sep="_")))|>
+    
+    dplyr::rename(
+      PLOT = IDP
+    )
+  
+  
+  soil_field<- list(
+    soil|> dplyr::select(
+      ID_UNIQUE_PLOT, 
+      PLOT,
+      DEP,
+      YEAR,
+      DATEECO,
+      TSOL, 
+      TSOL_DES,
+      ROCHE,
+      ROCHE_DES,
+      TEXT1,
+      TEXT1_DES,
+      TEXT2,
+      TEXT2_DES,
+      PROF1,
+      PROF2,
+      CAI40,
+      CAILLOUX,
+      AFFROC,
+      AFPLA
+    ))
+  
+  soil<- soil|>
+    dplyr::mutate(
+      soil_field = soil_field
+    )|>
+    dplyr::select(
+      ID_UNIQUE_PLOT, 
+      PLOT,
+      DEP,
+      YEAR,
+      DATEECO,
+      soil_field
+    )|>
+    dplyr::as_tibble()
+  
+  return(soil)
+  
+  
+  
+  
+}
+
