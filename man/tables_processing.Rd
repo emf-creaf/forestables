@@ -15,9 +15,9 @@
 \alias{fia_soils_loc_table_process}
 \title{Data tables process}
 \usage{
-ffi_plot_table_process(plot_data, soil_data, plot, year, def_metadonnes)
+ffi_plot_table_process(plot_data, soil_data, plot, year, metadonnees)
 
-ffi_tree_table_process(tree_data, plot, year, espar_cdref13, espar_ref)
+ffi_tree_table_process(tree_data, plot, year, espar_cdref13)
 
 ffi_shrub_table_process(
   shrub_data,
@@ -64,7 +64,7 @@ fia_soils_loc_table_process(soils_loc, veg_subplot, plot, county, state, year)
 
 \item{year}{Numeric, year to extract}
 
-\item{espar_cdref13, cdref13, ESPAR_REF, def_metadonnes, growth_form_lignified_france}{tables. These tables
+\item{espar_cdref13, metadonnees, growth_form_lignified_france}{tables. These tables
 are automatically read in \code{\link{fia_tables_process}} based on the folder provided.}
 
 \item{county}{COUNTYCD code}
