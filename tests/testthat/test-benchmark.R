@@ -107,6 +107,9 @@ test_fia <- bench::mark(
 
 library(esus)
 library(sf)
+library(dplyr)
+library(future)
+library(ggplot2)
 
 filter_list <- show_plots_from(
   "FIA",
@@ -116,13 +119,13 @@ filter_list <- show_plots_from(
   dplyr::filter(INVYR %in% c(2005, 2015)) |>
   dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
   dplyr::filter(length(INVYR) > 1) |>
-  dplyr::group_by(INVYR, STATECD) |>
-  dplyr::slice_sample(prop = 0.2) |>
+  dplyr::group_by(INVYR, STATECD, COUNTYCD) |>
+  dplyr::slice_sample(prop = 0.4) |>
   dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
   dplyr::filter(length(INVYR) > 1) |>
-  create_filter_list_fia()
+  esus:::create_filter_list_fia()
 
-future::plan(future.callr::callr, workers = 6)
+future::plan(future.callr::callr, workers = 12)
 res <- fia_to_tibble(
   years = c(2005, 2015),
   states = c("OR", "CA", "WA"),
@@ -139,36 +142,81 @@ test <- res |>
   dplyr::group_by(YEAR, ID_UNIQUE_PLOT) |>
   dplyr::summarise(DIA = mean(tree_DIA, na.rm = TRUE), HT = mean(tree_HT, na.rm = TRUE))
 
-states_map <- maps::map("state", plot = FALSE, fill = TRUE) |>
-  sf::st_as_sf() |>
-  dplyr::filter(ID %in% c("california", "oregon", "washington"))
 
-par(mfrow = c(1,2))
-mapsf::mf_theme("darkula")
-mapsf::mf_shadow(states_map)
-mapsf::mf_map(
-  x = states_map, type = "base", add = TRUE
-)
-mapsf::mf_map(
-  x = test |> dplyr::filter(YEAR == 2005),
-  var = c("DIA", "HT"),
-  type = "prop_choro",
-  alpha = 0.5
-)
-mapsf::mf_title("2005")
-mapsf::mf_theme("darkula")
-mapsf::mf_shadow(states_map)
-mapsf::mf_map(
-  x = states_map, type = "base", add = TRUE
-)
-mapsf::mf_map(
-  x = test |> dplyr::filter(YEAR == 2015),
-  var = c("DIA", "HT"),
-  type = "prop_choro",
-  alpha = 0.5
-)
-mapsf::mf_title("2015")
-dev.off()
+states_map_data <- rnaturalearth::ne_states(country = "United States of America", returnclass = "sf") |>
+  dplyr::filter(postal %in% c("OR", "CA", "WA")) |>
+  dplyr::select(postal) |>
+  sf::st_transform(crs = sf::st_crs(test)) |>
+  sf::st_join(test) |>
+  dplyr::group_by(YEAR, postal) |>
+  dplyr::summarise(DIA = mean(DIA, na.rm = TRUE), HT = mean(HT, na.rm = TRUE))
+
+
+counties_map_data <- maps::map("county", plot = FALSE, fill = TRUE) |>
+  sf::st_as_sf() |>
+  dplyr::filter(stringr::str_detect(ID, "california,|oregon,|washington,")) |>
+  sf::st_make_valid() |>
+  dplyr::filter(sf::st_is_valid(geom)) |>
+  sf::st_transform(crs = sf::st_crs(test)) |>
+  sf::st_join(test) |>
+  dplyr::group_by(YEAR, ID) |>
+  dplyr::filter(!is.na(YEAR)) |>
+  dplyr::summarise(DIA = mean(DIA, na.rm = TRUE), HT = mean(HT, na.rm = TRUE))
+
+states_map_data |>
+  ggplot() +
+  geom_sf(aes(fill = DIA)) +
+  facet_grid(cols = vars(YEAR))
+
+states_map_data |>
+  ggplot() +
+  geom_sf(aes(fill = HT)) +
+  facet_grid(cols = vars(YEAR))
+
+counties_map_data |>
+  ggplot() +
+  geom_sf(data = counties_map_data, fill = NA) +
+  geom_sf(aes(fill = DIA)) +
+  facet_grid(cols = vars(YEAR))
+
+counties_map_data |>
+  ggplot() +
+  geom_sf(data = counties_map_data, fill = NA) +
+  geom_sf(aes(fill = DIA)) +
+  facet_grid(cols = vars(YEAR)) +
+  scale_fill_gradientn(
+    colours = hcl.colors(8, "Spectral", alpha = 0.8),
+    na.value = "black"
+  ) +
+  theme_void()
+
+
+# par(mfrow = c(1,2))
+# mapsf::mf_theme("darkula")
+# mapsf::mf_shadow(states_map_data)
+# mapsf::mf_map(
+#   x = states_map_data, type = "base", add = TRUE
+# )
+# mapsf::mf_map(
+#   x = test |> dplyr::filter(YEAR == 2005),
+#   var = c("DIA", "HT"),
+#   type = "prop_choro",
+#   alpha = 0.5
+# )
+# mapsf::mf_title("2005")
+# mapsf::mf_theme("darkula")
+# mapsf::mf_shadow(states_map_data)
+# mapsf::mf_map(
+#   x = states_map_data, type = "base", add = TRUE
+# )
+# mapsf::mf_map(
+#   x = test |> dplyr::filter(YEAR == 2015),
+#   var = c("DIA", "HT"),
+#   type = "prop_choro",
+#   alpha = 0.5
+# )
+# mapsf::mf_title("2015")
+# dev.off()
 
 
 # tictoc::tic()
