@@ -31,3 +31,7 @@ ffi_plot_table_process(plot_data = input_df[["plot_table"]][1], soil_data =input
 ffi_tree_table_process(tree_data= input_df[["tree_table"]][1], plot, 2014, espar_cdref13 , espar_ref)
 
 ffi_shrub_table_process(shrub_data=input_df[["shrub_table"]][1], plot, 2014,cd_ref, growth_form_lignified_france)
+
+
+esus:::ffi_tables_process(2014 , filter_list, folder , .verbose =TRUE)
+
