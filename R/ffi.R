@@ -201,16 +201,11 @@ ffi_tables_process <- function(
  load(paste0(folder,"/growth_form_lignified_france.RData"))
   
   
-   furrr::future_pmap(
-  #   purrr::pmap(
+  # furrr::future_pmap(
+     purrr::pmap(
     .progress = .verbose,
-    .l = list(
-      dep = input_df[["dep"]],
-      plot = input_df[["plots"]],
-      tree_table_file = input_df[["tree_table"]],
-      plot_table_file = input_df[["plot_table"]],
-      shrub_table_file = input_df[["shrub_table"]],
-      soil_table_file = input_df[["soils_table"]]),
+    .l = input_df,
+      
     .f = \(dep,
            plots,
            tree_table_file,
@@ -219,13 +214,15 @@ ffi_tables_process <- function(
            soil_table_file
     ) {
       
-      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plot, year)
+      browser()
       
-      tree <- ffi_tree_table_process(tree_table_file, plot, year,espar_cdref13, espar_ref)
+      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plots, year, def_metadonnes)
       
-       shrub <- ffi_shrub_table_process(shrub_table_file, plot, year, cd_ref, growth_form_lignified_france)
+      tree <- ffi_tree_table_process(tree_table_file, plots, year,espar_cdref13, espar_ref)
+      
+       shrub <- ffi_shrub_table_process(shrub_table_file, plots, year, cd_ref, growth_form_lignified_france)
 
-       soil <- ffi_soil_table_process(soil_table_file, plot, year, def_metadonnes)
+       soil <- ffi_soil_table_process(soil_table_file, plots, year, def_metadonnes)
       # 
       
       #we select herbs
@@ -333,7 +330,7 @@ ffi_tables_process <- function(
 NULL
 
 #' @describeIn tables_processing Process to gather needed data from plot, survey and cond tables
-ffi_plot_table_process <- function(plot_data, soil_data, plot, year) {
+ffi_plot_table_process <- function(plot_data, soil_data, plot, year, def_metadonnes) {
   
   ## Debug
   # browser()
