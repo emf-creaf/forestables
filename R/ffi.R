@@ -128,15 +128,11 @@ ffi_to_tibble <- function(
   )
   # def metadonnes --> this file is edited from source!!
   assertthat::assert_that(
-    fs::file_exists(fs::path(folder, "def_metadonnes.xlsx")),
-    msg = cli::cli_abort("{.file def_metadonnes.xlsx} file must be present at {.path {folder}} to be able to continue")
+    fs::file_exists(fs::path(folder, "metadonnees.xlsx")),
+    msg = cli::cli_abort("{.file metadonnees.xlsx} file must be present at {.path {folder}} to be able to continue")
   )
   
-  # espar ref
-  assertthat::assert_that(
-    fs::file_exists(fs::path(folder, "espar_ref.xlsx")),
-    msg = cli::cli_abort("{.file espar_ref.xlsx} file must be present at {.path {folder}} to be able to continue")
-  )
+
   
   #  growth_form_species_france (try db)
   assertthat::assert_that(
@@ -177,7 +173,7 @@ ffi_tables_process <- function(
 ) {
   
   # debug
-  # browser()
+     browser()
   
   # Create input df for year
   
@@ -185,10 +181,30 @@ ffi_tables_process <- function(
   
   # Get needed ancillary data (changed for excel)
   
-  espar_cdref13 <-  readxl::read_excel(fs::path(folder, "espar-cdref13.xlsx")) |> dplyr::as_tibble()
-  cd_ref <-  readxl::read_excel(fs::path(folder, "CD_REF.xlsx")) |> dplyr::as_tibble()
-  espar_ref <-  readxl::read_excel(fs::path(folder, "ESPAR_REF.xlsx")) |> dplyr::as_tibble()
-  def_metadonnes <- readxl::read_excel(fs::path(folder, "def_metadonnes.xlsx")) |> dplyr::as_tibble()
+  espar_cdref13<-.read_ffi_data(fs::path(folder, "espar-cdref13.CSV")) |> dplyr::as_tibble()|>
+    dplyr::rename(
+      ESPAR ="// espar",
+      Libellé  = lib_espar                        
+    )|>
+    dplyr::arrange(ESPAR)
+  
+  metadonnees<-readr::read_delim(file = fs::path(folder, "metadonnees.csv"),skip = 412)|> dplyr::as_tibble()|>
+    dplyr::rename(
+      UNITE ="// Unité"
+    )
+  
+  cd_ref <-  metadonnees|>
+    dplyr::filter(UNITE =="CDREF13"
+          )|>
+    dplyr::mutate(lib_cdref=  stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)"))|>
+   dplyr::rename(
+     cd_ref = Code  
+    )
+    
+    
+  
+
+  
   idp_dep_ref<-readr::read_delim(paste0(folder, "PLACETTE.csv"), 
                                    delim = ";", escape_double = FALSE, trim_ws = TRUE)|>
     tibble::tibble()|>
@@ -197,6 +213,8 @@ ffi_tables_process <- function(
       DEP
     )|>
     unique()
+  
+  
   #revise  path!!!!
  load(paste0(folder,"/growth_form_lignified_france.RData"))
   
@@ -216,13 +234,14 @@ ffi_tables_process <- function(
       
       browser()
       
-      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plots, year, def_metadonnes)
+      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plots, year, metadonnees)
       
-      tree <- ffi_tree_table_process(tree_table_file, plots, year,espar_cdref13, espar_ref)
+      
+      tree <- ffi_tree_table_process(tree_table_file, plots, year,espar_cdref13)
       
        shrub <- ffi_shrub_table_process(shrub_table_file, plots, year, cd_ref, growth_form_lignified_france)
 
-       soil <- ffi_soil_table_process(soil_table_file, plots, year, def_metadonnes)
+       soil <- ffi_soil_table_process(soil_table_file, plots, year, metadonnees)
       # 
       
       #we select herbs
@@ -317,7 +336,7 @@ ffi_tables_process <- function(
 #' @param plot Numeric, plot code
 #' @param dep department code
 #' @param year Numeric, year to extract
-#' @param espar_cdref13,cdref13,ESPAR_REF,def_metadonnes,growth_form_lignified_france tables. These tables
+#' @param espar_cdref13,metadonnees,growth_form_lignified_france tables. These tables
 #'   are automatically read in \code{\link{fia_tables_process}} based on the folder provided.
 #' @param growth_habit Character, growth habit value to filter data (to distinguish between herbs
 #'   and shrubs)
@@ -330,10 +349,10 @@ ffi_tables_process <- function(
 NULL
 
 #' @describeIn tables_processing Process to gather needed data from plot, survey and cond tables
-ffi_plot_table_process <- function(plot_data, soil_data, plot, year, def_metadonnes) {
+ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees) {
   
   ## Debug
-  # browser()
+   # browser()
   
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -372,13 +391,13 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, def_metadon
   ) |>
     #join with metadonnes
     dplyr::left_join(
-      y = def_metadonnes|>
+      y = metadonnees|>
         dplyr::filter(
-          Unite == "DP"
+          UNITE == "DP"
         )|>
         dplyr::select(
           DEP = Code,
-          DEP_NAME = Libelle),
+          DEP_NAME = Libellé),
       
       by = "DEP"
     )|>
@@ -521,7 +540,7 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, def_metadon
 
 
 #' @describeIn tables_processing Process to gather needed data from tree table
-ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_ref) {
+ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13) {
   
   ## Debug
   # browser()
@@ -570,7 +589,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
       CAMPAGNE == year
       
     )|>
-    as_tibble()
+    dplyr::as_tibble()
   
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -616,15 +635,15 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
       by = "ESPAR"
     ) |>
     
-    #join with espar
-    dplyr::left_join(
-      y = espar_ref|>
-        dplyr::select(
-          ESPAR,
-          LIBELLE
-        ),
-      by = "ESPAR"
-    ) |>
+    # #join with espar
+    # dplyr::left_join(
+    #   y = espar_ref|>
+    #     dplyr::select(
+    #       ESPAR,
+    #       LIBELLE
+    #     ),
+    #   by = "ESPAR"
+    # ) |>
     
     dplyr::left_join(
       y = idp_dep_ref,
@@ -638,7 +657,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
     
     dplyr::rename(
       PLOT = IDP,
-      FR_SP_NAME = LIBELLE,
+     # FR_SP_NAME = LIBELLE,
       SP_NAME = lib_cdref, 
       SP_CODE = cd_ref,
       TREE = A, 
@@ -655,7 +674,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, espar_
       YEAR,
       TREE,
       ESPAR,
-      FR_SP_NAME,
+      #FR_SP_NAME,
       SP_CODE,
       SP_NAME,
       STATUS,
@@ -729,7 +748,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     CAMPAGNE == year
     
   ) |>
-    as_tibble()
+    dplyr::as_tibble()
   
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -750,7 +769,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     dplyr::mutate(
       YEAR = CAMPAGNE,
       # ID_UNIQUE_PLOT= (paste("FR", IDP, sep="_")),
-      cd_ref = CD_REF,
+      cd_ref = as.character(CD_REF),
       #conversion to percentage
       ABOND = dplyr::case_when(
         # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.				
@@ -791,13 +810,13 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
       SP_CODE = cd_ref,
       COVER = ABOND
     )|>
-    dplyr::rename(
-      full_name = SP_NAME
-    )|>
-    dplyr::mutate(genus = stringr::str_extract(full_name, "\\b\\w+\\b"),
-                  species =  stringr::str_extract(full_name, "(?<=\\s)\\w+"),
-                  species = dplyr::if_else(stringr::str_detect(species, "^\\("), "", species),
-                  SP_NAME = ifelse(is.na(species) | species == "", genus, paste(genus, species, sep = " ")))|>
+    # dplyr::rename(
+    #   full_name = SP_NAME
+    # )|>
+    # dplyr::mutate(genus = stringr::str_extract(full_name, "\\b\\w+\\b"),
+    #               species =  stringr::str_extract(full_name, "(?<=\\s)\\w+"),
+    #               species = dplyr::if_else(stringr::str_detect(species, "^\\("), "", species),
+    #               SP_NAME = ifelse(is.na(species) | species == "", genus, paste(genus, species, sep = " ")))|>
     
     #selection of final variables 
     
@@ -850,7 +869,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
 }
 
 
-ffi_soil_table_process <- function(soil_data, plot, year, def_metadonnes){
+ffi_soil_table_process <- function(soil_data, plot, year, metadonnees){
   
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -914,9 +933,9 @@ ffi_soil_table_process <- function(soil_data, plot, year, def_metadonnes){
   }
   
   
-  soil_meta<-def_metadonnes|>
+  soil_meta<-metadonnees|>
     dplyr::filter(
-      Unite  %in% c("TSOL", "TEXT1", "ROCHED0"))
+      UNITE  %in% c("TSOL", "TEXT1", "ROCHED0"))
   
   
   
@@ -934,35 +953,35 @@ ffi_soil_table_process <- function(soil_data, plot, year, def_metadonnes){
     
     dplyr::left_join(
       soil_meta|>
-        dplyr::filter(Unite =="TEXT1")|>
+        dplyr::filter(UNITE =="TEXT1")|>
         dplyr::rename(TEXT1 = Code,
-                      TEXT1_DES = Libelle)|>
+                      TEXT1_DES = Libellé)|>
         dplyr::select(TEXT1,TEXT1_DES),
       by = "TEXT1") |>
     
     dplyr::left_join(
       soil_meta|>
-        dplyr::filter(Unite =="TEXT1")|>
+        dplyr::filter(UNITE =="TEXT1")|>
         dplyr::rename(TEXT2 = Code,
-                      TEXT2_DES = Libelle)|>
+                      TEXT2_DES = Libellé)|>
         dplyr::select(TEXT2,TEXT2_DES),
       
       by = "TEXT2") |>
     
     dplyr::left_join(
       soil_meta|>
-        dplyr::filter(Unite =="ROCHED0")|>
+        dplyr::filter(UNITE =="ROCHED0")|>
         dplyr::rename(ROCHE = Code,
-                      ROCHE_DES = Libelle)|>
+                      ROCHE_DES = Libellé)|>
         dplyr::select(ROCHE,ROCHE_DES),
       
       by = "ROCHE") |>
     
     dplyr::left_join(
       soil_meta|>
-        dplyr::filter(Unite =="TSOL")|>
+        dplyr::filter(UNITE =="TSOL")|>
         dplyr::rename(TSOL = Code,
-                      TSOL_DES = Libelle)|>
+                      TSOL_DES = Libellé)|>
         dplyr::select(TSOL,TSOL_DES),
       
       by = "TSOL") |>
