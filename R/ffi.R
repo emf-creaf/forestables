@@ -173,7 +173,7 @@ ffi_tables_process <- function(
 ) {
   
   # debug
-     browser()
+     # browser()
   
   # Create input df for year
   
@@ -220,28 +220,29 @@ ffi_tables_process <- function(
   
   
   # furrr::future_pmap(
-     purrr::pmap(
+  purrr::pmap(
     .progress = .verbose,
     .l = input_df,
       
     .f = \(dep,
            plots,
-           tree_table_file,
-           plot_table_file, 
-           shrub_table_file,
-           soil_table_file
+           tree_table,
+           plot_table,
+           shrub_table,
+           soils_table
     ) {
       
-      browser()
+      # browser()
       
-      plot_info <- ffi_plot_table_process(plot_table_file, soil_table_file, plots, year, metadonnees)
+      plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
       
       
-      tree <- ffi_tree_table_process(tree_table_file, plots, year,espar_cdref13)
       
-       shrub <- ffi_shrub_table_process(shrub_table_file, plots, year, cd_ref, growth_form_lignified_france)
+      tree <- ffi_tree_table_process(tree_table, plots, year,espar_cdref13)
+      
+       shrub <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france)
 
-       soil <- ffi_soil_table_process(soil_table_file, plots, year, metadonnees)
+       soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees)
       # 
       
       #we select herbs
@@ -320,7 +321,7 @@ ffi_tables_process <- function(
         )
       
     }
-   )|>
+   ) |>
      purrr::list_rbind()
 }
 
@@ -445,7 +446,6 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees
   eco_filtered_data <- .read_ffi_data(
     soil_data,
     select = c(
-    
       "CAMPAGNE",
       "IDP",
       "EXPO",
@@ -453,7 +453,8 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees
       "LIGN1",
       "LIGN2",
       "HERB"
-    ))|>
+    )
+  ) |>
     
     
     
@@ -464,21 +465,23 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees
     dplyr::mutate(
       #CONVERSION TO SEXAGESIMAL
       EXPO = 0.9 * EXPO)|>
-    dplyr::select(PLOT,
-                  YEAR,
-                  EXPO,
-                  PENT2, 
-                  LIGN1,
-                  LIGN2,
-                  HERB)|>
-    dplyr::arrange(desc(YEAR))|>
+    dplyr::select(
+      PLOT,
+      YEAR,
+      EXPO,
+      PENT2, 
+      LIGN1,
+      LIGN2,
+      HERB
+    ) |>
+    dplyr::arrange(desc(YEAR)) |>
     data.table::as.data.table() |>
-    .extract_ffi_metadata(c(
-                            "EXPO",
-                            "PENT2", 
-                            "LIGN1",
-                            "LIGN2",
-                            "HERB"), plot, year, .soil_mode = FALSE) |>
+    .extract_ffi_metadata(
+      c("EXPO", "PENT2", "LIGN1", "LIGN2", "HERB"),
+      plot,
+      year,
+      .soil_mode = FALSE
+    ) |>
     dplyr::mutate(
       PLOT  = plot,
       YEAR  = year,

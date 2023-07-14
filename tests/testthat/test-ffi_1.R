@@ -16,7 +16,7 @@
 
 
 folder =  "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
-
+folder<- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
 filter_list<-list(
   "02" = c("932915", "1433309"),
   "50" = c("1422499","23087"),
