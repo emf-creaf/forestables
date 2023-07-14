@@ -72,6 +72,8 @@
   purrr::imap(
     filter_list,
     .f = \(counties_list, state) {
+      # browser()
+      
       counties_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
