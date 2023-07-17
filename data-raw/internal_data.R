@@ -4,8 +4,7 @@ fia_states_dictionary <- FIESTA::ref_statecd
 # FFI growth habit data
 # partimos de foo.txt que  me lo he bajado de TRY con species = bar y country = FRA
 
-fr_species_cdref <-
-  
+
   
   
   
