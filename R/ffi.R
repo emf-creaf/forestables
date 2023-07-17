@@ -289,7 +289,7 @@ ffi_tables_process <- function(
       # 
       # #we create understory with herbs and shrub
 
-      understory <- plot_info|>
+      understory <- plot_info |>
 
         dplyr::select(
           ID_UNIQUE_PLOT,

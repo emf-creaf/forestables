@@ -335,7 +335,6 @@ create_filter_list_fia <- function(plots_info) {
   .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
   .call = rlang::caller_env()
 ) {
-
   purrr::pmap_chr(
     .l = list(state, .county, .plot),
     .f = \(state, county, plot) {
@@ -387,7 +386,8 @@ create_filter_list_fia <- function(plots_info) {
      return(table_path)
     }
   )
-}
+ }
+
 
 #' Helper function to extract plot and soil metadata from from tables
 #'

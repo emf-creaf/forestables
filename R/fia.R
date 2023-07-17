@@ -254,7 +254,7 @@ fia_tables_process <- function(
         COUNTYCD = county,
         YEAR = year,
         STATECD =  state,
-        ID_UNIQUE_PLOT=paste("US",STATECD,COUNTYCD,PLOT,sep="_"),
+        ID_UNIQUE_PLOT = paste("US",STATECD,COUNTYCD,PLOT,sep="_"),
         shrub = list(shrub),
         herbs = list(herbs)
       ) |>

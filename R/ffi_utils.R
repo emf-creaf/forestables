@@ -50,7 +50,7 @@
 #'
 #' @noRd
 .build_ffi_input_with <- function(
-    year,  filter_list, folder, .verbose
+    year,  filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
   
   # # first, if is null filter list, create it
@@ -65,26 +65,150 @@
   #   )), .verbose
   # )
   
-
+# browser()
   dep_list <- filter_list
   
       dep_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
         purrr::set_names(c("dep", "plots")) |>
-        dplyr::select(dep, plots) |>
-   
-    dplyr::mutate(
-      tree_table = paste0(folder,"ARBRE.CSV"),
-      plot_table = paste0(folder,"PLACETTE.CSV"),
-      shrub_table = paste0(folder,"FLORE.CSV"),
-      soils_table = paste0(folder,"ECOLOGIE.CSV")
-      
-    )
+        dplyr::select(dep, plots) |>  
+        # purrr::list_rbind() |>
+        dplyr::mutate(
+          plot_table = .build_ffi_file_path(
+            dep, "plot", folder,
+            .plot = plots, 
+            .year = year, 
+            .custom = TRUE,
+            .call = .call
+          ),
+          tree_table = .build_ffi_file_path(
+            dep, "tree", folder,
+            .plot = plots, 
+            .year = year, 
+            .custom = TRUE,
+            .call = .call
+          ),
+          shrub_table = .build_ffi_file_path(
+            dep, "shrub", folder,
+            .plot = plots, 
+            .year = year, 
+            .custom = TRUE,
+            .call = .call
+          ),
+          soils_table = .build_ffi_file_path(
+            dep, "soils", folder,
+            .plot = plots, 
+            .year = year, 
+            .custom = TRUE,
+            .call = .call
+          )
+          )
+
+    
 }
 
 
 
+#' Create the path and system call for reading FFI csv's
+#'
+#' Create FFI csv file path with extra sugar
+#'
+#' This function builds the path to FIA table csv files based on the state and type of table.
+#' Also, using the type, we add the system call to \code{grep} in those tables which it can
+#' be used to avoid loading the whole table.
+#'
+#' @section \code{grep} system call:
+#' \code{grep} system library allows to find patterns in text files. This can be used prior
+#' to read the file to feed \code{fread} only with the rows we need. For this we build a
+#' regular expression that matches the county and plot code, as well as year in the case of
+#' some tables. This way we avoid loading the whole table and only the rows we need.
+#' In this case, the regular expression used is:
+#' \preformatted{
+#' ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),'
+#' }
+#' \code{",INVYR,"} matches the first row in all tables, because all tables have the Inventory
+#' year variable.
+#' \code{"|"} means \code{OR} as in R code. This way we match the first row with the part before
+#' "|", \emph{OR} the rows with the data as per the part after "|".
+#' \code{,{.year},.*,{county},({plot}|{plot}.0)} part matches any row with the values for
+#' year, county and plot in an specific order. First year between commas, after that an
+#' unspecified number of characters (\code{".*"}), and county and plot together between
+#' commas and separated by a comma.
+#' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
+#' because some states have this variable as a double value.
+#'
+#' @param state Character vector with two-letter code for states.
+#' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
+#'   "p3_understory",  "seedling", "soils_loc", "soils_lab", "veg_subplot", "p2_veg_subplot".
+#' @param folder Character, path to the folder with the FIA csv files.
+#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
+#' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
+#'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
+#' @param .year Numeric value (length one) with the year to build the \code{grep} command
+#'   if \code{.custom} is \code{TRUE}.
+#'
+#' @return Character vector with the paths (or custom command with path) to use with
+#'   \code{\link{.read_fia_data}}.
+#'
+#' @noRd
+
+
+.build_ffi_file_path <- function(
+    dep, type, folder = ".",
+    .plot = rep(NA, length(dep)),
+    .year = NULL,
+    .custom = FALSE,
+    .call = rlang::caller_env()
+    ) 
+{ 
+  purrr::pmap_chr(
+    .l = list(dep, .plot),
+    .f = \(dep,  plot) 
+    {
+      
+      # browser()
+      # file ending (beginning will be the state)
+      ending <- switch(
+        type,
+        "tree" = "ARBRE.csv",
+        "plot" = "PLACETTE.csv",
+        "shrub" = "FLORE.csv",
+        "soils" = "ECOLOGIE.csv"
+      )
+      
+      # return path
+      table_path <- fs::path(folder, glue::glue("{ending}"))
+      
+      # check file exists
+      if (!fs::file_exists(table_path)) {
+        cli::cli_warn(c(
+          "{.path {table_path}} file doesn't exists",
+          "!" = "Please check if {.path {folder}} is the correct path",
+          "i" = "Skipping {.path {table_path}}"
+        ), call = .call)
+        return(NA_character_)
+      }
+      
+      if (.custom) {
+        if (type %in% c("plot")) {
+          customized_path <- glue::glue(
+            "grep -E ';CAMPAGNE;|;{.year};.*;{plot};.*;{dep},' {table_path}"
+          )
+          } else {
+            if (type %in% c("tree", "shrub", "soils")) {
+              customized_path <- glue::glue(
+                "grep -E ';CAMPAGNE;|;{.year};;{plot};' {table_path}"
+              )
+            }
+          }
+        return(customized_path)
+      }
+      return(table_path)
+      }
+    
+)
+}
 
 #' Helper function to extract plot and soil metadata from from tables
 #'
