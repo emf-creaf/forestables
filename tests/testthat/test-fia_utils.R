@@ -1,5 +1,3 @@
-# build input ---------------------------------------------------------------------------------
-
 test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   test_plots <- list(
     "MN" = list(
@@ -97,6 +95,11 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # .build_fia_file_path
   # a correct one
   expect_identical(
+    test_res[["survey_table"]][1],
+    paste0(test_folder, names(test_plots)[1], "_SURVEY.csv")
+  )
+  # a correct custom one
+  expect_identical(
     test_res[["plot_table"]][1],
     paste0("grep -E ',INVYR,|,137,(29396|29396.0),' ", test_folder, names(test_plots)[1], "_PLOT.csv")
   )
@@ -104,6 +107,112 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   expect_identical(
     test_res[["plot_table"]][31], NA_character_
   )
+})
 
-  ## TODO test .build_fia_file_path for customized paths with grep
+test_that(".read_fia_data returns lazy_dt", {
+  test_file <- fs::path("/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/OR_PLOT.csv")
+  test_cmd <- glue::glue("grep -E ',INVYR,|,25,(84167|84167.0),' {test_file}")
+
+  expect_s3_class(.read_fia_data(test_file), "dtplyr_step_first")
+  expect_s3_class(.read_fia_data(test_cmd), "dtplyr_step_first")
+})
+
+test_that(".get_plots_from_state works as intended", {
+  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_states <- c("OR", "WA", "CA")
+
+  # error
+  expect_error(
+    suppressWarnings(.get_plots_from_state(test_states[1], ".")),
+    "folder doesn't contain"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(test_res_ok <- .get_plots_from_state(test_states[1], test_folder), "sf")
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(test_res_ok,c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  # expect rows
+  expect_true(
+    nrow(test_res_ok) > 0
+  )
+})
+
+
+test_that("show_plots_from_fia works as intended", {
+  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_states <- c("OR", "WA", "CA")
+
+  # error
+  expect_error(
+    suppressWarnings(show_plots_from_fia( ".", test_states[1])),
+    "folder doesn't contain"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(test_res_ok <- show_plots_from_fia(test_folder, test_states), "sf")
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(test_res_ok, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  # expect rows
+  expect_true(
+    nrow(test_res_ok) > 0
+  )
+  # we must have 3 states
+  expect_identical(
+    test_res_ok$STATECD |> unique() |> length(), 3L
+  )
+})
+
+test_that(".transform_plot_summary works as intended", {
+  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_states <- c("OR", "WA", "CA")
+  test_summary <- show_plots_from_fia(test_folder, test_states)
+  test_years <- c(2005, 2010, 2015)
+
+  # correct object
+  expect_type(
+    test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
+    "list"
+  )
+  # correct names
+  expect_named(test_res_2005_OR, "OR")
+  # expect results
+  expect_length(test_res_2005_OR, 1)
+  expect_true(length(test_res_2005_OR[[1]]) > 1)
+})
+
+test_that("create_filter_lsit_fia works as inteded", {
+  # test data
+  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_states <- c("OR", "WA", "CA")
+  test_summary <- show_plots_from_fia(test_folder, test_states) |>
+    dplyr::filter(INVYR %in% c(2005, 2010, 2015))
+
+  # errors
+  # object error
+  expect_error(create_filter_list_fia("test_summary"), "data.frame")
+  expect_error(create_filter_list_fia(as.list(test_summary)), "data.frame")
+  # names error
+  expect_error(create_filter_list_fia(iris), "expected names")
+  # rows error
+  expect_error(create_filter_list_fia(test_summary |> dplyr::filter(INVYR == 1800)), "one row")
+
+  # correct object
+  expect_type(
+    test_res <- create_filter_list_fia(test_summary),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("CA", "OR", "WA"))
+  # expect results
+  expect_length(test_res, 3)
+  expect_true(length(test_res[[1]]) > 1)
+  expect_true(length(test_res[[2]]) > 1)
+  expect_true(length(test_res[[3]]) > 1)
+
 })
