@@ -17,14 +17,15 @@
 \usage{
 ffi_plot_table_process(plot_data, soil_data, plot, year, metadonnees)
 
-ffi_tree_table_process(tree_data, plot, year, espar_cdref13)
+ffi_tree_table_process(tree_data, plot, year, espar_cdref13, idp_dep_ref)
 
 ffi_shrub_table_process(
   shrub_data,
   plot,
   year,
   cd_ref,
-  growth_form_lignified_france
+  growth_form_lignified_france,
+  idp_dep_ref
 )
 
 fia_plot_table_process(plot_data, survey_data, cond_data, plot, county, year)

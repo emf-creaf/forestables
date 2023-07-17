@@ -190,6 +190,17 @@ ffi_tables_process <- function(
       ESPAR = "// espar",
       Libellé  = lib_espar                        
     ) |>
+    dplyr::mutate(ESPAR = dplyr::case_when(
+      ESPAR == "2" ~"02",
+      ESPAR == "3" ~"03",
+      ESPAR == "4" ~"04",
+      ESPAR == "5" ~"05",
+      ESPAR == "6" ~"06",
+      ESPAR == "7" ~"07",
+      ESPAR == "9" ~"09",
+      TRUE ~ ESPAR
+    )
+    ) |>
     dplyr::arrange(ESPAR)
   
   metadonnees <- readr::read_delim(file = fs::path(folder, "metadonnees.csv"), skip = 412) |>
@@ -205,13 +216,18 @@ ffi_tables_process <- function(
     dplyr::mutate(
       lib_cdref =  stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
       ) |>
-
    dplyr::rename(
      cd_ref = Code  
     )
     
     
-  
+  ESPAR <- metadonnees |>
+    dplyr::filter(
+      UNITE == "ESPAR1"
+    ) |>
+    dplyr::rename(
+      cd_ref = Code  
+    )
 
 
   idp_dep_ref <- readr::read_delim(
@@ -227,10 +243,10 @@ ffi_tables_process <- function(
     unique()
   
   
-  #revise  path!!!!
- load(paste0(folder,"/growth_form_lignified_france.RData"))
-  
-  
+ #  #revise  path!!!!
+ # load(paste0(folder,"/growth_form_lignified_france.RData"))
+ #  
+ #  
   # furrr::future_pmap(
 
      purrr::pmap(
@@ -585,8 +601,9 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
     return(dplyr::tibble())
   }
   
+  # browser()
   
-  tree_filtered_data <- .read_ffi_data(
+  tree_raw_data <- .read_ffi_data(
     tree_data,
     select = c(
   
@@ -604,19 +621,19 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
       "TETARD",
       "QUALITE",
       "CIBLE"
-
-    )) |>
-
+    ) 
+    ) |>
+    dplyr::mutate_at(dplyr::vars(ESPAR,VEGET, VEGET5), ~ dplyr::na_if(., "")) |>
+    dplyr::as_tibble() 
+  
+  tree_filtered_data <- tree_raw_data |>
     
     # we  filter the data for plot/year and status (alive)
     
     dplyr::filter(
       IDP == plot,
-      CAMPAGNE == year
+      CAMPAGNE == year)
       
-    ) |>
-
-    dplyr::as_tibble()
   
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -631,7 +648,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
   
   
 
-  tree_plot_data <- tree_filtered_data |>
+  tree_plot_data <- tree_raw_data |>
 
     
     # we  filter the data for plot/
@@ -653,7 +670,6 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
       YEAR = CAMPAGNE,
       #ID_UNIQUE_PLOT= (paste("FR", IDP, sep="_"))
       
-=
     ) |>
     
     #join with espar_cdref
@@ -735,7 +751,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
     #añadir condiciones en funcion de si es na o no ??
     dplyr::group_by(ID_UNIQUE_PLOT) |>
 
-    dplyr::arrange(ID_UNIQUE_PLOT,TREE) |>
+    dplyr::arrange(ID_UNIQUE_PLOT,TREE, YEAR) |>
     tidyr::fill(c(ESPAR,SP_CODE,SP_NAME)) |>
     
     # we  filter the data for year

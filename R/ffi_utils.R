@@ -29,6 +29,8 @@
     # convert to tibble
     dtplyr::lazy_dt(immutable = TRUE)
   
+
+  
   return(res)
 }
 
@@ -64,19 +66,19 @@
   # )
   
 
-  dep_list<-filter_list
+  dep_list <- filter_list
   
       dep_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
         purrr::set_names(c("dep", "plots")) |>
-        dplyr::select(dep, plots)|>
+        dplyr::select(dep, plots) |>
    
     dplyr::mutate(
       tree_table = paste0(folder,"ARBRE.CSV"),
       plot_table = paste0(folder,"PLACETTE.CSV"),
       shrub_table = paste0(folder,"FLORE.CSV"),
-      soils_table =paste0(folder,"ECOLOGIE.CSV")
+      soils_table = paste0(folder,"ECOLOGIE.CSV")
       
     )
 }

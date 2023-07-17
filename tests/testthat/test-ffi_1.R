@@ -4,12 +4,14 @@ folder =  "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
 folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
 
 
+
+
 subset_ifn_fr <- .read_ffi_data(
-  "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.CSV"
+  "D:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.CSV"
   ) |>
   
   dplyr::group_by(DEP) |>
-  slice_sample(n = 2, replace = FALSE) |>
+  dplyr::slice_sample(n = 6, replace = FALSE) |>
    dplyr::filter(CAMPAGNE == 2019) |>
   dplyr::rename(
     plot = IDP,
@@ -44,5 +46,5 @@ ffi_tree_table_process(tree_data = input_df[["tree_table"]][1], plot, 2014, espa
 ffi_shrub_table_process(shrub_data = input_df[["shrub_table"]][1], plot, 2014,cd_ref, growth_form_lignified_france)
 
 
-esus:::ffi_tables_process(2014 , filter_list, folder , .verbose = TRUE)
+esus:::ffi_tables_process(2019 , filter_list, folder , .verbose = TRUE)
 
