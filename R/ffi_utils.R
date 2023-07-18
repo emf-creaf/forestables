@@ -68,7 +68,7 @@
     filter_list <-  purrr::map(
       dep,
       .f = \(dep) {
-        .get_plots(dep, folder, .call = .call) |>
+        .get_plots( folder, .call = .call) |>
           .transform_plot_summary(year,dep) 
       }
     ) |>
@@ -80,13 +80,13 @@
 
   }
 
-  # inform the user about the amount of plots for this year
-  verbose_msg(
-    cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {year}}"
-    )), .verbose
-  )
-  
+  # # inform the user about the amount of plots for this year
+  # verbose_msg(
+  #   cli::cli_inform(c(
+  #     "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {year}}"
+  #   )), .verbose
+  # )
+  # 
 # browser()
   dep_list <- filter_list
   
@@ -98,28 +98,34 @@
         # purrr::list_rbind() |>
         dplyr::mutate(
           plot_table = .build_ffi_file_path(
-            dep, "plot", folder,
+             "plot", folder,
+             .dep = dep,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           tree_table = .build_ffi_file_path(
-            dep, "tree", folder,
-            .plot = plots, 
+             "tree", folder,
+            .plot = plots,
+            .dep = dep,
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           shrub_table = .build_ffi_file_path(
-            dep, "shrub", folder,
+             "shrub", 
+             folder,
+             .dep = dep,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           soils_table = .build_ffi_file_path(
-            dep, "soils", folder,
+             "soils", 
+             folder,
+             .dep = dep,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
@@ -132,7 +138,11 @@
 
 
 
-.get_plots <- function(dep,folder, .call = rlang::caller_env()) {
+
+#' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
+#' @noRd
+
+.get_plots <- function(folder, .call = rlang::caller_env()) {
   
   # browser()
   ## TODO Assertion to ensure PLOT.csv file exists, because .build_fia_file_path is fail
@@ -140,7 +150,7 @@
   ## .get_plots_from_state is only called from .build_fia_input_with or show_plots_from_fia,
   ## that can not check for file existence (this is done in the individual plot functions)
   
-  plot_path <- .build_ffi_file_path( dep, "plot", folder)
+  plot_path <- .build_ffi_file_path("plot", folder)
   
   if (is.na(plot_path)) {
     cli::cli_abort(c(
@@ -152,7 +162,6 @@
   plot_data <- plot_path |>
     .read_ffi_data(select = c("CAMPAGNE","VISITE","IDP","XL","YL","DEP")) |>
       dplyr::group_by(DEP, IDP) |>
-    dplyr::filter(DEP == dep) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(XL))) |>
     dplyr::arrange(CAMPAGNE) |>
@@ -243,7 +252,6 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
 #' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
 #' because some states have this variable as a double value.
 #'
-#' @param state Character vector with two-letter code for states.
 #' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
 #'   "p3_understory",  "seedling", "soils_loc", "soils_lab", "veg_subplot", "p2_veg_subplot".
 #' @param folder Character, path to the folder with the FIA csv files.
@@ -260,16 +268,18 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
 
 
 .build_ffi_file_path <- function(
-    dep, type, folder = ".",
-    .plot = rep(NA, length(dep)),
+     type, 
+     folder = ".",
+    .dep = .dep,
+    .plot = .plot,
     .year = NULL,
     .custom = FALSE,
     .call = rlang::caller_env()
     ) 
 { 
   purrr::pmap_chr(
-    .l = list(dep, .plot),
-    .f = \(dep,  plot) 
+    .l = list( .plot),
+    .f = \(plot) 
     {
       
       #browser()
@@ -288,7 +298,7 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
       # check file exists
       if (!fs::file_exists(table_path)) {
         cli::cli_warn(c(
-          "{.path {table_path}} file doesn't exists",
+          "{.path {table_path}} file doesn't exist",
           "!" = "Please check if {.path {folder}} is the correct path",
           "i" = "Skipping {.path {table_path}}"
         ), call = .call)
