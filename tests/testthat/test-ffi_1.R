@@ -42,3 +42,4 @@ input_df <- esus::: .build_ffi_input_with(2014,filter_list,folder,.verbose = TRU
 
 esus:::ffi_tables_process(2019 , filter_list, folder , .verbose = TRUE)
 
+esus:::show_plots_from_ffi(dep = c(1:12),folder, .call = rlang::caller_env())
