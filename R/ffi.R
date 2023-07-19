@@ -7,7 +7,7 @@
 #' \code{folder} argument.
 #'
 #' @param years A numeric vector with the years to extract de data from.
-#' @param department A character vector with the two letters code for the departments to extract the data from.
+#' @param department A character vector with the code for the departments.
 #' @param filter_list A list of counties and plots to extract the data from. If \code{NULL} all
 #'   plots for the department for all years will be extracted, which can use a big amount of memory. See
 #'   details.
@@ -54,7 +54,7 @@
 #' @export
 ffi_to_tibble <- function(
     years,
-    deps,
+    departments,
     filter_list = NULL,
     folder,
     ...,
@@ -65,7 +65,7 @@ ffi_to_tibble <- function(
   ## Assertions and checks ##
   # departments
   assertthat::assert_that(
-    is.character(deps), length(deps) > 0,
+    is.character(departments), length(deps) > 0,
     msg = cli::cli_abort("years must be a character vector with at least one department code")
   )
   ## TODO
@@ -169,7 +169,7 @@ ffi_to_tibble <- function(
 #' @describeIn ffi_to_tibble Process one year
 #'
 ffi_tables_process <- function(
-    year, filter_list, folder, .parallel_options, .verbose, ...
+    departments,year, filter_list, folder, .parallel_options, .verbose, ...
 ) {
   
   # debug
@@ -179,7 +179,7 @@ ffi_tables_process <- function(
   
   # Create input df for year
   
-  input_df <- .build_ffi_input_with(year,  filter_list, folder, .verbose)
+  input_df <- .build_ffi_input_with(departments, year,  filter_list, folder, .verbose)
   
   # Get needed ancillary data (changed for excel)
   

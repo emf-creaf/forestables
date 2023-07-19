@@ -7,7 +7,7 @@
 \usage{
 ffi_to_tibble(
   years,
-  deps,
+  departments,
   filter_list = NULL,
   folder,
   ...,
@@ -15,7 +15,15 @@ ffi_to_tibble(
   .verbose = TRUE
 )
 
-ffi_tables_process(year, filter_list, folder, .parallel_options, .verbose, ...)
+ffi_tables_process(
+  departments,
+  year,
+  filter_list,
+  folder,
+  .parallel_options,
+  .verbose,
+  ...
+)
 }
 \arguments{
 \item{years}{A numeric vector with the years to extract de data from.}

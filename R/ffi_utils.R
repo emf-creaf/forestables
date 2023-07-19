@@ -44,88 +44,89 @@
 #' \code{\link{.get_plots}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
-#' @inheritParams fia_tables_process
+#' @inheritParams ffi_tables_process
 #'
 #' @return A data frame with state, dep, plot and table file names
 #'
 #' @noRd
 .build_ffi_input_with <- function(
-    year,  filter_list, folder, .verbose, .call = rlang::caller_env()
+    departments, year,  filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
   
   # # first, if is null filter list, create it
+  
+   # browser()
+  
   if (is.null(filter_list)) {
 
-    dep<- c("88","57",
-            "52","04","64","37","12","45","28","33" ,"19","90","63","67","11","10", "24", "77",
-            "58" ,"87", "41", "89", "46", "23","27", "51", "54", "84", "66", "40", "81", "71", "48", "13",
-            "70", "83", "2A", "76", "25", "32", "01", "72","86", "65", "02", "49", "34",
-            "05", "60", "39", "73", "74", "30", "18", "09", "36", "61", "2B", "78", "31", "21", "22", "43",
-            "38", "79", "55", "91", "42", "07", "03", "08", "26", "35", "69", "50", "56", "15", "62", "29",
-            "44", "68", "53" ,"82" ,"17","47", "85", "06", "59", "14" ,"16", "80", "95",
-            "92", "94", "93")
     
-    filter_list <-  purrr::map(
-      dep,
-      .f = \(dep) {
-        .get_plots( folder, .call = .call) |>
-          .transform_plot_summary(year,dep) 
-      }
-    ) |>
-      purrr::flatten()
+      filter_list <-  .get_plots( departments, folder, .call = .call) |>
+          .transform_plot_summary_ffi(year,departments) |>
+         head(30)
       
-        
-         
-       
-
   }
 
+
+  
   # # inform the user about the amount of plots for this year
-  # verbose_msg(
-  #   cli::cli_inform(c(
-  #     "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {year}}"
-  #   )), .verbose
-  # )
-  # 
+  verbose_msg(
+    cli::cli_inform(c(
+      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten()  |> length()}} plots for {.val {year}}"
+    )), .verbose
+  )
+
 # browser()
   dep_list <- filter_list
+    
   
-      dep_list |>
+      
+  dep_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
         purrr::set_names(c("dep", "plots")) |>
-        dplyr::select(dep, plots) |>  
-        # purrr::list_rbind() |>
+      dplyr::mutate(
+        plots= as.character(plots)
+      ) |> 
+        dplyr::select(dep, plots) |>
+          # purrr::list_rbind() |>
+        
+    # dep_list |>
+    # #  tibble::enframe() |>
+    # # tidyr::unnest(cols = value) |>
+    # purrr::set_names(c("dep", "plots")) |>
+    
+           
         dplyr::mutate(
           plot_table = .build_ffi_file_path(
-             "plot", folder,
-             .dep = dep,
+             dep,
+             "plot", 
+             folder,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           tree_table = .build_ffi_file_path(
+            dep,
              "tree", folder,
             .plot = plots,
-            .dep = dep,
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           shrub_table = .build_ffi_file_path(
-             "shrub", 
+            dep,
+            "shrub", 
              folder,
-             .dep = dep,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
             .call = .call
           ),
           soils_table = .build_ffi_file_path(
+             dep,
              "soils", 
              folder,
-             .dep = dep,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
@@ -142,15 +143,15 @@
 #' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
 #' @noRd
 
-.get_plots <- function(folder, .call = rlang::caller_env()) {
+.get_plots <- function(departments,folder, .call = rlang::caller_env()) {
   
   # browser()
   ## TODO Assertion to ensure PLOT.csv file exists, because .build_fia_file_path is fail
   ## resistant, returning always a result (NA_character) to allow its use in loops.
   ## .get_plots_from_state is only called from .build_fia_input_with or show_plots_from_fia,
   ## that can not check for file existence (this is done in the individual plot functions)
-  
-  plot_path <- .build_ffi_file_path("plot", folder)
+
+  plot_path <- .build_ffi_file_path(departments, "plot", folder)
   
   if (is.na(plot_path)) {
     cli::cli_abort(c(
@@ -160,8 +161,9 @@
   
   # If file exists, business as usual:
   plot_data <- plot_path |>
-    .read_ffi_data(select = c("CAMPAGNE","VISITE","IDP","XL","YL","DEP")) |>
+    .read_ffi_data(select = c("CAMPAGNE","IDP","XL","YL","DEP")) |>
       dplyr::group_by(DEP, IDP) |>
+    dplyr::filter(DEP == departments) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(XL))) |>
     dplyr::arrange(CAMPAGNE) |>
@@ -169,6 +171,7 @@
       c(XL, YL), .direction = "updown"
     ) |>
     dplyr::as_tibble()
+  
   
   
   #  crs to build the sf and transform
@@ -193,9 +196,9 @@
 #' @param folder Character, path to folder containing FIA csv files
 #' @param states Character vector with two-letter code for states
 #' @noRd
-show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
+show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env()) {
   withCallingHandlers(
-    purrr::map( dep, .f = .get_plots, folder = folder
+    purrr::map( departments, .f = .get_plots, folder = folder
     ) |>
       purrr::list_rbind() |>
       sf::st_as_sf(),
@@ -209,7 +212,7 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
 #' Helper to transform the plot summary returned by \code{\link{.get_plots}} in a
 #' filter_list object
 #' @noRd
-.transform_plot_summary <- function(plot_summary, years,dep) {
+.transform_plot_summary_ffi<- function(plot_summary, years,departments) {
   
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
@@ -217,10 +220,14 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
     dplyr::select(DEP, IDP) |>
     dplyr::distinct() |>
     dplyr::group_by(DEP) |>
-    dplyr::summarise(plots = list(IDP)) |>
-    tibble::deframe() |>
-    list()|>
-    purrr::set_names(dep)
+    dplyr::mutate(
+      IDP = as.character(IDP)
+    ) |> 
+     dplyr::summarise(plots = list(IDP)) |>
+    tibble::deframe() 
+    
+  
+    # purrr::set_names(,departments)
   
   return(filter_list)
 }
@@ -268,64 +275,79 @@ show_plots_from_ffi <- function(dep,folder, .call = rlang::caller_env()) {
 
 
 .build_ffi_file_path <- function(
+     departments,
      type, 
      folder = ".",
-    .dep = .dep,
-    .plot = .plot,
+    .plot = rep(NA, length(departments)),
     .year = NULL,
     .custom = FALSE,
     .call = rlang::caller_env()
     ) 
 { 
-  purrr::pmap_chr(
-    .l = list( .plot),
-    .f = \(plot) 
-    {
-      
-      #browser()
-      # file ending (beginning will be the state)
-      ending <- switch(
-        type,
-        "tree" = "ARBRE.csv",
-        "plot" = "PLACETTE.csv",
-        "shrub" = "FLORE.csv",
-        "soils" = "ECOLOGIE.csv"
-      )
-      
-      # return path
-      table_path <- fs::path(folder, glue::glue("{ending}"))
-      
-      # check file exists
-      if (!fs::file_exists(table_path)) {
-        cli::cli_warn(c(
-          "{.path {table_path}} file doesn't exist",
-          "!" = "Please check if {.path {folder}} is the correct path",
-          "i" = "Skipping {.path {table_path}}"
-        ), call = .call)
-        return(NA_character_)
-      }
-      
-      if (.custom) {
+  # 
+  # browser()
+  
+  ending <- switch(
+    type,
+    "tree" = "ARBRE.csv",
+    "plot" = "PLACETTE.csv",
+    "shrub" = "FLORE.csv",
+    "soils" = "ECOLOGIE.csv"
+  ) 
+
+  # return path
+  table_path <- fs::path(folder, glue::glue("{ending}"))
+  
+  # check file exists
+  if (!fs::file_exists(table_path)) {
+    cli::cli_warn(c(
+      "{.path {table_path}} file doesn't exist",
+      "!" = "Please check if {.path {folder}} is the correct path",
+      "i" = "Skipping {.path {table_path}}"
+    ), call = .call)
+    return(NA_character_)
+  }
+  
+  
+  
+ 
+ 
+ 
+  if (.custom) {
+    purrr::pmap_chr(
+      .l = list( .plot),
+      .f = \(plot) 
+      {
+    
         if (type %in% c("plot")) {
           customized_path <- glue::glue(
-            # "grep -E ';CAMPAGNE;|;{.year};.*;{plot};.*;{dep},' {table_path}"
-            "grep -E ';{.year};.*;{plot};.*;{dep};' {table_path}"
+            # "grep -E ';CAMPAGNE;|;{.year};.*;{plot};.*;{department},' {table_path}"
+            "grep -E ';{.year};.*;{plot};.*;' {table_path}"
           )
-         
-          } else {
-            if (type %in% c("tree", "shrub", "soils")) {
-              customized_path <- glue::glue(
-                "grep -E ';{.year};.*;{plot};' {table_path}"
-              )
-            }
+          
+        } else {
+          if (type %in% c("tree", "shrub", "soils")) {
+            customized_path <- glue::glue(
+              "grep -E ';{.year};.*;{plot};' {table_path}"
+            )
           }
-        return(customized_path)
-      }
-      return(table_path)
-      }
+          
+        }
+          return(customized_path)      
+  }
+      
+    )
+  }
     
-)
+    
+     
+  return(table_path)
+   
+  
 }
+    
+     
+    
 
 #' Helper function to extract plot and soil metadata from from tables
 #'

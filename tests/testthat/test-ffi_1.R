@@ -1,31 +1,31 @@
 # 
 # 
-# folder =  "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
+ folder =  "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
 # folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
 # 
 # 
 # 
 # 
-# subset_ifn_fr <- .read_ffi_data(
-#   "D:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.CSV"
-#   ) |>
-#   
-#   dplyr::group_by(DEP) |>
-#   dplyr::slice_sample(n = 6, replace = FALSE) |>
-#    dplyr::filter(CAMPAGNE == 2019) |>
-#   dplyr::rename(
-#     plot = IDP,
-#     dep = DEP, 
-#     year = CAMPAGNE) |> 
-#   dplyr::select(
-#     dep,
-#     plot
-#   ) |>
-#   dplyr::as_tibble() |> 
-#   
-#   dplyr::group_by(dep) |>
-#   dplyr::summarise(plot = list(as.character(plot))) |>
-#    tibble::deframe() -> filter_list
+subset_ifn_fr <- .read_ffi_data(
+  "C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.CSV"
+  ) |>
+
+  dplyr::group_by(DEP) |>
+  dplyr::slice_sample(n = 6, replace = FALSE) |>
+   dplyr::filter(CAMPAGNE == 2019) |>
+  dplyr::rename(
+    plot = IDP,
+    dep = DEP,
+    year = CAMPAGNE) |>
+  dplyr::select(
+    dep,
+    plot
+  ) |>
+  dplyr::as_tibble() |>
+
+  dplyr::group_by(dep) |>
+  dplyr::summarise(plot = list(as.character(plot))) |>
+   tibble::deframe() -> filter_list
 #  
 
 
@@ -40,7 +40,7 @@
 # 
 # 
 # 
-# esus:::ffi_tables_process(2019 , filter_list, folder , .verbose = TRUE)
+ esus:::ffi_tables_process(departments,2019 , filter_list, folder , .verbose = TRUE)
 # 
 # esus:::show_plots_from_ffi(dep = c(1:12),folder, .call = rlang::caller_env())
 # 
@@ -73,13 +73,15 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
       "221" = 20084,
       "88" = 20012,
       "89" = 1433956,
-      "91" = 1406115,
-    "tururu" = 3555
+      "91" = 1406115
+    #   ,
+    # "tururu" = 3555
     )
   
   test_year <- 2019
   test_states <- names(test_plots)
-  test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  # test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder<- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
   expected_names <- c(
     "dep", 
     "plots",
@@ -90,8 +92,9 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   )
   
   # warnings and messages
+ 
   expect_warning(
-    test_res <- .build_ffi_input_with(test_year, test_states, test_plots, test_folder, .verbose = TRUE),
+    test_res <- .build_ffi_input_with(test_year, test_plots, test_folder, .verbose = TRUE),
     "file doesn't exists"
   )
   

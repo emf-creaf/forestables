@@ -332,7 +332,8 @@ create_filter_list_fia <- function(plots_info) {
 #' @noRd
 .build_fia_file_path <- function(
   state, type, folder = ".",
-  .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
+  .county = rep(NA, length(state)), 
+  .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
   .call = rlang::caller_env()
 ) {
   purrr::pmap_chr(
