@@ -39,14 +39,14 @@
 #'
 #' Build the input dataframe
 #'
-#' This function takes the user input (year, dep, plots and folder) and build the input to be
+#' This function takes the user input (year, departments, plots and folder) and build the input to be
 #' able to iterate by plots in a year. If no plots filter list is provided, this function uses
-#' \code{\link{.get_plots}} and \code{\link{.trasnsform_plot_summary}} to create a
+#' \code{\link{.get_plots_from_departments}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
 #' @inheritParams ffi_tables_process
 #'
-#' @return A data frame with state, dep, plot and table file names
+#' @return A data frame with  departments, plot and table file names
 #'
 #' @noRd
 .build_ffi_input_with <- function(
@@ -60,9 +60,8 @@
   if (is.null(filter_list)) {
 
     
-      filter_list <-  .get_plots( departments, folder, .call = .call) |>
-          .transform_plot_summary_ffi(year,departments) |>
-         head(30)
+      filter_list <-  .get_plots_from_departments( departments, folder , .call = .call) |>
+          .transform_plot_summary_ffi(year,departments) 
       
   }
 
@@ -71,7 +70,7 @@
   # # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten()  |> length()}} plots for {.val {year}}"
+      "Getting ready to retrieve {.strong {filter_list |>  length()}} plots for {.val {year}}"
     )), .verbose
   )
 
@@ -79,26 +78,18 @@
   dep_list <- filter_list
     
   
-      
   dep_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
-        purrr::set_names(c("dep", "plots")) |>
+        purrr::set_names(c("department", "plots")) |>
       dplyr::mutate(
-        plots= as.character(plots)
+        plots = as.character(plots)
       ) |> 
-        dplyr::select(dep, plots) |>
-          # purrr::list_rbind() |>
-        
-    # dep_list |>
-    # #  tibble::enframe() |>
-    # # tidyr::unnest(cols = value) |>
-    # purrr::set_names(c("dep", "plots")) |>
-    
-           
+        dplyr::select(department, plots) |>
+          
         dplyr::mutate(
           plot_table = .build_ffi_file_path(
-             dep,
+             department,
              "plot", 
              folder,
             .plot = plots, 
@@ -107,7 +98,7 @@
             .call = .call
           ),
           tree_table = .build_ffi_file_path(
-            dep,
+            department,
              "tree", folder,
             .plot = plots,
             .year = year, 
@@ -115,7 +106,7 @@
             .call = .call
           ),
           shrub_table = .build_ffi_file_path(
-            dep,
+            department,
             "shrub", 
              folder,
             .plot = plots, 
@@ -124,7 +115,7 @@
             .call = .call
           ),
           soils_table = .build_ffi_file_path(
-             dep,
+            department,
              "soils", 
              folder,
             .plot = plots, 
@@ -140,22 +131,22 @@
 
 
 
-#' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
+#' Helper to read the PLACETTE.csv file from an state to retrieve the list of plots for that state
 #' @noRd
 
-.get_plots <- function(departments,folder, .call = rlang::caller_env()) {
+.get_plots_from_departments <- function(departments,folder, .call = rlang::caller_env()) {
   
   # browser()
-  ## TODO Assertion to ensure PLOT.csv file exists, because .build_fia_file_path is fail
+  ## TODO Assertion to ensure PLACETTE.csv file exists, because .build_fia_file_path is fail
   ## resistant, returning always a result (NA_character) to allow its use in loops.
-  ## .get_plots_from_state is only called from .build_fia_input_with or show_plots_from_fia,
+  ## .get_plots_from_departments_ is only called from .build_ffi_input_with or show_plots_from_ffia,
   ## that can not check for file existence (this is done in the individual plot functions)
 
   plot_path <- .build_ffi_file_path(departments, "plot", folder)
   
   if (is.na(plot_path)) {
     cli::cli_abort(c(
-      "{.path {folder}} folder doesn't contain a {.path ARBRE.csv}, aborting."
+      "{.path {folder}} folder doesn't contain a {.path PLACETTE.csv}, aborting."
     ), call = .call)
   }
   
@@ -189,16 +180,16 @@
 
  }
 
-#' show plots from fia helper
+#' show plots from department ffi helper
 #'
 #' Iterate for states and retrieve all the plots
 #'
-#' @param folder Character, path to folder containing FIA csv files
+#' @param folder Character, path to folder containing FFI csv files
 #' @param states Character vector with two-letter code for states
 #' @noRd
 show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env()) {
   withCallingHandlers(
-    purrr::map( departments, .f = .get_plots, folder = folder
+    purrr::map( departments, .f = .get_plots_from_departments, folder = folder
     ) |>
       purrr::list_rbind() |>
       sf::st_as_sf(),
@@ -209,10 +200,10 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
 }
 
 
-#' Helper to transform the plot summary returned by \code{\link{.get_plots}} in a
+#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_departments}} in a
 #' filter_list object
 #' @noRd
-.transform_plot_summary_ffi<- function(plot_summary, years,departments) {
+.transform_plot_summary_ffi <- function(plot_summary, years,departments) {
   
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
@@ -235,7 +226,7 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
 #'
 #' Create FFI csv file path with extra sugar
 #'
-#' This function builds the path to FIA table csv files based on the state and type of table.
+#' This function builds the path to FFI table csv files based on the type of table.
 #' Also, using the type, we add the system call to \code{grep} in those tables which it can
 #' be used to avoid loading the whole table.
 #'
@@ -259,9 +250,8 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
 #' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
 #' because some states have this variable as a double value.
 #'
-#' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
-#'   "p3_understory",  "seedling", "soils_loc", "soils_lab", "veg_subplot", "p2_veg_subplot".
-#' @param folder Character, path to the folder with the FIA csv files.
+#' @param type Character, table type. One of "tree", "plot", "soils" or "shrub"
+#' @param folder Character, path to the folder with the FFI csv files.
 #' @param .custom Logical indicating that a custom path, with \code{grep} must be created
 #' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
 #'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
@@ -280,7 +270,7 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
      folder = ".",
     .plot = rep(NA, length(departments)),
     .year = NULL,
-    .custom = FALSE,
+    .custom = TRUE,
     .call = rlang::caller_env()
     ) 
 { 
@@ -310,9 +300,7 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
   
   
   
- 
- 
- 
+
   if (.custom) {
     purrr::pmap_chr(
       .l = list( .plot),

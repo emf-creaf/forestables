@@ -41,7 +41,7 @@ details.}
 
 \item{.verbose}{Logical controlling if progress messages are shown.}
 
-\item{department}{A character vector with the two letters code for the departments to extract the data from.}
+\item{department}{A character vector with the code for the departments.}
 }
 \value{
 A nested tibble. This tibble contains a row per plot/year combination, with the plot

@@ -907,6 +907,8 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
       y = growth_form_lignified_france,
       by = "SP_NAME"
     ) |>
+    
+    #here we collect both tree and shrub but it is also possible to only collect shrub
     dplyr::filter(
       (grepl("tree|shrub", GrowthForm))) |>
     dplyr::select(

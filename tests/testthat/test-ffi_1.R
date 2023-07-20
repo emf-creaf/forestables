@@ -83,7 +83,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   # test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
   test_folder<- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
   expected_names <- c(
-    "dep", 
+    "departments", 
     "plots",
     "plot_table",
     "tree_table",
