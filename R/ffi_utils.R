@@ -302,36 +302,44 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
   
 
   if (.custom) {
-    purrr::pmap_chr(
-      .l = list( .plot),
-      .f = \(plot) 
-      {
+    if (type %in% c("plot")) {
+      customized_path <- glue::glue(
+        "grep -E ';CAMPAGNE;|;{.year};.*;{.plot};' {table_path}"
+        # "grep -E ';{.year};.*;{plots};' {table_path}"
+      )
+    }
     
-        if (type %in% c("plot")) {
-          customized_path <- glue::glue(
-            # "grep -E ';CAMPAGNE;|;{.year};.*;{plot};.*;{department},' {table_path}"
-            "grep -E ';{.year};.*;{plot};.*;' {table_path}"
-          )
-          
-        } else {
-          if (type %in% c("tree", "shrub", "soils")) {
-            customized_path <- glue::glue(
-              "grep -E ';{.year};.*;{plot};' {table_path}"
-            )
-          }
-          
-        }
-          return(customized_path)      
+    if (type %in% c("tree", "shrub", "soils")) {
+      customized_path <- glue::glue(
+        "grep -E ';CAMPAGNE;|;{.year};.*;{.plot};' {table_path}"
+        # "grep -E ';{.year};.*;{plots};' {table_path}"
+      )
+    }
+    
+    return(customized_path)
+    # purrr::pmap_chr(
+    #   .l = list( .plot),
+    #   .f = \(plots) {
+    #     if (type %in% c("plot")) {
+    #       customized_path <- glue::glue(
+    #         "grep -E ';CAMPAGNE;|;{.year};.*;{plots};' {table_path}"
+    #         # "grep -E ';{.year};.*;{plots};' {table_path}"
+    #       )
+    #       
+    #     } else {
+    #       if (type %in% c("tree", "shrub", "soils")) {
+    #         customized_path <- glue::glue(
+    #           "grep -E ';{.year};.*;{plots};' {table_path}"
+    #         )
+    #       }
+    #       
+    #     }
+    #     return(customized_path)      
+    #   }
+    # )
   }
-      
-    )
-  }
-    
-    
-     
-  return(table_path)
-   
   
+  return(table_path)
 }
     
      

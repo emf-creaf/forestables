@@ -174,7 +174,7 @@ ffi_tables_process <- function(
   
   # debug
  
-    # browser()
+    browser()
 
   
   # Create input df for year
@@ -254,7 +254,7 @@ ffi_tables_process <- function(
     .progress = .verbose,
     .l = input_df,
       
-    .f = \(dep,
+    .f = \(department,
            plots,
            tree_table,
            plot_table,
@@ -262,7 +262,7 @@ ffi_tables_process <- function(
            soils_table
     ) {
       
-      # browser()
+      browser()
       
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
       

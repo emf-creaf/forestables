@@ -1,13 +1,12 @@
 # 
 # 
- folder =  "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
-# folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
+#folder =  "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+ folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
+
 # 
 # 
 # 
-# 
-subset_ifn_fr <- .read_ffi_data(
-  "C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.CSV"
+subset_ifn_fr <- .read_ffi_data(paste0(folder, "PLACETTE.CSV")
   ) |>
 
   dplyr::group_by(DEP) |>
