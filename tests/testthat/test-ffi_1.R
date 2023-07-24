@@ -1,7 +1,7 @@
 # 
 # 
-#folder =  "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
- folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
+folder =  "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+ # folder <- "C:/Users/a.tovar/Documents/international_inventories_emf/data/export_dataifn_2005_2021/"
 
 # 
 # 
@@ -72,17 +72,16 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
       "221" = 20084,
       "88" = 20012,
       "89" = 1433956,
-      "91" = 1406115
-    #   ,
-    # "tururu" = 3555
+      "91" = 1406115,
+    "tururu" = 3555
     )
   
   test_year <- 2019
-  test_states <- names(test_plots)
+  test_departments <- names(test_plots)
   # test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
-  test_folder<- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
   expected_names <- c(
-    "departments", 
+    "department", 
     "plots",
     "plot_table",
     "tree_table",
@@ -92,9 +91,142 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   
   # warnings and messages
  
-  expect_warning(
-    test_res <- .build_ffi_input_with(test_year, test_plots, test_folder, .verbose = TRUE),
-    "file doesn't exists"
+  #este no funciona : Error: `... <- NULL` did not throw the expected warning.
+   expect_warning(
+     test_res <- esus:::.build_ffi_input_with(test_departments,test_year, test_plots, test_folder, .verbose = TRUE),
+     "file doesn't exist"
+   )
+  expect_message(
+    esus:::.build_ffi_input_with(test_departments, test_year,  test_plots[-26], test_folder, .verbose = TRUE),
+    "Getting ready to retrieve"
+  )
+  expect_no_message(
+    esus:::.build_ffi_input_with(test_departmets, test_year , test_plots[-26], test_folder, .verbose = FALSE)
   )
   
+  ## result tests
+  # we expect a tibble
+  expect_s3_class(test_res, "tbl")
+  # with the correct names
+  expect_named(test_res, expected_names)
+  # and for 31 plots as per the filter list we create
+  expect_true(nrow(test_res) == 32L)
+  # and for the correct counties
+  expect_identical(
+    unique(test_res[["department"]]) |> sort(),
+     names(test_plots) |> sort()
+   
+  )
+  
+  
+#   # and correct_plots
+     
+     expect_identical(
+       unique(test_res[["plots"]]) |> 
+         unlist() |> 
+         sort(),
+       unique(test_plots) |> 
+        unlist() |> 
+        as.character() |> 
+         sort()
+         
+)
+     
+     
+     # we can test here also if .build_fia_file_path works
+     # .build_fia_file_path
+     # a correct one
+      expect_identical(
+       as.character(test_res[["plot_table"]][1]),
+        paste0(test_folder, "PLACETTE.csv")
+      )
+     #  # a correct custom one --< no funciona
+     #   expect_identical(
+     #     as.character(test_res[["plot_table"]][1]),
+     #    paste0("grep -E '^CAMPAGNE;|^2019;.*;1404119;' ", test_folder, names(test_plots)[1], "PLACETTE.csv")
+     # )
+     # # # an incorrect one --< no funciona
+     #  expect_identical(
+     #    test_res[["plot_table"]][32], NA_character_
+     #  )
 })
+
+      # test_that(".read_ffi_data returns lazy_dt", {
+      #   test_file <- fs::path("/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
+      #   test_cmd <- glue::glue("grep -E ',INVYR,|,25,(84167|84167.0),' {test_file}")
+      # 
+      #   expect_s3_class(esus:::.read_ffi_data(test_file), "dtplyr_step_first")
+      #   expect_s3_class(esus:::.read_ffi_data(test_cmd), "dtplyr_step_first")
+      # })
+      # 
+      test_that(".get_plots_from_departments works as intended", {
+        test_folder <- "/international_inventories_emf/data/export_dataifn_2005_2021/"
+        test_departments <- c("01", "10", "11")
+        
+        # error
+        expect_error(
+          suppressWarnings(esus:::.get_plots_from_departments(test_departments[1], ".")),
+          "folder doesn't contain"
+        )
+        ## results are ok
+        # class
+        expect_s3_class(test_res_ok <- esus:::.get_plots_from_departments(test_departments[1], test_folder), "sf")
+        # crs
+        expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+        # names
+        expect_named(test_res_ok,c("CAMPAGNE", "IDP", "DEP", "geometry"))
+        # expect rows
+        expect_true(
+          nrow(test_res_ok) > 0
+        )
+        
+  })
+      
+      #NOT WORKING: PROBLEM IN PATCH LENGTH , WARNING
+      test_that("show_plots_from_ffi works as intended", {
+        test_folder <- "/international_inventories_emf/data/export_dataifn_2005_2021/"
+        test_departments <- c("01", "10", "11")
+        
+        # error
+        expect_error(
+          suppressWarnings(esus:::show_plots_from_ffi( ".", test_departments[1])),
+          "folder doesn't contain"
+        )
+        
+        ## results are ok
+        # class
+        expect_s3_class(test_res_ok <- esus:::show_plots_from_ffi(test_folder, test_departments), "sf")
+        # crs
+        expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+        # names
+        expect_named(test_res_ok, c("CAMPAGNE", "IDP", "DEP", "geometry"))
+        # expect rows
+        expect_true(
+          nrow(test_res_ok) > 0
+        )
+        # we must have 3 states
+        expect_identical(
+          test_res_ok$DEP |> unique() |> length(), 3L
+        )
+      })
+
+      
+      
+      test_that(".transform_plot_summary_ffi works as intended", {
+        test_folder <- "/international_inventories_emf/data/export_dataifn_2005_2021/"
+        test_departments <- c("01", "10", "11")
+        test_summary <- esus:::show_plots_from_ffi(test_folder, test_departments)
+        test_years <- c(2005, 2010, 2015)
+        
+        # correct object
+        expect_type(
+          test_res_1 <- esus:::.transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),
+          "list"
+        )
+        # correct names
+        expect_named(test_res_1, "01")
+        # expect results
+        expect_length(test_res_1, 1)
+        expect_true(length(test_res_1[[1]]) > 1)
+      })
+      

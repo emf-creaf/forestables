@@ -174,7 +174,8 @@ ffi_tables_process <- function(
   
   # debug
  
-    browser()
+    
+   # browser()
 
   
   # Create input df for year
@@ -262,7 +263,7 @@ ffi_tables_process <- function(
            soils_table
     ) {
       
-      browser()
+      # browser()
       
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
       
@@ -407,6 +408,7 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees
     return(dplyr::tibble())
   }
  
+  browser()
   
   plot_processed <- .read_ffi_data(
     plot_data,
@@ -433,9 +435,14 @@ ffi_plot_table_process <- function(plot_data, soil_data, plot, year, metadonnees
           UNITE == "DP"
         ) |>
 
-        dplyr::select(
+        dplyr::rename(
           DEP = Code,
-          DEP_NAME = Libellé),
+          DEP_NAME = Libellé) |> 
+        dplyr::select(
+            DEP ,
+            DEP_NAME
+            )
+      ,
       
       by = "DEP"
     ) |>

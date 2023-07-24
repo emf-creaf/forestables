@@ -17,7 +17,7 @@
 .read_ffi_data <- function(input, ...) {
   
   # check if special input is provided
-  if (stringr::str_detect(input, "^grep -E '")) {
+  if (stringr::str_detect(input, '^grep -E "')) {
     res <- data.table::fread(cmd = input, ...) |>
       # convert to tibble
       dtplyr::lazy_dt(immutable = TRUE)
@@ -94,7 +94,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            .custom = TRUE,
+            ,
             .call = .call
           ),
           tree_table = .build_ffi_file_path(
@@ -102,7 +102,7 @@
              "tree", folder,
             .plot = plots,
             .year = year, 
-            .custom = TRUE,
+            .custom = FALSE,
             .call = .call
           ),
           shrub_table = .build_ffi_file_path(
@@ -111,7 +111,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            .custom = TRUE,
+            .custom = FALSE,
             .call = .call
           ),
           soils_table = .build_ffi_file_path(
@@ -120,7 +120,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            .custom = TRUE,
+            .custom = FALSE,
             .call = .call
           )
           )
@@ -187,7 +187,7 @@
 #' @param folder Character, path to folder containing FFI csv files
 #' @param states Character vector with two-letter code for states
 #' @noRd
-show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env()) {
+show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()) {
   withCallingHandlers(
     purrr::map( departments, .f = .get_plots_from_departments, folder = folder
     ) |>
@@ -270,7 +270,7 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
      folder = ".",
     .plot = rep(NA, length(departments)),
     .year = NULL,
-    .custom = TRUE,
+    .custom = FALSE,
     .call = rlang::caller_env()
     ) 
 { 
@@ -298,45 +298,26 @@ show_plots_from_ffi <- function(departments,folder, .call = rlang::caller_env())
     return(NA_character_)
   }
   
-  
+ # browser()
   
 
   if (.custom) {
     if (type %in% c("plot")) {
       customized_path <- glue::glue(
-        "grep -E ';CAMPAGNE;|;{.year};.*;{.plot};' {table_path}"
+        'grep -E "^CAMPAGNE;|^{.year};.*;{.plot};" {table_path}'
         # "grep -E ';{.year};.*;{plots};' {table_path}"
       )
     }
     
     if (type %in% c("tree", "shrub", "soils")) {
       customized_path <- glue::glue(
-        "grep -E ';CAMPAGNE;|;{.year};.*;{.plot};' {table_path}"
+        'grep -E "^CAMPAGNE;IDP;|;{.year};{.plot};" {table_path}'
         # "grep -E ';{.year};.*;{plots};' {table_path}"
       )
     }
     
     return(customized_path)
-    # purrr::pmap_chr(
-    #   .l = list( .plot),
-    #   .f = \(plots) {
-    #     if (type %in% c("plot")) {
-    #       customized_path <- glue::glue(
-    #         "grep -E ';CAMPAGNE;|;{.year};.*;{plots};' {table_path}"
-    #         # "grep -E ';{.year};.*;{plots};' {table_path}"
-    #       )
-    #       
-    #     } else {
-    #       if (type %in% c("tree", "shrub", "soils")) {
-    #         customized_path <- glue::glue(
-    #           "grep -E ';{.year};.*;{plots};' {table_path}"
-    #         )
-    #       }
-    #       
-    #     }
-    #     return(customized_path)      
-    #   }
-    # )
+    
   }
   
   return(table_path)
