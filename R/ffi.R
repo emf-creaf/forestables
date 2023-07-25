@@ -65,8 +65,8 @@ ffi_to_tibble <- function(
   ## Assertions and checks ##
   # departments
   assertthat::assert_that(
-    is.character(departments), length(deps) > 0,
-    msg = cli::cli_abort("years must be a character vector with at least one department code")
+    is.character(departments), length(departments) > 0,
+    msg = cli::cli_abort("departments must be a character vector with at least one department code")
   )
   ## TODO
   # check all departments are valid
@@ -123,22 +123,16 @@ ffi_to_tibble <- function(
   # ancillary data needed
   # espar cdref
   assertthat::assert_that(
-    fs::file_exists(fs::path(folder, "espar_cdref13.xlsx")),
-    msg = cli::cli_abort("{.file espar_cdref13.xlsx} must be present at {.path {folder}} to be able to continue")
+    fs::file_exists(fs::path(folder, "espar-cdref13.csv")),
+    msg = cli::cli_abort("{.file espar-cdref13.csv} must be present at {.path {folder}} to be able to continue")
   )
   # def metadonnes --> this file is edited from source!!
   assertthat::assert_that(
-    fs::file_exists(fs::path(folder, "metadonnees.xlsx")),
-    msg = cli::cli_abort("{.file metadonnees.xlsx} file must be present at {.path {folder}} to be able to continue")
+    fs::file_exists(fs::path(folder, "metadonnees.csv")),
+    msg = cli::cli_abort("{.file metadonnees.csv} file must be present at {.path {folder}} to be able to continue")
   )
   
 
-  
-  #  growth_form_species_france (try db)
-  assertthat::assert_that(
-    fs::file_exists(fs::path(folder, "growth_form_species_france.RData")),
-    msg = cli::cli_abort("{.file growth_form_species_france.RData} file must be present at {.path {folder}} to be able to continue")
-  )
   
   ## inform the user
   verbose_msg(
@@ -151,7 +145,7 @@ ffi_to_tibble <- function(
   purrr::map(
     years,
     .f = \(year) {
-      ffi_tables_process(year, deps, filter_list, folder, .parallel_options, .verbose, ...)
+      ffi_tables_process(departments,year, filter_list, folder, .parallel_options, .verbose, ...)
     },
     .progress = FALSE
   ) |>
@@ -244,10 +238,7 @@ ffi_tables_process <- function(
     unique()
   
   
- #  #revise  path!!!!
- # load(paste0(folder,"/growth_form_lignified_france.RData"))
- #  
- #  
+
   # furrr::future_pmap(
 
      purrr::pmap(

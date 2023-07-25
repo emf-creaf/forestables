@@ -94,7 +94,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            ,
+            .custom = TRUE,
             .call = .call
           ),
           tree_table = .build_ffi_file_path(
@@ -102,7 +102,7 @@
              "tree", folder,
             .plot = plots,
             .year = year, 
-            .custom = FALSE,
+            .custom = TRUE,
             .call = .call
           ),
           shrub_table = .build_ffi_file_path(
@@ -111,7 +111,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            .custom = FALSE,
+            .custom = TRUE,
             .call = .call
           ),
           soils_table = .build_ffi_file_path(
@@ -120,7 +120,7 @@
              folder,
             .plot = plots, 
             .year = year, 
-            .custom = FALSE,
+            .custom = TRUE,
             .call = .call
           )
           )
@@ -298,20 +298,20 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     return(NA_character_)
   }
   
- # browser()
+  # browser()
   
 
   if (.custom) {
     if (type %in% c("plot")) {
       customized_path <- glue::glue(
-        'grep -E "^CAMPAGNE;|^{.year};.*;{.plot};" {table_path}'
+        'grep -E "CAMPAGNE|^{.year};.*;{.plot};" {table_path}'
         # "grep -E ';{.year};.*;{plots};' {table_path}"
       )
     }
     
     if (type %in% c("tree", "shrub", "soils")) {
       customized_path <- glue::glue(
-        'grep -E "^CAMPAGNE;IDP;|;{.year};{.plot};" {table_path}'
+        'grep -E "CAMPAGNE|^{.year};{.plot};" {table_path}'
         # "grep -E ';{.year};.*;{plots};' {table_path}"
       )
     }
