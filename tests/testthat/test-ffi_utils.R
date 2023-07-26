@@ -58,6 +58,8 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   )
   
   ## result tests
+  #
+  test_res <-  .build_ffi_input_with(test_departments,test_year, test_plots, test_folder, .verbose = TRUE)
   # we expect a tibble
   expect_s3_class(test_res, "tbl")
   # with the correct names
@@ -93,15 +95,15 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     as.character(test_res[["plot_table"]][1]),
     paste0(test_folder, "PLACETTE.csv")
   )
-  #  # a correct custom one --< no funciona
-  #   expect_identical(
-  #     as.character(test_res[["plot_table"]][1]),
-  #    paste0("grep -E '^CAMPAGNE;|^2019;.*;1404119;' ", test_folder, names(test_plots)[1], "PLACETTE.csv")
-  # )
+  #  # a correct custom one
+    expect_identical(
+      as.character(test_res[["plot_table"]][1]),
+     paste0('grep -E "CAMPAGNE|.*;1404119;.*;01;" ', test_folder, "PLACETTE.csv")
+  )
   # # # an incorrect one --< no funciona
-  #  expect_identical(
-  #    test_res[["plot_table"]][32], NA_character_
-  #  )
+   expect_identical(
+     test_res[["plot_table"]][32], NA_character_
+   )
 })
 
  test_that(".read_ffi_data returns lazy_dt", {
@@ -137,7 +139,7 @@ test_that(".get_plots_from_departments works as intended", {
   
 })
 
-#NOT WORKING: PROBLEM IN PATH LENGTH , WARNING
+#
 test_that("show_plots_from_ffi works as intended", {
   test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
   test_departments <- c("01", "10", "11")
@@ -175,7 +177,7 @@ test_that(".transform_plot_summary_ffi works as intended", {
   
   # correct object
   expect_type(
-    test_res_1 <-  .transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),
+    test_res_1 <- .transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),
     "list"
   )
   # correct names

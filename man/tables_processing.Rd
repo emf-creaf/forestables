@@ -15,7 +15,7 @@
 \alias{fia_soils_loc_table_process}
 \title{Data tables process}
 \usage{
-ffi_plot_table_process(plot_data, soil_data, plot, year, metadonnees)
+ffi_plot_table_process(plot_data, soils_data, plot, year, metadonnees)
 
 ffi_tree_table_process(tree_data, plot, year, espar_cdref13, idp_dep_ref)
 
@@ -59,7 +59,7 @@ fia_soils_lab_table_process(soils_lab, plot, county, state, year)
 fia_soils_loc_table_process(soils_loc, veg_subplot, plot, county, state, year)
 }
 \arguments{
-\item{plot_data, tree_data, shrub_data, soil_data}{Paths to the files with the corresponding data}
+\item{plot_data, tree_data, shrub_data, soils_data}{Paths to the files with the corresponding data}
 
 \item{plot}{Numeric, plot code}
 

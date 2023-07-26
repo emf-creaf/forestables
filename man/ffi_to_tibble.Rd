@@ -8,7 +8,7 @@
 ffi_to_tibble(
   years,
   departments,
-  filter_list = NULL,
+  filter_list,
   folder,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),

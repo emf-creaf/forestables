@@ -302,23 +302,33 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
   
 
   if (.custom) {
-    if (type %in% c("plot")) {
+    # if (type %in% c("plot")) {
+    #   customized_path <- glue::glue(
+    #     'grep -E "CAMPAGNE|^{.year};.*;{.plot};" {table_path}'
+    #     # "grep -E ';{.year};.*;{plots};' {table_path}"
+    #   )
+    # }
+    
+    if (type %in% c("tree", "shrub")) {
       customized_path <- glue::glue(
-        'grep -E "CAMPAGNE|^{.year};.*;{.plot};" {table_path}'
+        # 'grep -E "CAMPAGNE|^{.year};{.plot};" {table_path}'
+         'grep -E "CAMPAGNE|.*;{.plot};" {table_path}' 
+        # "grep -E ';{.year};.*;{plots};' {table_path}"
+      ) } else if (type %in% c("soils")) {
+        customized_path <- glue::glue(
+          'grep -E "CAMPAGNE|.*;{.plot};" {table_path}'
+          # "grep -E ';{.year};.*;{plots};' {table_path}"
+        )} else  if (type %in% c( "plot")) {
+      customized_path <- glue::glue(
+        'grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}'
         # "grep -E ';{.year};.*;{plots};' {table_path}"
       )
-    }
     
-    if (type %in% c("tree", "shrub", "soils")) {
-      customized_path <- glue::glue(
-        'grep -E "CAMPAGNE|^{.year};{.plot};" {table_path}'
-        # "grep -E ';{.year};.*;{plots};' {table_path}"
-      )
     }
-    
     return(customized_path)
-    
   }
+    
+   
   
   return(table_path)
 }
@@ -370,7 +380,9 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     .x = vars,
     .y = vars_orig,
     .f = \(var, var_orig) {
+  
       
+      # browser()    
       filter_nas <- TRUE
       if (!.soil_mode) {
         filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
