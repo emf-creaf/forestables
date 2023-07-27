@@ -17,7 +17,7 @@
 \usage{
 ffi_plot_table_process(plot_data, soils_data, plot, year, metadonnees)
 
-ffi_tree_table_process(tree_data, plot, year, espar_cdref13, idp_dep_ref)
+ffi_tree_table_process(tree_data, plot, year, espar_cdref, idp_dep_ref)
 
 ffi_shrub_table_process(
   shrub_data,
@@ -65,7 +65,7 @@ fia_soils_loc_table_process(soils_loc, veg_subplot, plot, county, state, year)
 
 \item{year}{Numeric, year to extract}
 
-\item{espar_cdref13, metadonnees, growth_form_lignified_france}{tables. These tables
+\item{espar_cdref, metadonnees, growth_form_lignified_france}{tables. These tables
 are automatically read in \code{\link{fia_tables_process}} based on the folder provided.}
 
 \item{county}{COUNTYCD code}
@@ -103,7 +103,7 @@ These functions retrieve the data for a plot in one year.
 
 \item \code{ffi_tree_table_process()}: Process to gather needed data from tree table
 
-\item \code{ffi_shrub_table_process()}: Process to gather needed data from xxxxx
+\item \code{ffi_shrub_table_process()}: Process to gather needed data from shrub table
 
 \item \code{fia_plot_table_process()}: Process to gather needed data from plot, survey and cond tables
 

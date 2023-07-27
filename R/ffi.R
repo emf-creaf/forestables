@@ -6,8 +6,8 @@
 #' plots provided. For that, csv files from FFI must reside in the folder indicated in the
 #' \code{folder} argument.
 #'
+#' @param departments A character vector with the code for the departments.
 #' @param years A numeric vector with the years to extract de data from.
-#' @param department A character vector with the code for the departments.
 #' @param filter_list A list of counties and plots to extract the data from. If \code{NULL} all
 #'   plots for the department for all years will be extracted, which can use a big amount of memory. See
 #'   details.
@@ -25,10 +25,11 @@
 #'   with the counties and plots to look after to narrow the process. This \code{filter_list} should
 #'   have the following structure:
 #'   \preformatted{
-#'   list(
-#'     "MN" = list("137" = c(29396, 25064), "71" = c(20210)),
-#'     "OR" = list("59" = c(76413)),
-#'     "CA" = list("105" = c(70128, 83043))
+#'    list(
+#'    "01" = 1404119,
+#'    "10" = 900863,
+#'    "11" = c(1436508, 1410492))
+#'     
 #'   )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
@@ -53,8 +54,8 @@
 #'
 #' @export
 ffi_to_tibble <- function(
-    years,
     departments,
+    years,
     filter_list,
     folder,
     ...,
@@ -65,7 +66,7 @@ ffi_to_tibble <- function(
   ## Assertions and checks ##
   # departments
   assertthat::assert_that(
-    is.character(departments), length(departments) > 0,
+    is.numeric(departments), length(departments) > 0,
     msg = cli::cli_abort("departments must be a character vector with at least one department code")
   )
   ## TODO
@@ -145,7 +146,7 @@ ffi_to_tibble <- function(
   purrr::map(
     years,
     .f = \(year) {
-      ffi_tables_process(departments,year, filter_list, folder, .parallel_options, .verbose, ...)
+      ffi_tables_process(departments, year, filter_list, folder, .parallel_options, .verbose, ...)
     },
     .progress = FALSE
   ) |>
@@ -179,31 +180,48 @@ ffi_tables_process <- function(
   # Get needed ancillary data (changed for excel)
   
 
-  espar_cdref13 <- .read_ffi_data(fs::path(folder, "espar-cdref13.CSV")) |>
-    # dplyr::as_tibble() |>
+  espar_cdref <- .read_ffi_data(fs::path(folder, "espar-cdref13.CSV"),
+                                  colClasses = list(character = c( "// espar")),
+                                  header = TRUE) |>
+     dplyr::as_tibble() |>
     dplyr::rename(
       ESPAR = "// espar",
       Libellé  = lib_espar                        
     ) |>
-      dplyr::mutate(ESPAR = dplyr::case_when(
-       ESPAR == "2" ~"02",
-       ESPAR == "3" ~"03",
-       ESPAR == "4" ~"04",
-       ESPAR == "5" ~"05",
-       ESPAR == "6" ~"06",
-       ESPAR == "7" ~"07",
-       ESPAR == "9" ~"09",
-       TRUE ~ ESPAR
-      )
-    ) |>
+    
+    #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
+    dplyr::mutate(ESPAR = dplyr::case_when(
+      ESPAR == "2" ~"02",
+      ESPAR == "3" ~"03",
+      ESPAR == "4" ~"04",
+      ESPAR == "5" ~"05",
+      ESPAR == "6" ~"06",
+      ESPAR == "7" ~"07",
+      ESPAR == "9" ~"09",
+      TRUE ~ ESPAR
+    )) |> 
+    
     dplyr::arrange(ESPAR)
   
-  metadonnees <- readr::read_delim(file = fs::path(folder, "metadonnees.csv"), skip = 412) |>
-    # dplyr::as_tibble() |>
-    dplyr::rename(
-      UNITE = "// Unité"
-    )
+  #here i leave this for the moment as it gives an error in the lecture
+
+  # metadonnees <- esus:::.read_ffi_data(
+  #   fs::path(folder, "metadonnees.CSV"), 
+  #   skip = 413,
+  #     col.names = c("UNITE","Code", "Libellé", "Définition", "NA"),
+  #   ) 
+  #   # dplyr::as_tibble() |>
+  #   # dplyr::rename(
+  #   #   UNITE = "// Unité"
+  #   # )
   
+    metadonnees <- readr::read_delim(
+      file = fs::path(folder, "metadonnees.csv"), skip = 412) |>
+    dplyr::rename(
+      UNITE = "// Unité") |> 
+      dplyr::as_tibble()
+    
+    
   cd_ref <-  metadonnees |>
     dplyr::filter(
       UNITE == "CDREF13"
@@ -212,7 +230,7 @@ ffi_tables_process <- function(
       lib_cdref =  stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
       ) |>
    dplyr::rename(
-     cd_ref = Code  
+     CD_REF = Code  
     )
     
     
@@ -221,21 +239,19 @@ ffi_tables_process <- function(
       UNITE == "ESPAR1"
     ) |>
     dplyr::rename(
-      cd_ref = Code  
+      CD_REF = Code  
     )
 
 
-  idp_dep_ref <- readr::read_delim(
-                          paste0(folder, "PLACETTE.csv"), 
-                          delim = ";", escape_double = FALSE, trim_ws = TRUE
-                          ) |>
-    tibble::tibble() |>
-    dplyr::select(
-      IDP,
-      DEP
-    ) |>
-
+  idp_dep_ref <- .read_ffi_data(fs::path(folder, "PLACETTE.csv"),
+  select = c(
+      "IDP",
+      "DEP"
+    ),
+  colClasses = list(character = c( "IDP","DEP"))) |>
+    tibble::as_tibble() |> 
     unique()
+  
   
   
 
@@ -254,19 +270,20 @@ ffi_tables_process <- function(
            soils_table
     ) {
       
-      browser()
+      # browser()
       
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
       
       
       
-      tree <- ffi_tree_table_process(tree_table, plots, year,espar_cdref13, idp_dep_ref)
+      tree <- ffi_tree_table_process(tree_table, plots, year,espar_cdref, idp_dep_ref)
       
       shrub <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref)
 
       soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
       # 
       
+      # browser()
       #we select herbs
       herbs <- plot_info |>
         dplyr::select(
@@ -365,7 +382,7 @@ ffi_tables_process <- function(
 #' @param plot Numeric, plot code
 #' @param dep department code
 #' @param year Numeric, year to extract
-#' @param espar_cdref13,metadonnees,growth_form_lignified_france tables. These tables
+#' @param espar_cdref,metadonnees,growth_form_lignified_france tables. These tables
 #'   are automatically read in \code{\link{fia_tables_process}} based on the folder provided.
 #' @param growth_habit Character, growth habit value to filter data (to distinguish between herbs
 #'   and shrubs)
@@ -381,7 +398,7 @@ NULL
 ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnees) {
   
   ## Debug
-    # browser()
+     # browser()
   
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -399,7 +416,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     return(dplyr::tibble())
   }
  
-     browser()
+      # browser()
   
   plot_processed <- .read_ffi_data(
     plot_data,
@@ -417,27 +434,11 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     #   #UTA1 et UTA2 : Première et deuxième utilisation du sol
     #   "UTA1",
     #   "UTA2"
-    )
+    ),
+    colClasses = list(character = c("DEP","IDP")),
+    header = TRUE
   ) |> 
-    
-    
-   dplyr::mutate(
-       DEP =  as.character(DEP),
-       IDP = as.character(IDP)
-     ) |> 
-        dplyr::mutate(DEP = dplyr::case_when(
-        DEP == "1" ~"01",
-        DEP == "2" ~"02",
-        DEP == "3" ~"03",
-        DEP == "4" ~"04",
-        DEP == "5" ~"05",
-        DEP == "6" ~"06",
-        DEP == "7" ~"07",
-        DEP == "8" ~"08",
-        DEP == "9" ~"09",
-        TRUE ~ DEP
-          )
-        ) |> 
+  
   
    
     #join with metadonnes
@@ -496,22 +497,22 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
       PLOT  = plot,
       YEAR  = year
     ) |> dplyr::as_tibble()
-  
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(plot_processed) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "The file  plot_data has no data for that  plot ",
-      "i" = "Returning empty tibble for plot {.var {plot}}  "
-    ))
-    return(dplyr::tibble())
-  } 
-  
+  # 
+  # # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  # if (nrow(plot_processed) < 1) {
+  #   # warn the user
+  #   cli::cli_warn(c(
+  #     "The file  plot_data has no data for that  plot ",
+  #     "i" = "Returning empty tibble for plot {.var {plot}}  "
+  #   ))
+  #   return(dplyr::tibble())
+  # }
 
+  
   
   # browser()
   
-  eco_raw_data <- .read_ffi_data(
+  eco_filtered_data <- .read_ffi_data(
     soils_data,
     select = c(
 
@@ -522,23 +523,11 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
       "LIGN1",
       "LIGN2",
       "HERB"
-    )
-  ) 
- 
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(eco_raw_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "The file  soils_data has no data for that  plot ",
-      "i" = "Returning empty tibble for plot {.var {plot}}  "
-    ))
-    return(dplyr::tibble())
-  } 
-  
-  
-  eco_filtered_data <- eco_raw_data |> 
+    ),
     
-    dplyr::as_tibble() |> 
+    colClasses = list(character = c("IDP")),
+    header = TRUE
+  )  |> 
     dplyr::select(
       IDP,
       CAMPAGNE,
@@ -574,32 +563,26 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     ) |> 
     tibble::as_tibble()
   
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(eco_filtered_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "There is no tree data for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
-    return(dplyr::tibble())
-  }
   
 
-  plot_info <- dplyr::left_join( 
+  
 
-    # dplyr::bind_cols(
-    plot_processed,
-    eco_filtered_data,
-    by = c("PLOT")
-
-  ) |>
-    dplyr::mutate(
-      PLOT  = plot,
-      YEAR  = year
+  
+plot_info <- dplyr::bind_cols(
+     plot_processed,
+    eco_filtered_data, 
+    by = "plot"
     ) |>
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = (paste("FR", DEP, PLOT, sep = "_")),
-      COUNTRY = "FR") |>
+  
+  dplyr::mutate(
+    PLOT  = plot,
+    YEAR  = year
+  ) |>
+  dplyr::mutate(
+    ID_UNIQUE_PLOT = (paste("FR", DEP, PLOT, sep = "_")),
+    COUNTRY = "FR") |>
+  
+  dplyr::as_tibble() |> 
     dplyr::select(
       ID_UNIQUE_PLOT,
       COUNTRY,
@@ -621,8 +604,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
       LIGN2,
       HERB
 
-   ) |>
-    dplyr::as_tibble()
+   ) 
   
   
   return(plot_info)
@@ -634,11 +616,12 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
 
 #' @describeIn tables_processing Process to gather needed data from tree table
 
-ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_dep_ref) {
+ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_ref) {
 
   
+  
   ## Debug
-   # browser()
+    # browser()
   
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -670,70 +653,49 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
       "VEGET", 
       "VEGET5",
       "C13",
-      "HTOT",
-      "IR5",
-      "TIGE",
-      "TETARD",
-      "QUALITE",
-      "CIBLE"
+      "HTOT"
+      # "IR5",
+      # "TIGE",
+      # "TETARD",
+      # "QUALITE",
+      # "CIBLE"
+    ),
+    colClasses = list(character = c( "ESPAR", "IDP")),
+    header = TRUE
     ) 
-    ) |>
-     # dplyr::mutate_at(dplyr::vars(ESPAR,VEGET, VEGET5), ~ dplyr::na_if(., "")) |>
-    dplyr::as_tibble() 
   
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(tree_raw_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "The file tree_data does not have information for plot {.var {plot}}",
-      "i" = "Returning empty tibble for plot {.var {plot}}  "
-    ))
-    return(dplyr::tibble())
-  }
-  
-  
-  
-  tree_filtered_data <- tree_raw_data |>
+    
+  tree_filtered_data <- tree_raw_data |> 
+    
     
     # we  filter the data for plot/year and status (alive)
     
     dplyr::filter(
       IDP == plot,
       CAMPAGNE == year) |> 
-    tibble::as_tibble()
-      
-  
-
-  
-  
-  
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(tree_filtered_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      " There  file   {tree_data}} has no data for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
-    return(dplyr::tibble())
-  }
-  
-  
-
-  tree_plot_data <- tree_raw_data |>
-
     
+    tibble::as_tibble()
+  
+  
+  # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  # if (nrow(tree_filtered_data) < 1) {
+  #   # warn the user
+  #   cli::cli_warn(c(
+  #     " There  file   {tree_data}} has no data for that combination of plot and year",
+  #     "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
+  #   ))
+  #   return(dplyr::tibble())
+  # }
+  
+  
+  
+  tree <- tree_raw_data |>
     # we  filter the data for plot/
     dplyr::filter(
-      IDP == plot) 
+      IDP == plot) |> 
   
   # transformations and filters
-  
-
-  tree <- tree_plot_data |>
-
-    
     dplyr::mutate(
-      ESPAR = as.character(ESPAR),
       DENSITY = W,
       C13 = as.numeric(C13),
       
@@ -744,39 +706,19 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
       
     ) |>
     
-    dplyr::mutate(ESPAR = dplyr::case_when(
-      ESPAR == "2" ~"02",
-      ESPAR == "3" ~"03",
-      ESPAR == "4" ~"04",
-      ESPAR == "5" ~"05",
-      ESPAR == "6" ~"06",
-      ESPAR == "7" ~"07",
-      ESPAR == "9" ~"09",
-      TRUE ~ ESPAR
-    )
-    ) |> 
-    
+   
     #join with espar_cdref
     dplyr::left_join(
-      y = espar_cdref13 |>
+      y = espar_cdref |>
         dplyr::select(
           ESPAR,
           cd_ref,
           lib_cdref
         ) |> 
-        tibble::as_tibble(),
+        dplyr::as_tibble(),
       by = "ESPAR"
     ) |>
-    
-    # #join with espar
-    # dplyr::left_join(
-    #   y = espar_ref|>
-    #     dplyr::select(
-    #       ESPAR,
-    #       LIBELLE
-    #     ),
-    #   by = "ESPAR"
-    # ) |>
+   
     
     dplyr::left_join(
       y = idp_dep_ref |> 
@@ -838,6 +780,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
     dplyr::group_by(ID_UNIQUE_PLOT) |>
 
     dplyr::arrange(ID_UNIQUE_PLOT,TREE, YEAR) |>
+     dplyr::mutate_at(dplyr::vars(ESPAR), ~ dplyr::na_if(., "")) |>
     dplyr::as_tibble() |> 
     tidyr::fill(c(ESPAR,SP_CODE,SP_NAME)) |>
     
@@ -853,13 +796,13 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref13, idp_de
 
 
 #' @describeIn tables_processing 
-#' Process to gather needed data from xxxxx
+#' Process to gather needed data from shrub table
 
 ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_lignified_france, idp_dep_ref) {
 
   
   # Debug
-     # browser()
+   # browser()
   
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -878,19 +821,20 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
       "IDP",
       "CD_REF",
       "ABOND"
-    )
-
+    ),
+    header = TRUE,
+ colClasses = list(character = c("IDP", "CD_REF"))
   ) 
 
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(shrub_raw_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "The file shrub_data does not have information for plot {.var {plot}}",
-      "i" = "Returning empty tibble for plot {.var {plot}}  "
-    ))
-    return(dplyr::tibble())
-  }
+  # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  # if (nrow(shrub_raw_data) < 1) {
+  #   # warn the user
+  #   cli::cli_warn(c(
+  #     "The file shrub_data does not have information for plot {.var {plot}}",
+  #     "i" = "Returning empty tibble for plot {.var {plot}}  "
+  #   ))
+  #   return(dplyr::tibble())
+  # }
   
   
   
@@ -909,17 +853,17 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     dplyr::as_tibble()
   
   
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  
-  if (nrow(shrub_filtered_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "File {.file {shrub_data}} has no data for that combination of plot, dep and year", 
-      "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
-    ))
-    return(dplyr::tibble())
-  }
-  
+  # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  # 
+  # if (nrow(shrub_filtered_data) < 1) {
+  #   # warn the user
+  #   cli::cli_warn(c(
+  #     "File {.file {shrub_data}} has no data for that combination of plot, dep and year", 
+  #     "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
+  #   ))
+  #   return(dplyr::tibble())
+  # }
+  # 
   
   # transformations and filters
   
@@ -928,7 +872,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     dplyr::mutate(
       YEAR = CAMPAGNE,
       # ID_UNIQUE_PLOT= (paste("FR", IDP, sep="_")),
-      cd_ref = as.character(CD_REF),
+      # cd_ref = as.character(CD_REF),
       #conversion to percentage
       ABOND = dplyr::case_when(
         # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.				
@@ -949,10 +893,10 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     dplyr::left_join(
       y = cd_ref |>
         dplyr::select(
-          cd_ref,
+          CD_REF,
           lib_cdref
-        ), 
-      by = "cd_ref"
+        ) , 
+      by = "CD_REF"
     ) |>
     
     dplyr::left_join(
@@ -967,18 +911,11 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     dplyr::rename(
       PLOT = IDP,
       SP_NAME = lib_cdref,
-      SP_CODE = cd_ref,
+      SP_CODE = CD_REF,
       COVER = ABOND
     ) |>
     
-    # dplyr::rename(
-    #   full_name = SP_NAME
-    # )|>
-    # dplyr::mutate(genus = stringr::str_extract(full_name, "\\b\\w+\\b"),
-    #               species =  stringr::str_extract(full_name, "(?<=\\s)\\w+"),
-    #               species = dplyr::if_else(stringr::str_detect(species, "^\\("), "", species),
-    #               SP_NAME = ifelse(is.na(species) | species == "", genus, paste(genus, species, sep = " ")))|>
-    
+  
     #selection of final variables 
     
     dplyr::select( 
@@ -994,7 +931,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
     ) |>
     dplyr::as_tibble()
   
-  #this is new
+  
   #to eliminate herbs i do a join with a database from try
   
   growth_form_lignified_france <- growth_form_lignified_france |>
@@ -1052,7 +989,7 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
   } 
   
    # browser()
-    soil_raw_data <- .read_ffi_data(
+  soil_filtered_data <- .read_ffi_data(
     soils_data,
     select = c(
     "CAMPAGNE",
@@ -1073,22 +1010,10 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
     "CAI40",
     "CAILLOUX",
     "AFPLA"
-    
-
-  )) 
-    
-    
-    ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-    if (nrow(soil_raw_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
-        "The file soil_data does not have information for plot {.var {plot}}",
-        "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
-      return(dplyr::tibble())
-    }
-    
-  soil_filtered_data <- soil_raw_data |>  
+  ),
+  header = TRUE,
+  colClasses = list(character = c("IDP", "TEXT1", "TEXT2", "ROCHE", "TSOL"))
+  ) |>  
       
     # we  filter the data for plot/year 
     
@@ -1101,14 +1026,14 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
   
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   
-  if (nrow(soil_filtered_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "File {.file {soils_data}} has no data for that combination of plot, dep and year", 
-      "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
-    ))
-    return(dplyr::tibble())
-  }
+  # if (nrow(soil_filtered_data) < 1) {
+  #   # warn the user
+  #   cli::cli_warn(c(
+  #     "File {.file {soils_data}} has no data for that combination of plot, dep and year", 
+  #     "i" = "Returning NULL for plot {.var {plot}} in year {.var {year}} "
+  #   ))
+  #   return(dplyr::tibble())
+  # }
   
   
 
@@ -1118,16 +1043,9 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
   
   
   
-
   soil <- soil_filtered_data |>
     dplyr::mutate(
       YEAR = CAMPAGNE,
-      TEXT1 = as.character(TEXT1),
-      TEXT2 = as.character(TEXT2),
-      ROCHE = as.character(ROCHE),
-      TSOL = as.character(TSOL),
-      IDP = as.double(IDP),
-      
       #dm to cm
       PROF1 = PROF1*10,
       PROF2 = PROF2*10
@@ -1206,7 +1124,7 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
     ))
   
 
-  soil <- soil |>
+  soil_info <- soil |>
     dplyr::mutate(
       soil_field = soil_field
     ) |>
@@ -1221,7 +1139,7 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
     ) |>
     dplyr::as_tibble()
   
-  return(soil)
+  return(soil_info)
   
   
   

@@ -18,11 +18,6 @@ verbose_msg <- function(msg, .verbose) {
 }
 
 
-#add_leading_zeros
-.add_leading_zeros <- function(x) {
-  as.character(formatC(x, width = 2, flag = "0"))
-
-}
 
 
 #' Show plots for any inventory

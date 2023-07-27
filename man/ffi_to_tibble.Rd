@@ -6,8 +6,8 @@
 \title{Raw FFI data to tibble}
 \usage{
 ffi_to_tibble(
-  years,
   departments,
+  years,
   filter_list,
   folder,
   ...,
@@ -26,6 +26,8 @@ ffi_tables_process(
 )
 }
 \arguments{
+\item{departments}{A character vector with the code for the departments.}
+
 \item{years}{A numeric vector with the years to extract de data from.}
 
 \item{filter_list}{A list of counties and plots to extract the data from. If \code{NULL} all
@@ -40,8 +42,6 @@ details.}
 \code{\link[furrr]{furrr_options}}.}
 
 \item{.verbose}{Logical controlling if progress messages are shown.}
-
-\item{department}{A character vector with the code for the departments.}
 }
 \value{
 A nested tibble. This tibble contains a row per plot/year combination, with the plot
@@ -75,10 +75,11 @@ long times of calculation (specially when parallelising). Is better to provide a
 with the counties and plots to look after to narrow the process. This \code{filter_list} should
 have the following structure:
 \preformatted{
-  list(
-    "MN" = list("137" = c(29396, 25064), "71" = c(20210)),
-    "OR" = list("59" = c(76413)),
-    "CA" = list("105" = c(70128, 83043))
+   list(
+   "01" = 1404119,
+   "10" = 900863,
+   "11" = c(1436508, 1410492))
+    
   )
   }
 \code{esus} package offers workflows to create this automatically, see

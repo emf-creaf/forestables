@@ -22,8 +22,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "80" = c(1417044,1452529),
     "81" = c(1428398, 973950),
     "86" = c(957495,921133),
-    "221" = 20084,
-    "88" = 20012,
+    "87" = c(975666,979897),
     "89" = 1433956,
     "91" = 1406115,
     "tururu" = 3555
@@ -108,12 +107,21 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
  test_that(".read_ffi_data returns lazy_dt", {
 
-   test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
- test_cmd <- glue::glue('grep -E "CAMPAGNE|^2019;.*;900863;" {test_file}')
+ test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
+ test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
+ 
+ #ecologie table
+ test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/ECOLOGIE.csv")
+ test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}')
+ 
+ #flore arbre table
+ test_file<- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/FLORE.csv")
+ test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}' )
+ 
  
 # 
-  expect_s3_class( .read_ffi_data(test_file), "dtplyr_step_first")
-  expect_s3_class( .read_ffi_data(test_cmd), "dtplyr_step_first")
+  expect_s3_class( .read_ffi_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class( .read_ffi_data(test_cmd,header = TRUE), "dtplyr_step_first")
  })
 # 
 test_that(".get_plots_from_departments works as intended", {

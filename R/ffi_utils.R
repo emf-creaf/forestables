@@ -108,7 +108,7 @@
           shrub_table = .build_ffi_file_path(
             department,
             "shrub", 
-             folder,
+            folder,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
@@ -116,16 +116,16 @@
           ),
           soils_table = .build_ffi_file_path(
             department,
-             "soils", 
-             folder,
+            "soils", 
+            folder,
             .plot = plots, 
             .year = year, 
             .custom = TRUE,
             .call = .call
           )
-          )
-
-    
+        )
+  
+  
 }
 
 
@@ -141,7 +141,7 @@
   ## resistant, returning always a result (NA_character) to allow its use in loops.
   ## .get_plots_from_departments_ is only called from .build_ffi_input_with or show_plots_from_ffia,
   ## that can not check for file existence (this is done in the individual plot functions)
-
+  
   plot_path <- .build_ffi_file_path(departments, "plot", folder)
   
   if (is.na(plot_path)) {
@@ -153,7 +153,7 @@
   # If file exists, business as usual:
   plot_data <- plot_path |>
     .read_ffi_data(select = c("CAMPAGNE","IDP","XL","YL","DEP")) |>
-      dplyr::group_by(DEP, IDP) |>
+    dplyr::group_by(DEP, IDP) |>
     dplyr::filter(DEP == departments) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(XL))) |>
@@ -167,18 +167,18 @@
   
   #  crs to build the sf and transform
   # to 4326 to have all in the same coordinate system.
- 
-    epgs <- 2154
-    res <- plot_data |>
-      sf::st_as_sf(
-        coords = c("XL", "YL"),
-        crs = sf::st_crs(epgs)
-      ) |>
-      sf::st_transform(crs = 4326)
-    
-    return(res)
-
- }
+  
+  epgs <- 2154
+  res <- plot_data |>
+    sf::st_as_sf(
+      coords = c("XL", "YL"),
+      crs = sf::st_crs(epgs)
+    ) |>
+    sf::st_transform(crs = 4326)
+  
+  return(res)
+  
+}
 
 #' show plots from department ffi helper
 #'
@@ -214,11 +214,11 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     dplyr::mutate(
       IDP = as.character(IDP)
     ) |> 
-     dplyr::summarise(plots = list(IDP)) |>
+    dplyr::summarise(plots = list(IDP)) |>
     tibble::deframe() 
-    
   
-    # purrr::set_names(,departments)
+  
+  # purrr::set_names(,departments)
   
   return(filter_list)
 }
@@ -265,14 +265,14 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
 
 
 .build_ffi_file_path <- function(
-     departments,
-     type, 
-     folder = ".",
+    departments,
+    type, 
+    folder = ".",
     .plot = rep(NA, length(departments)),
     .year = NULL,
     .custom = FALSE,
     .call = rlang::caller_env()
-    ) 
+) 
 { 
   # 
   # browser()
@@ -284,7 +284,7 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     "shrub" = "FLORE.csv",
     "soils" = "ECOLOGIE.csv"
   ) 
-
+  
   # return path
   table_path <- fs::path(folder, glue::glue("{ending}"))
   
@@ -300,7 +300,7 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
   
   # browser()
   
-
+  
   if (.custom) {
     # if (type %in% c("plot")) {
     #   customized_path <- glue::glue(
@@ -311,30 +311,30 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     
     if (type %in% c("tree", "shrub")) {
       customized_path <- glue::glue(
-        # 'grep -E "CAMPAGNE|^{.year};{.plot};" {table_path}'
-         'grep -E "CAMPAGNE|.*;{.plot};" {table_path}' 
-        # "grep -E ';{.year};.*;{plots};' {table_path}"
+        
+        'grep -E "CAMPAGNE|.*;{.plot};" {table_path}' 
+      
       ) } else if (type %in% c("soils")) {
         customized_path <- glue::glue(
           'grep -E "CAMPAGNE|.*;{.plot};" {table_path}'
-          # "grep -E ';{.year};.*;{plots};' {table_path}"
+        
         )} else  if (type %in% c( "plot")) {
-      customized_path <- glue::glue(
-        'grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}'
-        # "grep -E ';{.year};.*;{plots};' {table_path}"
-      )
-    
-    }
+          customized_path <- glue::glue(
+            'grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}'
+            
+          )
+          
+        }
     return(customized_path)
   }
-    
-   
+  
+  
   
   return(table_path)
 }
-    
-     
-    
+
+
+
 
 #' Helper function to extract plot and soil metadata from from tables
 #'
@@ -380,7 +380,7 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     .x = vars,
     .y = vars_orig,
     .f = \(var, var_orig) {
-  
+      
       
       # browser()    
       filter_nas <- TRUE
