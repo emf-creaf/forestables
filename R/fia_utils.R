@@ -32,7 +32,7 @@
   return(res)
 }
 
-#' Build the input dataframe to interate by plots for the year
+#' Build the input dataframe to iterate by plots for the year
 #'
 #' Build the input dataframe
 #'
@@ -72,6 +72,8 @@
   purrr::imap(
     filter_list,
     .f = \(counties_list, state) {
+      # browser()
+      
       counties_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
@@ -194,7 +196,7 @@
 show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   withCallingHandlers(
     purrr::map(
-      states, .f = .get_plots_from_state, folder = folder, .call = .call
+      states, .f = .get_plots_from_state, folder = folder
     ) |>
       purrr::list_rbind() |>
       sf::st_as_sf(),
@@ -330,10 +332,10 @@ create_filter_list_fia <- function(plots_info) {
 #' @noRd
 .build_fia_file_path <- function(
   state, type, folder = ".",
-  .county = rep(NA, length(state)), .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
+  .county = rep(NA, length(state)), 
+  .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
   .call = rlang::caller_env()
 ) {
-
   purrr::pmap_chr(
     .l = list(state, .county, .plot),
     .f = \(state, county, plot) {
@@ -385,7 +387,8 @@ create_filter_list_fia <- function(plots_info) {
      return(table_path)
     }
   )
-}
+ }
+
 
 #' Helper function to extract plot and soil metadata from from tables
 #'

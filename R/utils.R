@@ -17,6 +17,9 @@ verbose_msg <- function(msg, .verbose) {
   }
 }
 
+
+
+
 #' Show plots for any inventory
 #'
 #' Show plots with minimal metadata from any inventory
@@ -72,9 +75,10 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   show_plots_function <- switch(
     inventory,
     "FIA" = show_plots_from_fia,
-    "FFI" = NULL,
+    "FFI" = show_plots_from_ffi,
     "IFN" = NULL
   )
 
   show_plots_function(folder, ...)
 }
+
