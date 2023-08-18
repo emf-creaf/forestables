@@ -27,23 +27,23 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "91" = 1406115,
     "tururu" = 3555
   )
-  
+
   test_year <- 2019
   test_departments <- names(test_plots)
   # test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
-  test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder <- Sys.getenv("ffi_path")
   expected_names <- c(
-    "department", 
+    "department",
     "plots",
     "plot_table",
     "tree_table",
     "shrub_table",
     "soils_table"
   )
-  
+
   # warnings and messages
-  
-  
+
+
    expect_warning(
     test_res <-  .build_ffi_input_with(test_departments,test_year, test_plots, ".", .verbose = TRUE),
     "file doesn't exist"
@@ -55,7 +55,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   expect_no_message(
      .build_ffi_input_with(test_departmets, test_year , test_plots[-26], test_folder, .verbose = FALSE)
   )
-  
+
   ## result tests
   #
   test_res <-  .build_ffi_input_with(test_departments,test_year, test_plots, test_folder, .verbose = TRUE)
@@ -69,24 +69,24 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   expect_identical(
     unique(test_res[["department"]]) |> sort(),
     names(test_plots) |> sort()
-    
+
   )
-  
-  
+
+
   #   # and correct_plots
-  
+
   expect_identical(
-    unique(test_res[["plots"]]) |> 
-      unlist() |> 
+    unique(test_res[["plots"]]) |>
+      unlist() |>
       sort(),
-    unique(test_plots) |> 
-      unlist() |> 
-      as.character() |> 
+    unique(test_plots) |>
+      unlist() |>
+      as.character() |>
       sort()
-    
+
   )
-  
-  
+
+
   # we can test here also if .build_fia_file_path works
   # .build_fia_file_path
   # a correct one
@@ -107,27 +107,27 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
  test_that(".read_inventory_data returns lazy_dt", {
 
- test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
+ test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
- 
+
  #ecologie table
- test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/ECOLOGIE.csv")
+ test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}')
- 
+
  #flore arbre table
- test_file<- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/FLORE.csv")
+ test_file<- fs::path(Sys.getenv("ffi_path"), "FLORE.csv")
  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}' )
- 
- 
-# 
+
+
+#
   expect_s3_class( .read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
   expect_s3_class( .read_inventory_data(test_cmd,header = TRUE), "dtplyr_step_first")
  })
-# 
+#
 test_that(".get_plots_from_departments works as intended", {
-  test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")
-  
+
   # error
   expect_error(
     suppressWarnings( .get_plots_from_departments(test_departments[1], ".")),
@@ -144,20 +144,20 @@ test_that(".get_plots_from_departments works as intended", {
   expect_true(
     nrow(test_res_ok) > 0
   )
-  
+
 })
 
 #
 test_that("show_plots_from_ffi works as intended", {
-  test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")
-  
+
   # error
   expect_error(
     suppressWarnings( show_plots_from_ffi(  test_departments[1], ".",)),
     "folder doesn't contain"
   )
-  
+
   ## results are ok
   # class
   expect_s3_class(test_res_ok <-  show_plots_from_ffi( test_departments, test_folder), "sf")
@@ -178,11 +178,11 @@ test_that("show_plots_from_ffi works as intended", {
 
 
 test_that(".transform_plot_summary_ffi works as intended", {
-  test_folder <- "C:/international_inventories_emf/data/export_dataifn_2005_2021/"
+  test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")
   test_summary <-  show_plots_from_ffi(test_departments, test_folder)
   test_years <- c(2005, 2010, 2015)
-  
+
   # correct object
   expect_type(
     test_res_1 <- .transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),

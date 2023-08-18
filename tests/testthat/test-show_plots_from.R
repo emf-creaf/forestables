@@ -7,7 +7,7 @@ test_that("show_plots_from works for FIA", {
 
   # test data
   inventory <- "FIA"
-  folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  folder <- Sys.getenv("fia_path")
   states <- c("OR", "CA", "WA")
 
   # tests

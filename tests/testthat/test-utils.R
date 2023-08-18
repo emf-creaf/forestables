@@ -37,15 +37,15 @@ test_that(".read_inventory_data returns lazy_dt for fia", {
 
 test_that(".read_inventory_data returns lazy_dt for ffi", {
 
-  test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
+  test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
   test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
 
   #ecologie table
-  test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/ECOLOGIE.csv")
+  test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
   test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}')
 
   #flore arbre table
-  test_file<- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/FLORE.csv")
+  test_file<- fs::path(Sys.getenv("ffi_path"), "FLORE.csv")
   test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}' )
 
 

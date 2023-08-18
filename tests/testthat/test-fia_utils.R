@@ -44,7 +44,7 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   )
   test_year <- 2010
   test_states <- names(test_plots)
-  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_folder <- Sys.getenv("fia_path")
   expected_names <- c(
     "state", "county", "plots",
     "tree_table",
@@ -110,7 +110,7 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
 })
 
 test_that(".get_plots_from_state works as intended", {
-  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
 
   # error
@@ -134,7 +134,7 @@ test_that(".get_plots_from_state works as intended", {
 
 
 test_that("show_plots_from_fia works as intended", {
-  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
 
   # error
@@ -161,7 +161,7 @@ test_that("show_plots_from_fia works as intended", {
 })
 
 test_that(".transform_plot_summary works as intended", {
-  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
   test_summary <- show_plots_from_fia(test_folder, test_states)
   test_years <- c(2005, 2010, 2015)
@@ -180,7 +180,7 @@ test_that(".transform_plot_summary works as intended", {
 
 test_that("create_filter_lsit_fia works as inteded", {
   # test data
-  test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
+  test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
   test_summary <- show_plots_from_fia(test_folder, test_states) |>
     dplyr::filter(INVYR %in% c(2005, 2010, 2015))
