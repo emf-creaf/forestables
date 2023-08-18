@@ -170,19 +170,21 @@ states_map_data |>
 
 states_map_data |>
   ggplot() +
-  geom_sf(aes(fill = HT)) +
-  facet_grid(cols = vars(YEAR))
+  geom_sf(data = test, colour = "black", alpha = 0.9, shape = 21) +
+  geom_sf(data = states_map_data, fill = NA) +
+  geom_sf(aes(fill = HT), alpha = 0.8) +
+  facet_grid(cols = vars(YEAR)) +
+  scale_fill_gradientn(
+    colours = hcl.colors(8, "Spectral", alpha = 0.8),
+    na.value = "black"
+  ) +
+  theme_void()
 
 counties_map_data |>
   ggplot() +
+  geom_sf(data = test, colour = "black", alpha = 0.9, shape = 21) +
   geom_sf(data = counties_map_data, fill = NA) +
-  geom_sf(aes(fill = DIA)) +
-  facet_grid(cols = vars(YEAR))
-
-counties_map_data |>
-  ggplot() +
-  geom_sf(data = counties_map_data, fill = NA) +
-  geom_sf(aes(fill = DIA)) +
+  geom_sf(aes(fill = DIA), alpha = 0.8) +
   facet_grid(cols = vars(YEAR)) +
   scale_fill_gradientn(
     colours = hcl.colors(8, "Spectral", alpha = 0.8),
