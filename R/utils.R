@@ -17,9 +17,6 @@ verbose_msg <- function(msg, .verbose) {
   }
 }
 
-
-
-
 #' Show plots for any inventory
 #'
 #' Show plots with minimal metadata from any inventory
@@ -82,3 +79,36 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   show_plots_function(folder, ...)
 }
 
+#' Function to read inventory files
+#'
+#' Read inventory csv file
+#'
+#' This function uses internally \code{\link[data.table]{fread}} to read the csv files. This way
+#' we can leverage the options of \code{fread} to execute \code{grep} system tool to prefilter the
+#' rows and others.
+#'
+#' @param input character vector as provided by \code{\link{.build_fia_file_path}},
+#' \code{\link{.build_ffi_file_path}}. See there for details about the \code{grep} usage.
+#' @param ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
+#'   a list of columns to read with the \code{select} argument.
+#'
+#' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shenanigans
+#'   with caching if used)
+#' @noRd
+.read_inventory_data <- function(input, ...) {
+
+  # check if special input is provided
+  if (stringr::str_detect(input, "^grep -E '")) {
+    res <- data.table::fread(cmd = input, ...) |>
+      # convert to tibble
+      dtplyr::lazy_dt(immutable = TRUE)
+    return(res)
+  }
+
+  # read the data
+  res <- data.table::fread(file = input, ...) |>
+    # convert to tibble
+    dtplyr::lazy_dt(immutable = TRUE)
+
+  return(res)
+}

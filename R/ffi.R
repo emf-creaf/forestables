@@ -180,7 +180,7 @@ ffi_tables_process <- function(
   # Get needed ancillary data (changed for excel)
   
 
-  espar_cdref <- .read_ffi_data(fs::path(folder, "espar-cdref13.CSV"),
+  espar_cdref <- .read_inventory_data(fs::path(folder, "espar-cdref13.CSV"),
                                   colClasses = list(character = c( "// espar")),
                                   header = TRUE) |>
      dplyr::as_tibble() |>
@@ -205,7 +205,7 @@ ffi_tables_process <- function(
   
   #here i leave this for the moment as it gives an error in the lecture
 
-  # metadonnees <- esus:::.read_ffi_data(
+  # metadonnees <- esus:::.read_inventory_data(
   #   fs::path(folder, "metadonnees.CSV"), 
   #   skip = 413,
   #     col.names = c("UNITE","Code", "Libellé", "Définition", "NA"),
@@ -243,7 +243,7 @@ ffi_tables_process <- function(
     )
 
 
-  idp_dep_ref <- .read_ffi_data(fs::path(folder, "PLACETTE.csv"),
+  idp_dep_ref <- .read_inventory_data(fs::path(folder, "PLACETTE.csv"),
   select = c(
       "IDP",
       "DEP"
@@ -418,7 +418,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
  
       # browser()
   
-  plot_processed <- .read_ffi_data(
+  plot_processed <- .read_inventory_data(
     plot_data,
     select = c(
     "CAMPAGNE",
@@ -512,7 +512,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
   
   # browser()
   
-  eco_filtered_data <- .read_ffi_data(
+  eco_filtered_data <- .read_inventory_data(
     soils_data,
     select = c(
 
@@ -641,7 +641,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
   
     # browser()
   
-  tree_raw_data <- .read_ffi_data(
+  tree_raw_data <- .read_inventory_data(
     tree_data,
     select = c(
   
@@ -814,7 +814,7 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
   
   # 2. col names
   
-  shrub_raw_data <- .read_ffi_data(
+  shrub_raw_data <- .read_inventory_data(
     shrub_data,
     select = c(
       "CAMPAGNE",
@@ -989,7 +989,7 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
   } 
   
    # browser()
-  soil_filtered_data <- .read_ffi_data(
+  soil_filtered_data <- .read_inventory_data(
     soils_data,
     select = c(
     "CAMPAGNE",

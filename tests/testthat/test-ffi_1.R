@@ -6,7 +6,7 @@
 # # 
 # # 
 # # 
-# subset_ifn_fr <- .read_ffi_data(paste0(folder, "PLACETTE.CSV")
+# subset_ifn_fr <- .read_inventory_data(paste0(folder, "PLACETTE.CSV")
 #   ) |>
 # 
 #   dplyr::group_by(DEP) |>

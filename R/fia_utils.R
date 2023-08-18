@@ -1,37 +1,3 @@
-#' Function to read the FIA files
-#'
-#' Read FIA csv file
-#'
-#' This function uses internally \code{\link[data.table]{fread}} to read the csv files. This way
-#' we can leverage the options of \code{fread} to execute \code{grep} system tool to prefilter the
-#' rows and others.
-#'
-#' @param input character vector as provided by \code{\link{.build_fia_file_path}}. See there for
-#'   details about the \code{grep} usage.
-#' @param ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
-#'   a list of columns to read with the \code{select} argument.
-#'
-#' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shenanigans
-#'   with caching if used)
-#' @noRd
-.read_fia_data <- function(input, ...) {
-
-  # check if special input is provided
-  if (stringr::str_detect(input, "^grep -E '")) {
-    res <- data.table::fread(cmd = input, ...) |>
-      # convert to tibble
-      dtplyr::lazy_dt(immutable = TRUE)
-    return(res)
-  }
-
-  # read the data
-  res <- data.table::fread(file = input, ...) |>
-    # convert to tibble
-    dtplyr::lazy_dt(immutable = TRUE)
-
-  return(res)
-}
-
 #' Build the input dataframe to iterate by plots for the year
 #'
 #' Build the input dataframe
@@ -73,7 +39,7 @@
     filter_list,
     .f = \(counties_list, state) {
       # browser()
-      
+
       counties_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
@@ -150,7 +116,7 @@
 
   # If file exists, business as usual:
   plot_data <- plot_path |>
-    .read_fia_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
+    .read_inventory_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
     # we need to weed out some plots that have all NAs in coordinates in some states
     # (i.e. CA or WA)
     dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
@@ -327,12 +293,12 @@ create_filter_list_fia <- function(plots_info) {
 #'   if \code{.custom} is \code{TRUE}.
 #'
 #' @return Character vector with the paths (or custom command with path) to use with
-#'   \code{\link{.read_fia_data}}.
+#'   \code{\link{.read_inventory_data}}.
 #'
 #' @noRd
 .build_fia_file_path <- function(
   state, type, folder = ".",
-  .county = rep(NA, length(state)), 
+  .county = rep(NA, length(state)),
   .plot = rep(NA, length(state)), .year = NULL, .custom = FALSE,
   .call = rlang::caller_env()
 ) {

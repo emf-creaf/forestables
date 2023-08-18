@@ -171,8 +171,8 @@ fia_tables_process <- function(
   input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose)
 
   # Get needed ancillary data
-  ref_species <- .read_fia_data(fs::path(folder, "REF_SPECIES.csv")) |> dplyr::as_tibble()
-  ref_plant_dictionary <- .read_fia_data(fs::path(folder, "REF_PLANT_DICTIONARY.csv")) |> dplyr::as_tibble()
+  ref_species <- .read_inventory_data(fs::path(folder, "REF_SPECIES.csv")) |> dplyr::as_tibble()
+  ref_plant_dictionary <- .read_inventory_data(fs::path(folder, "REF_PLANT_DICTIONARY.csv")) |> dplyr::as_tibble()
 
   furrr::future_pmap(
   # purrr::pmap(
@@ -328,7 +328,7 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
 
   ## Data gathering
   # survey table
-  data_survey <- .read_fia_data(
+  data_survey <- .read_inventory_data(
     survey_data,
     select = c("INVYR","STATECD","STATEAB","STATENM", "RSCD", "ANN_INVENTORY")
   ) |>
@@ -345,7 +345,7 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
     )
 
   # plot table
-  data_plot <- .read_fia_data(
+  data_plot <- .read_inventory_data(
     plot_data,
     select = c("INVYR",
                "STATECD",
@@ -395,7 +395,7 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
     )
 
   # CONDITION TABLE
-  data_cond <- .read_fia_data(
+  data_cond <- .read_inventory_data(
     cond_data,
     select = c("INVYR",
                "STATECD",
@@ -519,7 +519,7 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
   }
 
   # 2. col names we select the column names to be read
-  filtered_data <- .read_fia_data(
+  filtered_data <- .read_inventory_data(
     tree_data,
     select = c(
       "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "TREE", "STATUSCD", "CONDID",
@@ -625,7 +625,7 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
 
   # 2. col names
 
-  filtered_data <- .read_fia_data(
+  filtered_data <- .read_inventory_data(
     understory_data,
     select = c(
       "INVYR",
@@ -780,7 +780,7 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
   }
 
   # 2. col names
-  filtered_data <- .read_fia_data(
+  filtered_data <- .read_inventory_data(
     understory_p2,
     select = c(
       "INVYR",
@@ -941,7 +941,7 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
   # 2. col names
 
 
-  filtered_data <- .read_fia_data(
+  filtered_data <- .read_inventory_data(
     seedling_data,
     select = c(
       "INVYR",
@@ -1055,7 +1055,7 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
   }
   # 2. col names
 
-  filtered_data <- .read_fia_data(
+  filtered_data <- .read_inventory_data(
     subplot_data,
     select = c(
       "INVYR",
@@ -1139,7 +1139,7 @@ fia_soils_lab_table_process <- function(soils_lab, plot, county, state, year) {
   }
 
   #soils lab
-  data_soils_lab <- .read_fia_data(
+  data_soils_lab <- .read_inventory_data(
     soils_lab,
     select = c(
       "INVYR",
@@ -1287,7 +1287,7 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
 
 
   #veg_subplot
-  data_veg_subplot <- .read_fia_data(
+  data_veg_subplot <- .read_inventory_data(
     veg_subplot,
     select = c(
       "INVYR",
@@ -1346,7 +1346,7 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
     )
 
   #soils_loc
-  data_soils_loc <- .read_fia_data(
+  data_soils_loc <- .read_inventory_data(
     soils_loc,
     select = c(
       "INVYR",

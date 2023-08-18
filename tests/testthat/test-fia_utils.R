@@ -109,14 +109,6 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   )
 })
 
-test_that(".read_fia_data returns lazy_dt", {
-  test_file <- fs::path("/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/OR_PLOT.csv")
-  test_cmd <- glue::glue("grep -E ',INVYR,|,25,(84167|84167.0),' {test_file}")
-
-  expect_s3_class(.read_fia_data(test_file), "dtplyr_step_first")
-  expect_s3_class(.read_fia_data(test_cmd), "dtplyr_step_first")
-})
-
 test_that(".get_plots_from_state works as intended", {
   test_folder <- "/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
   test_states <- c("OR", "WA", "CA")

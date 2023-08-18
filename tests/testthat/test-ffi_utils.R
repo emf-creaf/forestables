@@ -105,7 +105,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
    )
 })
 
- test_that(".read_ffi_data returns lazy_dt", {
+ test_that(".read_inventory_data returns lazy_dt", {
 
  test_file <- fs::path("C:/international_inventories_emf/data/export_dataifn_2005_2021/PLACETTE.csv")
  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
@@ -120,8 +120,8 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
  
  
 # 
-  expect_s3_class( .read_ffi_data(test_file, header = TRUE), "dtplyr_step_first")
-  expect_s3_class( .read_ffi_data(test_cmd,header = TRUE), "dtplyr_step_first")
+  expect_s3_class( .read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class( .read_inventory_data(test_cmd,header = TRUE), "dtplyr_step_first")
  })
 # 
 test_that(".get_plots_from_departments works as intended", {
