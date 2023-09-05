@@ -91,22 +91,6 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   )
 })
 
-test_that(".read_inventory_data returns lazy_dt", {
-  # placette table
-  test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
-  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})900863;((?:[^;]+;){{2}})10" {test_file}')
-
-  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
-  expect_s3_class(.read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
-
-  # ARBRE, BOIS_MORT, COUVERT, ECOLOGIE, FLORE and HABITAT tables
-  test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
-  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}})900863;" {test_file}')
-
-  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
-  expect_s3_class(.read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
-})
-#
 test_that(".get_plots_from_departments works as intended", {
   test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")

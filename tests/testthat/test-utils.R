@@ -32,24 +32,34 @@ test_that(".read_inventory_data returns lazy_dt for fia", {
   test_cmd <- glue::glue("grep -E ',INVYR,|,25,(84167|84167.0),' {test_file}")
 
   expect_s3_class(.read_inventory_data(test_file), "dtplyr_step_first")
-  expect_s3_class(.read_inventory_data(test_cmd), "dtplyr_step_first")
+  expect_s3_class(test_res <- .read_inventory_data(test_cmd), "dtplyr_step_first")
+  expect_true(nrow(test_res) > 0)
+
+  # wrong one
+  test_cmd <- glue::glue("grep -E ',INVYR,|,25,(tururu|tururu.0),' {test_file}")
+  expect_s3_class(test_res <- .read_inventory_data(test_cmd), "dtplyr_step_first")
+  expect_false(nrow(test_res) > 0)
 })
 
 test_that(".read_inventory_data returns lazy_dt for ffi", {
-
+  # placette table
   test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
-  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
+  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})900863;((?:[^;]+;){{2}})10" {test_file}')
 
-  #ecologie table
+  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class(test_res <- .read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
+  expect_true(nrow(test_res) > 0)
+
+  # ARBRE, BOIS_MORT, COUVERT, ECOLOGIE, FLORE and HABITAT tables
   test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
-  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}')
+  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}})900863;" {test_file}')
 
-  #flore arbre table
-  test_file<- fs::path(Sys.getenv("ffi_path"), "FLORE.csv")
-  test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}' )
+  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class(test_res <- .read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
+  expect_true(nrow(test_res) > 0)
 
-
-  #
-  expect_s3_class( .read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
-  expect_s3_class( .read_inventory_data(test_cmd,header = TRUE), "dtplyr_step_first")
+  # wrong plot or department
+  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}})tururu;" {test_file}')
+  expect_s3_class(test_res <- .read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
+  expect_false(nrow(test_res) > 0)
 })
