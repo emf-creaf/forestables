@@ -178,7 +178,7 @@ test_that(".transform_plot_summary works as intended", {
   expect_true(length(test_res_2005_OR[[1]]) > 1)
 })
 
-test_that("create_filter_lsit_fia works as inteded", {
+test_that("create_filter_list_fia works as inteded", {
   # test data
   test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
