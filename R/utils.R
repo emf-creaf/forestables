@@ -98,7 +98,7 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 .read_inventory_data <- function(input, ...) {
 
   # check if special input is provided
-  if (stringr::str_detect(input, "^grep -E '")) {
+  if (stringr::str_detect(input, "^grep")) {
     res <- data.table::fread(cmd = input, ...) |>
       # convert to tibble
       dtplyr::lazy_dt(immutable = TRUE)

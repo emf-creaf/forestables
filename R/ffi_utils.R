@@ -13,7 +13,7 @@
 #'
 #' @noRd
 .build_ffi_input_with <- function(
-    departments, year,  filter_list, folder, .verbose, .call = rlang::caller_env()
+    departments, year, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
 
   # # first, if is null filter list, create it
@@ -272,22 +272,15 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
     #   )
     # }
 
-    if (type %in% c("tree", "shrub")) {
+    if (type %in% c("tree", "shrub", "soils")) {
       customized_path <- glue::glue(
-
-        'grep -E "CAMPAGNE|.*;{.plot};" {table_path}'
-
-      ) } else if (type %in% c("soils")) {
-        customized_path <- glue::glue(
-          'grep -E "CAMPAGNE|.*;{.plot};" {table_path}'
-
-        )} else  if (type %in% c( "plot")) {
-          customized_path <- glue::glue(
-            'grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}'
-
-          )
-
-        }
+        'grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'
+      )
+    } else{
+      customized_path <- glue::glue(
+        'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
+      )
+    }
     return(customized_path)
   }
 

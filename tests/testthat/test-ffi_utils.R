@@ -42,10 +42,8 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   )
 
   # warnings and messages
-
-
    expect_warning(
-    test_res <-  .build_ffi_input_with(test_departments,test_year, test_plots, ".", .verbose = TRUE),
+    .build_ffi_input_with(test_departments,test_year, test_plots, ".", .verbose = TRUE),
     "file doesn't exist"
    )
   expect_message(
@@ -53,12 +51,11 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "Getting ready to retrieve"
   )
   expect_no_message(
-     .build_ffi_input_with(test_departmets, test_year , test_plots[-26], test_folder, .verbose = FALSE)
+     .build_ffi_input_with(test_departments, test_year , test_plots[-26], test_folder, .verbose = FALSE)
   )
 
   ## result tests
-  #
-  test_res <-  .build_ffi_input_with(test_departments,test_year, test_plots, test_folder, .verbose = TRUE)
+  test_res <- .build_ffi_input_with(test_departments, test_year, test_plots, test_folder, .verbose = FALSE)
   # we expect a tibble
   expect_s3_class(test_res, "tbl")
   # with the correct names
@@ -69,12 +66,8 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   expect_identical(
     unique(test_res[["department"]]) |> sort(),
     names(test_plots) |> sort()
-
   )
-
-
-  #   # and correct_plots
-
+  # and correct_plots
   expect_identical(
     unique(test_res[["plots"]]) |>
       unlist() |>
@@ -86,43 +79,33 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
   )
 
-
-  # we can test here also if .build_fia_file_path works
-  # .build_fia_file_path
-  # a correct one
+  # a correct custom one
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
-    paste0(test_folder, "PLACETTE.csv")
+    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {test_folder}PLACETTE.csv')
   )
-  #  # a correct custom one
-    expect_identical(
-      as.character(test_res[["plot_table"]][1]),
-     paste0('grep -E "CAMPAGNE|.*;1404119;.*;01;" ', test_folder, "PLACETTE.csv")
+  # an incorrect one, that will be tested later when loading the data
+  expect_identical(
+    test_res[["plot_table"]][32],
+    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv')
   )
-  # # # an incorrect one --< no funciona
-   expect_identical(
-     test_res[["plot_table"]][32], NA_character_
-   )
 })
 
- test_that(".read_inventory_data returns lazy_dt", {
+test_that(".read_inventory_data returns lazy_dt", {
+  # placette table
+  test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
+  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})900863;((?:[^;]+;){{2}})10" {test_file}')
 
- test_file <- fs::path(Sys.getenv("ffi_path"), "PLACETTE.csv")
- test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;.*;10;" {test_file}')
+  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class(.read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
 
- #ecologie table
- test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
- test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}')
+  # ARBRE, BOIS_MORT, COUVERT, ECOLOGIE, FLORE and HABITAT tables
+  test_file <- fs::path(Sys.getenv("ffi_path"), "ECOLOGIE.csv")
+  test_cmd <- glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}})900863;" {test_file}')
 
- #flore arbre table
- test_file<- fs::path(Sys.getenv("ffi_path"), "FLORE.csv")
- test_cmd <- glue::glue('grep -E "CAMPAGNE|.*;900863;" {test_file}' )
-
-
-#
-  expect_s3_class( .read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
-  expect_s3_class( .read_inventory_data(test_cmd,header = TRUE), "dtplyr_step_first")
- })
+  expect_s3_class(.read_inventory_data(test_file, header = TRUE), "dtplyr_step_first")
+  expect_s3_class(.read_inventory_data(test_cmd, header = TRUE), "dtplyr_step_first")
+})
 #
 test_that(".get_plots_from_departments works as intended", {
   test_folder <- Sys.getenv("ffi_path")
