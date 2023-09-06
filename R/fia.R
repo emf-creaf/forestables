@@ -167,8 +167,9 @@ fia_tables_process <- function(
   # debug
   # browser()
 
-  # Create input df for year
-  input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose)
+  # Create input df for year. We need to remove the NAs due to missing files
+  input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose) |>
+    dplyr::filter(!is.na(plot_table))
 
   # Get needed ancillary data
   ref_species <- .read_inventory_data(fs::path(folder, "REF_SPECIES.csv")) |> dplyr::as_tibble()
@@ -773,7 +774,7 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
   if (is.character(files_validation)) {
     cli::cli_warn(c(
       "Some files can't be found",
-      "i" = "Skipping understory p3 data for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
+      "i" = "Skipping understory p2 data for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
     ))
 
     return(dplyr::tibble())
@@ -811,7 +812,7 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
   if (nrow(filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "There is no p3 understory data for that combination of plot, county and year",
+      "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
     ))
     return(dplyr::tibble())
@@ -873,7 +874,7 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
   if (nrow(understory_p2_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "There is no p3 understory data for that combination of plot, county and year",
+      "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
     ))
     return(dplyr::tibble())
@@ -1229,7 +1230,7 @@ fia_soils_lab_table_process <- function(soils_lab, plot, county, state, year) {
       PLOT = plot,
       INVYR = year,
       COUNTYCD = county,
-      STATECD = state,
+      # STATECD = state,
       ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
     ) |>
     dplyr::select(
@@ -1335,14 +1336,13 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
     .extract_fia_metadata(
       c(
         # "VEG_SUBP_STATUS_CD",
-        "ROCK_COVER_PCT_MEAN"
+        "ROCK_COVER_PCT_MEAN", "STATECD"
       ), county, plot, year
     ) |>
     dplyr::mutate(
       PLOT  = plot,
       INVYR  = year,
-      COUNTYCD = county,
-      STATECD = state
+      COUNTYCD = county
     )
 
   #soils_loc
@@ -1467,7 +1467,7 @@ fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, st
     ) |>
     dplyr::select(
       ID_UNIQUE_PLOT,
-      INVYR,
+      YEAR = INVYR,
       STATECD,
       COUNTYCD,
       PLOT,
