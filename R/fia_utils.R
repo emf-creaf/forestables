@@ -116,7 +116,9 @@
 
   # If file exists, business as usual:
   plot_data <- plot_path |>
-    .read_inventory_data(select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")) |>
+    .read_inventory_data(
+      select = c("INVYR", "STATECD", "COUNTYCD", "PLOT", "LAT", "LON")
+    ) |>
     # we need to weed out some plots that have all NAs in coordinates in some states
     # (i.e. CA or WA)
     dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
@@ -125,12 +127,13 @@
     tidyr::fill(
       c(LAT, LON), .direction = "updown"
     ) |>
+    dplyr::mutate(STATEAB = state) |>
     dplyr::as_tibble()
 
 
   # For some states CRS is different so we use the correct crs to build the sf and transform
   # to 4326 to have all in the same coordinate system.
-  if (plot_data[["STATECD"]] |> unique() %in%  c(60,64,66,68,69,70)) {
+  if (unique(plot_data[["STATECD"]]) %in%  c(60,64,66,68,69,70)) {
     epgs <- 4269
     res <- plot_data |>
       sf::st_as_sf(
@@ -175,18 +178,24 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
 #' filter_list object
 #' @noRd
-.transform_plot_summary <- function(plot_summary, years, state) {
+.transform_plot_summary <- function(plot_summary, years, states) {
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
-    dplyr::filter(INVYR %in% years) |>
-    dplyr::select(COUNTYCD, PLOT) |>
+    dplyr::filter(
+      INVYR %in% years,
+      STATEAB %in% states
+    ) |>
+    dplyr::select(STATEAB, COUNTYCD, PLOT) |>
     dplyr::distinct() |>
-    dplyr::group_by(COUNTYCD) |>
+    dplyr::group_by(STATEAB, COUNTYCD) |>
     dplyr::summarise(plots = list(PLOT)) |>
-    tibble::deframe() |>
-    list() |>
-    purrr::set_names(state)
+    dplyr::group_map(.f = \(state_plots, state_name) {
+      tibble::deframe(state_plots) |>
+        list() |>
+        purrr::set_names(state_name[[1]])
+    }) |>
+    purrr::flatten()
 
   return(filter_list)
 }
@@ -219,7 +228,7 @@ create_filter_list_fia <- function(plots_info) {
   )
   # assert col names
   assertthat::assert_that(
-    all(names(plots_info) %in% c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry")),
+    all(names(plots_info) %in% c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry")),
     msg = cli::cli_abort(c(
       "{.arg plots_info} provided don't have the expected names",
       "i" = "Expected names are {.value {c('INVYR', 'STATECD', 'COUNTYCD', 'PLOT', 'geometry')}}"

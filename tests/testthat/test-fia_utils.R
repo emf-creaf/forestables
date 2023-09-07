@@ -107,6 +107,10 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   expect_identical(
     test_res[["plot_table"]][31], NA_character_
   )
+
+
+  ### TODO
+  # - tests for filter list NULL
 })
 
 test_that(".get_plots_from_state works as intended", {
@@ -125,11 +129,14 @@ test_that(".get_plots_from_state works as intended", {
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
-  expect_named(test_res_ok,c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  expect_named(test_res_ok, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry"))
   # expect rows
-  expect_true(
-    nrow(test_res_ok) > 0
-  )
+  expect_true(nrow(test_res_ok) > 0)
+  # expect values
+  expect_identical(unique(test_res_ok$STATECD), 41L)
+  expect_identical(unique(test_res_ok$STATEAB), "OR")
+  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATECD), 6L)
+  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATEAB), "CA")
 })
 
 
@@ -149,7 +156,7 @@ test_that("show_plots_from_fia works as intended", {
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
-  expect_named(test_res_ok, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  expect_named(test_res_ok, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry"))
   # expect rows
   expect_true(
     nrow(test_res_ok) > 0
@@ -166,6 +173,7 @@ test_that(".transform_plot_summary works as intended", {
   test_summary <- show_plots_from_fia(test_folder, test_states)
   test_years <- c(2005, 2010, 2015)
 
+  # One state, one year
   # correct object
   expect_type(
     test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
@@ -176,6 +184,49 @@ test_that(".transform_plot_summary works as intended", {
   # expect results
   expect_length(test_res_2005_OR, 1)
   expect_true(length(test_res_2005_OR[[1]]) > 1)
+  # correct counties
+  expect_named(
+    test_res_2005_OR[["OR"]],
+    test_summary |>
+      dplyr::filter(STATEAB == "OR", INVYR == test_years[1]) |>
+      dplyr::pull(COUNTYCD) |>
+      unique() |>
+      as.character(),
+    ignore.order = TRUE
+  )
+
+  ## all states all years
+  expect_type(
+    test_res <- .transform_plot_summary(test_summary, test_years, test_states),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("OR", "WA", "CA"), ignore.order = TRUE)
+  # expect results
+  expect_length(test_res, 3)
+  expect_true(length(test_res[[1]]) > 1)
+  expect_true(length(test_res[[2]]) > 1)
+  expect_true(length(test_res[[3]]) > 1)
+  # correct counties
+  expect_named(
+    test_res[["OR"]],
+    test_summary |>
+      dplyr::filter(STATEAB %in% "OR", INVYR %in% test_years) |>
+      dplyr::pull(COUNTYCD) |>
+      unique() |>
+      as.character(),
+    ignore.order = TRUE
+  )
+
+  expect_named(
+    test_res[["CA"]],
+    test_summary |>
+      dplyr::filter(STATEAB %in% "CA", INVYR %in% test_years) |>
+      dplyr::pull(COUNTYCD) |>
+      unique() |>
+      as.character(),
+    ignore.order = TRUE
+  )
 })
 
 test_that("create_filter_list_fia works as inteded", {

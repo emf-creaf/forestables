@@ -15,6 +15,19 @@ test_that("show_plots_from works for FIA", {
     test_plots <- show_plots_from(inventory, folder, states = states)
   )
   expect_s3_class(test_plots, "sf")
-  expect_named(test_plots, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "geometry"))
+  expect_named(test_plots, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry"))
   expect_true(all(unique(test_plots[["STATECD"]]) %in% c(6L, 41L, 53L)))
+
+  # test data
+  inventory <- "FFI"
+  folder <- Sys.getenv("ffi_path")
+  departments <- c("01", "10", "11")
+
+  # tests
+  expect_no_error(
+    test_plots <- show_plots_from(inventory, folder, departments = departments)
+  )
+  expect_s3_class(test_plots, "sf")
+  expect_named(test_plots, c("CAMPAGNE", "IDP", "DEP", "geometry"))
+  expect_true(all(unique(test_plots[["DEP"]]) %in% c("01", "10", "11")))
 })

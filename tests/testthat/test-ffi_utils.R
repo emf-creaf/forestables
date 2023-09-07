@@ -43,7 +43,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
   # warnings and messages
    expect_warning(
-    .build_ffi_input_with(test_departments,test_year, test_plots, ".", .verbose = TRUE),
+    .build_ffi_input_with(test_departments, test_year, test_plots, ".", .verbose = TRUE),
     "file doesn't exist"
    )
   expect_message(
@@ -79,6 +79,8 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
   )
 
+  # we can test here also if .build_fia_file_path works
+  # .build_fia_file_path
   # a correct custom one
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
@@ -89,20 +91,23 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     test_res[["plot_table"]][32],
     glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv')
   )
+
+  ### TODO
+  # - test when filter list NULL
 })
 
-test_that(".get_plots_from_departments works as intended", {
+test_that(".get_plots_from_department works as intended", {
   test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")
 
   # error
   expect_error(
-    suppressWarnings( .get_plots_from_departments(test_departments[1], ".")),
+    suppressWarnings(.get_plots_from_department(test_departments[1], ".")),
     "folder doesn't contain"
   )
   ## results are ok
   # class
-  expect_s3_class(test_res_ok <-  .get_plots_from_departments(test_departments[1], test_folder), "sf")
+  expect_s3_class(test_res_ok <- .get_plots_from_department(test_departments[1], test_folder), "sf")
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
@@ -111,7 +116,9 @@ test_that(".get_plots_from_departments works as intended", {
   expect_true(
     nrow(test_res_ok) > 0
   )
-
+  # expect values
+  expect_identical(unique(test_res_ok$DEP), "01")
+  expect_identical(unique(.get_plots_from_department(test_departments[3], test_folder)$DEP), "11")
 })
 
 #
@@ -121,13 +128,13 @@ test_that("show_plots_from_ffi works as intended", {
 
   # error
   expect_error(
-    suppressWarnings( show_plots_from_ffi(  test_departments[1], ".",)),
+    suppressWarnings(show_plots_from_ffi(".", test_departments[1])),
     "folder doesn't contain"
   )
 
   ## results are ok
   # class
-  expect_s3_class(test_res_ok <-  show_plots_from_ffi( test_departments, test_folder), "sf")
+  expect_s3_class(test_res_ok <- show_plots_from_ffi(test_folder, test_departments), "sf")
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
@@ -142,23 +149,92 @@ test_that("show_plots_from_ffi works as intended", {
   )
 })
 
-
-
 test_that(".transform_plot_summary_ffi works as intended", {
   test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11")
-  test_summary <-  show_plots_from_ffi(test_departments, test_folder)
+  test_summary <-  show_plots_from_ffi(test_folder, test_departments)
   test_years <- c(2005, 2010, 2015)
 
+  # One department, one year
   # correct object
   expect_type(
-    test_res_1 <- .transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),
+    test_res_01 <- .transform_plot_summary_ffi(test_summary, test_years[1], test_departments[1]),
     "list"
   )
   # correct names
-  expect_named(test_res_1,  c("01", "10", "11"))
+  expect_named(test_res_01, "01")
   # expect results
-  expect_length(test_res_1, 3)
-  expect_true(length(test_res_1[[1]]) > 1)
+  expect_length(test_res_01, 1)
+  expect_true(length(test_res_01[[1]]) > 1)
+  # correct counties
+  expect_equal(
+    test_res_01[["01"]],
+    test_summary |>
+      dplyr::filter(DEP == "01", CAMPAGNE == test_years[1]) |>
+      dplyr::pull(IDP) |>
+      unique() |>
+      as.character()
+  )
+
+  # All departments all years
+  # correct object
+  expect_type(
+    test_res <- .transform_plot_summary_ffi(test_summary, test_years, test_departments),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("01", "10", "11"), ignore.order = TRUE)
+  # expect results
+  expect_length(test_res, 3)
+  expect_true(length(test_res[[1]]) > 1)
+  expect_true(length(test_res[[2]]) > 1)
+  expect_true(length(test_res[[3]]) > 1)
+  # correct counties
+  expect_equal(
+    test_res[["01"]],
+    test_summary |>
+      dplyr::filter(DEP %in% "01", CAMPAGNE %in% test_years) |>
+      dplyr::pull(IDP) |>
+      unique() |>
+      as.character()
+  )
+  expect_equal(
+    test_res[["11"]],
+    test_summary |>
+      dplyr::filter(DEP %in% "11", CAMPAGNE %in% test_years) |>
+      dplyr::pull(IDP) |>
+      unique() |>
+      as.character()
+  )
 })
 
+test_that("create_filter_list_ffi works as inteded", {
+  # test data
+  test_folder <- Sys.getenv("ffi_path")
+  test_departments <- c("01", "10", "11")
+  test_summary <- show_plots_from_ffi(test_folder, test_departments) |>
+    dplyr::filter(CAMPAGNE %in% c(2005, 2010, 2015))
+
+  # errors
+  # object error
+  expect_error(create_filter_list_ffi("test_summary"), "data.frame")
+  expect_error(create_filter_list_ffi(as.list(test_summary)), "data.frame")
+  # names error
+  expect_error(create_filter_list_ffi(iris), "expected names")
+  # rows error
+  expect_error(create_filter_list_ffi(test_summary |> dplyr::filter(CAMPAGNE == 1800)), "one row")
+
+  # correct object
+  expect_type(
+    test_res <- create_filter_list_ffi(test_summary),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("01", "10", "11"))
+  # expect results
+  expect_length(test_res, 3)
+  expect_true(length(test_res[[1]]) > 1)
+  expect_true(length(test_res[[2]]) > 1)
+  expect_true(length(test_res[[3]]) > 1)
+
+})

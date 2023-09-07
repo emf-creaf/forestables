@@ -4,7 +4,7 @@
 #'
 #' This function takes the user input (year, departments, plots and folder) and build the input to be
 #' able to iterate by plots in a year. If no plots filter list is provided, this function uses
-#' \code{\link{.get_plots_from_departments}} and \code{\link{.trasnsform_plot_summary}} to create a
+#' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
 #' @inheritParams ffi_tables_process
@@ -23,7 +23,7 @@
   if (is.null(filter_list)) {
 
 
-      filter_list <-  .get_plots_from_departments( departments, folder , .call = .call) |>
+      filter_list <-  .get_plots_from_department( departments, folder , .call = .call) |>
           .transform_plot_summary_ffi(year,departments)
 
   }
@@ -97,27 +97,27 @@
 #' Helper to read the PLACETTE.csv file from an state to retrieve the list of plots for that state
 #' @noRd
 
-.get_plots_from_departments <- function(departments,folder, .call = rlang::caller_env()) {
+.get_plots_from_department <- function(department, folder, .call = rlang::caller_env()) {
 
   # browser()
   ## TODO Assertion to ensure PLACETTE.csv file exists, because .build_fia_file_path is fail
   ## resistant, returning always a result (NA_character) to allow its use in loops.
-  ## .get_plots_from_departments_ is only called from .build_ffi_input_with or show_plots_from_ffia,
+  ## .get_plots_from_department_ is only called from .build_ffi_input_with or show_plots_from_ffia,
   ## that can not check for file existence (this is done in the individual plot functions)
 
-  plot_path <- .build_ffi_file_path(departments, "plot", folder)
+  plot_path <- .build_ffi_file_path(department, "plot", folder)
 
   if (is.na(plot_path)) {
     cli::cli_abort(c(
-      "{.path {folder}} folder doesn't contain a {.path PLACETTE.csv}, aborting."
+      "{.path {folder}} folder doesn't contain any file named {.path PLACETTE.csv}, aborting."
     ), call = .call)
   }
 
   # If file exists, business as usual:
   plot_data <- plot_path |>
-    .read_inventory_data(select = c("CAMPAGNE","IDP","XL","YL","DEP")) |>
+    .read_inventory_data(select = c("CAMPAGNE", "IDP", "XL", "YL", "DEP")) |>
     dplyr::group_by(DEP, IDP) |>
-    dplyr::filter(DEP == departments) |>
+    dplyr::filter(DEP == department) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(XL))) |>
     dplyr::arrange(CAMPAGNE) |>
@@ -126,11 +126,7 @@
     ) |>
     dplyr::as_tibble()
 
-
-
-  #  crs to build the sf and transform
-  # to 4326 to have all in the same coordinate system.
-
+  # crs to build the sf and transform to 4326 to have all in the same coordinate system.
   epgs <- 2154
   res <- plot_data |>
     sf::st_as_sf(
@@ -140,7 +136,6 @@
     sf::st_transform(crs = 4326)
 
   return(res)
-
 }
 
 #' show plots from department ffi helper
@@ -150,10 +145,9 @@
 #' @param folder Character, path to folder containing FFI csv files
 #' @param states Character vector with two-letter code for states
 #' @noRd
-show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()) {
+show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()) {
   withCallingHandlers(
-    purrr::map( departments, .f = .get_plots_from_departments, folder = folder
-    ) |>
+    purrr::map(departments, .f = .get_plots_from_department, folder = folder) |>
       purrr::list_rbind() |>
       sf::st_as_sf(),
     purrr_error_indexed = function(err) {
@@ -162,15 +156,17 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
   )
 }
 
-
-#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_departments}} in a
+#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_department}} in a
 #' filter_list object
 #' @noRd
-.transform_plot_summary_ffi <- function(plot_summary, years,departments) {
+.transform_plot_summary_ffi <- function(plot_summary, years, departments) {
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
-    dplyr::filter(CAMPAGNE %in% years) |>
+    dplyr::filter(
+      CAMPAGNE %in% years,
+      DEP %in% departments
+    ) |>
     dplyr::select(DEP, IDP) |>
     dplyr::distinct() |>
     dplyr::group_by(DEP) |>
@@ -178,13 +174,70 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
       IDP = as.character(IDP)
     ) |>
     dplyr::summarise(plots = list(IDP)) |>
-    tibble::deframe()
-
-
-  # purrr::set_names(,departments)
+    dplyr::group_by(DEP) |>
+    dplyr::group_map(.f = \(department_plots, department_name) {
+      tibble::deframe(department_plots) |>
+        purrr::set_names(department_name[[1]])
+    }) |>
+    purrr::flatten()
 
   return(filter_list)
 }
+
+#' Create the \code{filter_list} for FFI inventory
+#'
+create_filter_list_ffi <- function(plots_info) {
+
+  ## assertions
+  # this process is independent from ffi, and the user can modify plots_info to
+  # filter plots and counties. So we can not assume plots_info is going to have the str we
+  # need. So, we assert and inform the user if something is wrong
+
+  ## TODO
+  # assert class
+  assertthat::assert_that(
+    inherits(plots_info, c("tbl", "sf", "data.frame")),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must be a data.frame or something coercible to one, as the result of {.code show_plots_from_ffi()}"
+    ))
+  )
+  # assert col names
+  assertthat::assert_that(
+    all(names(plots_info) %in% c("CAMPAGNE", "IDP", "DEP", "geometry")),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} provided don't have the expected names",
+      "i" = "Expected names are {.value {c('CAMPAGNE', 'IDP', 'DEP', 'geometry')}}"
+    ))
+  )
+  # assert there is data
+  assertthat::assert_that(
+    nrow(plots_info) > 0,
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must have at least one row"
+    ))
+  )
+
+  # loop around states
+  plots_years <- plots_info[["CAMPAGNE"]] |>
+    unique()
+  departments_names <- plots_info[["DEP"]] |>
+    unique() |>
+    as.character()
+
+  res <- plots_info |>
+    dplyr::group_by(DEP) |>
+    dplyr::group_split() |>
+    purrr::set_names(departments_names) |>
+    purrr::imap(
+      .f = \(department_data, department_name) {
+        .transform_plot_summary_ffi(department_data, plots_years, department_name)
+      }
+    ) |>
+    purrr::flatten()
+
+  return(res)
+}
+
 #' Create the path and system call for reading FFI csv's
 #'
 #' Create FFI csv file path with extra sugar
@@ -225,8 +278,6 @@ show_plots_from_ffi <- function(departments, folder, .call = rlang::caller_env()
 #'   \code{\link{.read_inventory_data}}.
 #'
 #' @noRd
-
-
 .build_ffi_file_path <- function(
     departments,
     type,
