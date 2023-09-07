@@ -530,7 +530,7 @@ test_that("fia_soils_loc_table_process works as intended", {
 test_that("fia_table_process works as intended", {
 
   ### TODO
-  # - test what happens when some tables are NAs (not found when builoding the input)
+  # - test what happens when some tables are NAs (not found when building the input)
   # -
   #
 
@@ -565,5 +565,45 @@ test_that("fia_table_process works as intended", {
     unique(test_res$COUNTYCD) %in%
       (purrr::map_depth(test_plots, .depth = 1, names) |> purrr::flatten_chr() |> unique())
   ))
+
+})
+
+# fia_to_tibble -------------------------------------------------------------------------------
+
+test_that("fia_to_tibble works as intended", {
+
+  # tests config
+  test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  future::plan(future::multisession, workers = 3)
+  withr::defer(future::plan(future::sequential))
+
+  # tests data
+  expected_names <- c(
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
+    "P3PANEL", "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
+    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
+    "tree", "understory", "regen", "subplot", "soils"
+  )
+  test_years <- c(2005, 2010)
+
+  # object
+  expect_s3_class(
+    test_res <- suppressWarnings(fia_to_tibble(
+      test_years, test_states, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names)
+  expect_identical(nrow(test_res), 60L)
+  expect_true(all(unique(test_res$STATEAB) %in% names(test_plots)))
+  expect_true(all(
+    unique(test_res$COUNTYCD) %in%
+      (purrr::map_depth(test_plots, .depth = 1, names) |> purrr::flatten_chr() |> unique())
+  ))
+  expect_true(all(unique(test_res$YEAR) %in% test_years))
 
 })
