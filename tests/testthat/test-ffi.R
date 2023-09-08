@@ -73,6 +73,20 @@ test_idp_def_ref <- .read_inventory_data(
   tibble::as_tibble() |>
   unique()
 
+test_cdref <- test_metadonnees |>
+  dplyr::filter(
+    UNITE == "CDREF13"
+  ) |>
+  dplyr::mutate(
+    lib_cdref =  stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
+  ) |>
+  dplyr::rename(
+    CD_REF = Code
+  )
+
+# growth_form_lignified_france comes from internal data
+test_growth_form_lignified_france <- growth_form_lignified_france
+
 # table functions -----------------------------------------------------------------------------
 test_that("ffi_plot_table_process works as intended", {
 
@@ -147,6 +161,53 @@ test_that("ffi_tree_table_process works as intended", {
       test_input$plots[1],
       test_year,
       test_espar_cdref,
+      test_idp_def_ref
+    ),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names, ignore.order = TRUE)
+  expect_true(nrow(test_res) > 0)
+
+  expect_length(unique(test_res$YEAR), 1)
+  expect_length(unique(test_res$PLOT), 1)
+  expect_length(unique(test_res$DEP), 1)
+
+  expect_identical(unique(test_res$YEAR), test_year |> as.integer())
+  expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.character())
+  expect_identical(unique(test_res$DEP) |> as.character(), test_input$department[1])
+
+  # errors
+  expect_warning(
+    test_error <- ffi_tree_table_process(
+      NA_character_,
+      test_input$plots[1],
+      test_year,
+      test_espar_cdref,
+      test_idp_def_ref
+    ),
+    "Some files"
+  )
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+})
+
+test_that("ffi_shrub_table_process works as intended", {
+
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE",
+    "SP_NAME", "COVER", "GrowthForm"
+  )
+
+  # object
+  expect_s3_class(
+    test_res <- ffi_shrub_table_process(
+      test_input$shrub_table[1],
+      test_input$plots[1],
+      test_year,
+      test_cdref,
+      test_growth_form_lignified_france,
       test_idp_def_ref
     ),
     "tbl"

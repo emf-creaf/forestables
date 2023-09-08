@@ -734,8 +734,10 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
 #' @describeIn tables_processing
 #' Process to gather needed data from shrub table
 
-ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_lignified_france, idp_dep_ref) {
-
+ffi_shrub_table_process <- function(
+  shrub_data, plot, year,
+  cd_ref, growth_form_lignified_france, idp_dep_ref
+) {
 
   # Debug
    # browser()
@@ -900,9 +902,6 @@ ffi_shrub_table_process <- function(shrub_data, plot, year,cd_ref, growth_form_l
 
 
   return(shrub_no_herbs)
-
-
-
 }
 
 

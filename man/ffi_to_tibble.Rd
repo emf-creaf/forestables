@@ -79,7 +79,7 @@ have the following structure:
    "01" = 1404119,
    "10" = 900863,
    "11" = c(1436508, 1410492))
-    
+
   )
   }
 \code{esus} package offers workflows to create this automatically, see
