@@ -25,7 +25,7 @@ test_plots <- list(
     "119" = 20129,
     "225" = 20168,
     "221" = 20084,
-    "88" = 20012
+    "88" = 20012 # this doesn't exist, so NAs in lat lon
   ),
   "OH" = list(
     "41" = 3878,
@@ -36,9 +36,9 @@ test_plots <- list(
   ),
   "OR" = list(
     "59" = c(76413, 76413),
-    "17" = 63905,
-    "31" = 95724,
-    "71" = 99371
+    "17" = 63905, # this doesn't exist, so NAs in lat lon
+    "31" = 95724, # this doesn't exist, so NAs in lat lon
+    "71" = 99371 # this doesn't exist, so NAs in lat lon
   ),
   "tururu" = list(
     "1" = 2500
@@ -89,6 +89,7 @@ test_that("fia_plot_table_process works as intended", {
   expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
 
   # errors
+  # No table
   expect_warning(
     test_error <- fia_plot_table_process(
       NA_character_,
@@ -102,6 +103,21 @@ test_that("fia_plot_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  # expect_warning(
+  #   test_no_plot_error <- fia_plot_table_process(
+  #     test_input$plot_table[1],
+  #     test_input$survey_table[1],
+  #     test_input$cond_table[1],
+  #     "tururu",
+  #     test_input$county[1],
+  #     test_year
+  #   ),
+  #   "Some plots"
+  # )
+  # expect_s3_class(test_no_plot_error, "tbl")
+  # expect_true(nrow(test_no_plot_error) < 1)
 })
 
 test_that("fia_tree_table_process works as intended", {
@@ -559,12 +575,19 @@ test_that("fia_table_process works as intended", {
 
   # data integrity
   expect_named(test_res, expected_names)
-  expect_identical(nrow(test_res), 30L)
   expect_true(all(unique(test_res$STATEAB) %in% names(test_plots)))
-  expect_true(all(
-    unique(test_res$COUNTYCD) %in%
-      (purrr::map_depth(test_plots, .depth = 1, names) |> purrr::flatten_chr() |> unique())
-  ))
+  # this test is wrong:
+  # expect_true(all(
+  #   unique(test_res$COUNTYCD) %in%
+  #     (purrr::map_depth(test_plots, .depth = 1, names) |> purrr::flatten_chr() |> unique())
+  # ))
+
+  ### missing tables/plots
+  # tururu state shouldn't appear
+  # inexistent plots (MO-88-20012, OR-17-63905, OR-31-95724, OR-71-99371) shouldn't
+  # be present, so 26 of 31 elements in filter list
+  expect_false("tururu" %in% unique(test_res$STATEAB))
+  expect_identical(nrow(test_res), 26L)
 
 })
 
@@ -598,7 +621,8 @@ test_that("fia_to_tibble works as intended", {
 
   # data integrity
   expect_named(test_res, expected_names)
-  expect_identical(nrow(test_res), 60L)
+  expect_false("tururu" %in% unique(test_res$STATEAB))
+  expect_identical(nrow(test_res), 52L) # four plots dont exist, so 4x2=8 rows less
   expect_true(all(unique(test_res$STATEAB) %in% names(test_plots)))
   expect_true(all(
     unique(test_res$COUNTYCD) %in%

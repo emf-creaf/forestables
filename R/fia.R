@@ -169,6 +169,8 @@ fia_tables_process <- function(
 
   # Create input df for year. We need to remove the NAs due to missing files
   input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose) |>
+    # filter file name NAs due to missing files (bad states or bad paths)
+    # (missing plots are filtered at the end of the process, not ideal but ok)
     dplyr::filter(!is.na(plot_table))
 
   # Get needed ancillary data
@@ -280,7 +282,10 @@ fia_tables_process <- function(
         )
     }
   ) |>
-    purrr::list_rbind()
+    purrr::list_rbind() |>
+    # filtering the missing plots. This is done based on the fact plot table functions returns NAs
+    # for all vars, including coords, when the plot is not found
+    dplyr::filter(!(is.na(LAT) & is.na(LAT_ORIGINAL) & is.na(LON) & is.na(LON_ORIGINAL)))
 }
 
 #' Data tables process
