@@ -55,52 +55,6 @@ test_input <-
   .build_fia_input_with(test_year, test_states, test_plots[-7], test_folder, .verbose = FALSE)
 
 # table functions -----------------------------------------------------------------------------
-test_that("fia_tree_table_process works as intended", {
-
-  expected_names <- c(
-    "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "TREE",
-    "STATUS", "DIA", "HT", "SP_NAME", "SP_CODE", "DENSITY"
-  )
-
-  # object
-  expect_s3_class(
-    test_res <- fia_tree_table_process(
-      test_input$tree_table[1],
-      test_input$plots[1],
-      test_input$county[1],
-      test_year,
-      test_ref_species
-    ),
-    "tbl"
-  )
-
-  # data integrity
-  expect_named(test_res, expected_names, ignore.order = TRUE)
-  expect_true(nrow(test_res) > 0)
-
-  expect_length(unique(test_res$YEAR), 1)
-  expect_length(unique(test_res$PLOT), 1)
-  expect_length(unique(test_res$COUNTYCD), 1)
-
-  expect_identical(unique(test_res$YEAR), test_year)
-  expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.integer())
-  expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
-
-  # errors
-  expect_warning(
-    test_error <- fia_tree_table_process(
-      NA_character_,
-      test_input$plots[1],
-      test_input$county[1],
-      test_year,
-      test_ref_species
-    ),
-    "Some files"
-  )
-  expect_s3_class(test_error, "tbl")
-  expect_true(nrow(test_error) < 1)
-})
-
 test_that("fia_plot_table_process works as intended", {
 
   expected_names <- c(
@@ -143,6 +97,52 @@ test_that("fia_plot_table_process works as intended", {
       test_input$plots[1],
       test_input$county[1],
       test_year
+    ),
+    "Some files"
+  )
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+})
+
+test_that("fia_tree_table_process works as intended", {
+
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "TREE",
+    "STATUS", "DIA", "HT", "SP_NAME", "SP_CODE", "DENSITY"
+  )
+
+  # object
+  expect_s3_class(
+    test_res <- fia_tree_table_process(
+      test_input$tree_table[1],
+      test_input$plots[1],
+      test_input$county[1],
+      test_year,
+      test_ref_species
+    ),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names, ignore.order = TRUE)
+  expect_true(nrow(test_res) > 0)
+
+  expect_length(unique(test_res$YEAR), 1)
+  expect_length(unique(test_res$PLOT), 1)
+  expect_length(unique(test_res$COUNTYCD), 1)
+
+  expect_identical(unique(test_res$YEAR), test_year)
+  expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.integer())
+  expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
+
+  # errors
+  expect_warning(
+    test_error <- fia_tree_table_process(
+      NA_character_,
+      test_input$plots[1],
+      test_input$county[1],
+      test_year,
+      test_ref_species
     ),
     "Some files"
   )

@@ -30,7 +30,6 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
 
   test_year <- 2019
   test_departments <- names(test_plots)
-  # test_folder <- "D:/international_inventories_emf/data/export_dataifn_2005_2021/"
   test_folder <- Sys.getenv("ffi_path")
   expected_names <- c(
     "department",
