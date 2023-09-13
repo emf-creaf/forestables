@@ -164,24 +164,19 @@ ffi_to_tibble <- function(
 #' @describeIn ffi_to_tibble Process one year
 #'
 ffi_tables_process <- function(
-    departments,year, filter_list, folder, .parallel_options, .verbose, ...
+    departments, year, filter_list, folder,
+    .parallel_options, .verbose, ...
 ) {
 
   # debug
-
-
-   # browser()
-
+  # browser()
 
   # Create input df for year
-
   input_df <- .build_ffi_input_with(departments, year,  filter_list, folder, .verbose)
 
   # Get needed ancillary data (changed for excel)
-
-
   espar_cdref <- .read_inventory_data(
-    fs::path(folder, "espar-cdref13.CSV"),
+    fs::path(folder, "espar-cdref13.csv"),
     colClasses = list(character = c( "// espar")),
     header = TRUE
   ) |>
@@ -249,36 +244,19 @@ ffi_tables_process <- function(
     tibble::as_tibble() |>
     unique()
 
-  # furrr::future_pmap(
-
-     purrr::pmap(
-
+  # loop for each row of the input_df
+  furrr::future_pmap(
+  # purrr::pmap(
     .progress = .verbose,
     .l = input_df,
-
-    .f = \(department,
-           plots,
-           tree_table,
-           plot_table,
-           shrub_table,
-           soils_table
-    ) {
-
+    .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table) {
       # browser()
-
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
-
-
-
       tree <- ffi_tree_table_process(tree_table, plots, year,espar_cdref, idp_dep_ref)
-
       shrub <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref)
-
       soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
-      #
 
-      # browser()
-      #we select herbs
+      # we select herbs
       herbs <- plot_info |>
         dplyr::select(
           ID_UNIQUE_PLOT,
@@ -288,12 +266,8 @@ ffi_tables_process <- function(
           YEAR,
           HERB
         )
-      #
-      #
-      # #we create understory with herbs and shrub
-
+      # we create understory with herbs and shrub
       understory <- plot_info |>
-
         dplyr::select(
           ID_UNIQUE_PLOT,
           PLOT,
@@ -303,27 +277,18 @@ ffi_tables_process <- function(
           LIGN2,
           YEAR
         ) |>
-
         dplyr::mutate(
           shrub = list(shrub),
           herbs = list(herbs)
         )
-      #
-      #
-
       # we put together all tables in a data frame
-
-
       plot_info <- plot_info |>
-
         dplyr::mutate(
           crs = 2154,
           tree = list(tree),
-           understory = list(understory),
-           soil = list(soil)
-
-          ) |>
-
+          understory = list(understory),
+          soil = list(soil)
+        ) |>
         dplyr::select(
           ID_UNIQUE_PLOT,
           PLOT,
@@ -346,9 +311,7 @@ ffi_tables_process <- function(
           understory,
           soil
         ) |>
-
-        # #HARMONIZATION OF NAMES
-
+        # HARMONIZATION OF NAMES
         dplyr::rename(
           ASPECT = EXPO,
           ASPECT_ORIGINAL = EXPO_ORIGINAL,
@@ -356,12 +319,12 @@ ffi_tables_process <- function(
           SLOPE_ORIGINAL = PENT2_ORIGINAL,
           soils = soil
         )
-
     }
-
-   ) |>
-
-     purrr::list_rbind()
+  ) |>
+    purrr::list_rbind() |>
+    # filtering the missing plots. This is done based on the fact plot table functions returns NAs
+    # for all vars, including coords, when the plot is not found
+    dplyr::filter(!(is.na(YL) & is.na(YL_ORIGINAL) & is.na(XL) & is.na(XL_ORIGINAL)))
 }
 
 
@@ -410,7 +373,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     return(dplyr::tibble())
   }
 
-      # browser()
+  # browser()
 
   plot_processed <- .read_inventory_data(
     plot_data,
@@ -473,7 +436,7 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     #there might be more than 1 record
     dplyr::distinct() |>
     .extract_ffi_metadata(
-      c("ID_UNIQUE_PLOT","PLOT","DEP","DEP_NAME","VISITE","COORD_SYS","XL","YL"),
+      c("ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "VISITE", "COORD_SYS", "XL", "YL"),
       plot,
       year,
       .soil_mode = TRUE
@@ -534,10 +497,9 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     tibble::as_tibble()
 
 
-  plot_info <- dplyr::bind_cols(
+  plot_info <- dplyr::left_join(
     plot_processed,
-    eco_filtered_data,
-    by = "plot"
+    eco_filtered_data
   ) |>
     dplyr::mutate(
       PLOT  = plot,

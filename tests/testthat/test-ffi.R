@@ -35,6 +35,7 @@ test_input <- .build_ffi_input_with(
   test_departments, test_year, test_plots, test_folder,
   .verbose = FALSE
 )
+
 test_metadonnees <- suppressWarnings(
   readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
     dplyr::rename(UNITE = "// Unité") |>
@@ -396,4 +397,47 @@ test_that("ffi_soil_table_process works as intended", {
     "tbl"
   )
   expect_true(nrow(test_error) < 1)
+})
+
+# table process -------------------------------------------------------------------------------
+
+test_that("ffi_tables_process works as intended", {
+
+  ### TODO
+  # - test what happens when some tables are NAs (not found when building the input)
+  # -
+  #
+
+  # tests config
+  test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  future::plan(future::multisession, workers = 3)
+  withr::defer(future::plan(future::sequential))
+
+  # tests data
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+    "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
+    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "soils"
+  )
+
+  # object
+  expect_s3_class(
+    test_res <- suppressWarnings(ffi_tables_process(
+      test_departments, test_year, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names)
+  expect_true(all(unique(test_res$DEP) %in% names(test_plots)))
+
+  ### missing tables/plots
+  # tururu state shouldn't appear
+  # inexistent plots (91-0) shouldn't
+  # be present, so 31 of 33 elements in filter list
+  expect_false("tururu" %in% unique(test_res$DEP))
+  expect_identical(nrow(test_res), 31L)
 })
