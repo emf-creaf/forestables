@@ -24,7 +24,7 @@ test_plots <- list(
   "86" = c(957495,921133),
   "87" = c(975666,979897),
   "89" = 1433956,
-  "91" = 1406115,
+  "91" = c(1406115, 0),
   "tururu" = 3555
 )
 
@@ -35,9 +35,11 @@ test_input <- .build_ffi_input_with(
   test_departments, test_year, test_plots, test_folder,
   .verbose = FALSE
 )
-test_metadonnees <- readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
-  dplyr::rename(UNITE = "// Unité") |>
-  dplyr::as_tibble()
+test_metadonnees <- suppressWarnings(
+  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
+    dplyr::rename(UNITE = "// Unité") |>
+    dplyr::as_tibble()
+)
 
 test_espar_cdref <- .read_inventory_data(
   fs::path(test_folder, "espar-cdref13.csv"),
@@ -145,6 +147,42 @@ test_that("ffi_plot_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+  # error in department name, gives a tibble with NAs in important vars
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_plot_table_process(
+      test_input$plot_table[33],
+      test_input$soils_table[33],
+      test_input$plots[33],
+      test_year,
+      test_metadonnees
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) == 1L)
+  expect_true(all(
+    is.na(test_error[["XL"]]),
+    is.na(test_error[["XL_ORIGINAL"]]),
+    is.na(test_error[["YL"]]),
+    is.na(test_error[["YL_ORIGINAL"]])
+  ))
+  # error in plot name, gives a tibble with NAs in important vars
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_plot_table_process(
+      test_input$plot_table[32],
+      test_input$soils_table[32],
+      test_input$plots[32],
+      test_year,
+      test_metadonnees
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) == 1L)
+  expect_true(all(
+    is.na(test_error[["XL"]]),
+    is.na(test_error[["XL_ORIGINAL"]]),
+    is.na(test_error[["YL"]]),
+    is.na(test_error[["YL_ORIGINAL"]])
+  ))
 })
 
 test_that("ffi_tree_table_process works as intended", {
@@ -191,6 +229,30 @@ test_that("ffi_tree_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+  # error in department name, gives an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_tree_table_process(
+      test_input$tree_table[33],
+      test_input$plots[33],
+      test_year,
+      test_espar_cdref,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) < 1)
+  # error in plot name, should return an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_tree_table_process(
+      test_input$tree_table[32],
+      test_input$plots[32],
+      test_year,
+      test_espar_cdref,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) < 1)
 })
 
 test_that("ffi_shrub_table_process works as intended", {
@@ -227,15 +289,111 @@ test_that("ffi_shrub_table_process works as intended", {
 
   # errors
   expect_warning(
-    test_error <- ffi_tree_table_process(
+    test_error <- ffi_shrub_table_process(
       NA_character_,
       test_input$plots[1],
       test_year,
-      test_espar_cdref,
+      test_cdref,
+      test_growth_form_lignified_france,
       test_idp_def_ref
     ),
     "Some files"
   )
   expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+  # error in department name, gives an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_shrub_table_process(
+      test_input$shrub_table[33],
+      test_input$plots[33],
+      test_year,
+      test_cdref,
+      test_growth_form_lignified_france,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) < 1L)
+  # error in plot name, should return an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_shrub_table_process(
+      test_input$shrub_table[32],
+      test_input$plots[32],
+      test_year,
+      test_cdref,
+      test_growth_form_lignified_france,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) < 1)
+})
+
+test_that("ffi_soil_table_process works as intended", {
+
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "DATEECO", "soil_field"
+  )
+
+  # object
+  expect_s3_class(
+    test_res <- ffi_soil_table_process(
+      test_input$soils_table[1],
+      test_input$plots[1],
+      test_year,
+      test_metadonnees,
+      test_idp_def_ref
+    ),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names, ignore.order = TRUE)
+  expect_true(nrow(test_res) > 0)
+
+  expect_length(unique(test_res$YEAR), 1)
+  expect_length(unique(test_res$PLOT), 1)
+  expect_length(unique(test_res$DEP), 1)
+
+  expect_identical(unique(test_res$YEAR), test_year |> as.integer())
+  expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.character())
+  expect_identical(unique(test_res$DEP) |> as.character(), test_input$department[1])
+
+  # errors
+  expect_warning(
+    test_error <- ffi_soil_table_process(
+      NA_character_,
+      test_input$plots[1],
+      test_year,
+      test_metadonnees,
+      test_idp_def_ref
+    ),
+    "Some files"
+  )
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+  # error in department name, gives an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_soil_table_process(
+      test_input$soils_table[33],
+      test_input$plots[33],
+      test_year,
+      test_metadonnees,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_error) < 1L)
+  # error in plot name, should return an empty tibble
+  expect_s3_class(
+    test_error <- suppressWarnings(ffi_soil_table_process(
+      test_input$soils_table[32],
+      test_input$plots[32],
+      test_year,
+      test_metadonnees,
+      test_idp_def_ref
+    )),
+    "tbl"
+  )
   expect_true(nrow(test_error) < 1)
 })

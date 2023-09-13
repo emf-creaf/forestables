@@ -24,7 +24,7 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "86" = c(957495,921133),
     "87" = c(975666,979897),
     "89" = 1433956,
-    "91" = 1406115,
+    "91" = c(1406115, 0),
     "tururu" = 3555
   )
 
@@ -46,21 +46,21 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "file doesn't exist"
    )
   expect_message(
-     .build_ffi_input_with(test_departments, test_year,  test_plots[-26], test_folder, .verbose = TRUE),
+     .build_ffi_input_with(test_departments, test_year,  test_plots, test_folder, .verbose = TRUE),
     "Getting ready to retrieve"
   )
   expect_no_message(
-     .build_ffi_input_with(test_departments, test_year , test_plots[-26], test_folder, .verbose = FALSE)
+    test_res <-
+      .build_ffi_input_with(test_departments, test_year , test_plots, test_folder, .verbose = FALSE)
   )
 
   ## result tests
-  test_res <- .build_ffi_input_with(test_departments, test_year, test_plots, test_folder, .verbose = FALSE)
   # we expect a tibble
   expect_s3_class(test_res, "tbl")
   # with the correct names
   expect_named(test_res, expected_names)
   # and for 31 plots as per the filter list we create
-  expect_true(nrow(test_res) == 32L)
+  expect_true(nrow(test_res) == length(test_plots |> purrr::flatten()))
   # and for the correct counties
   expect_identical(
     unique(test_res[["department"]]) |> sort(),
@@ -85,9 +85,13 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     as.character(test_res[["plot_table"]][1]),
     glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {test_folder}PLACETTE.csv')
   )
-  # an incorrect one, that will be tested later when loading the data
+  # incorrect ones, that will be tested later when loading the data
   expect_identical(
     test_res[["plot_table"]][32],
+    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})0;((?:[^;]+;){{2}})91" {test_folder}PLACETTE.csv')
+  )
+  expect_identical(
+    test_res[["plot_table"]][33],
     glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv')
   )
 
