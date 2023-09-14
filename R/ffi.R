@@ -198,18 +198,21 @@ ffi_tables_process <- function(
     )) |>
     dplyr::arrange(ESPAR)
 
-  #here i leave this for the moment as it gives an error in the lecture
-
-  # metadonnees <- esus:::.read_inventory_data(
-  #   fs::path(folder, "metadonnees.CSV"),
-  #   skip = 413,
-  #     col.names = c("UNITE","Code", "Libellé", "Définition", "NA"),
-  #   )
+  # here i leave this for the moment as it gives an error in the lecture
+  # This is due to an error in data.table::fread (https://github.com/Rdatatable/data.table/issues/5378)
+  # For the moment, we go with readr until is fixed
+  # metadonnees <- .read_inventory_data(
+  #   fs::path(folder, "metadonnees.csv"),
+  #   skip = 413, fill = 10
+  # )
   #   # dplyr::as_tibble() |>
   #   # dplyr::rename(
   #   #   UNITE = "// Unité"
   #   # )
-  metadonnees <- readr::read_delim(file = fs::path(folder, "metadonnees.csv"), skip = 412) |>
+  metadonnees <- suppressWarnings(readr::read_delim(
+    file = fs::path(folder, "metadonnees.csv"), skip = 412,
+    show_col_types = FALSE
+  )) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 
