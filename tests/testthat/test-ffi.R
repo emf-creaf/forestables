@@ -441,3 +441,38 @@ test_that("ffi_tables_process works as intended", {
   expect_false("tururu" %in% unique(test_res$DEP))
   expect_identical(nrow(test_res), 31L)
 })
+
+# ffi_to_tibble -------------------------------------------------------------------------------
+
+test_that("ffi_to_tibble works as intended", {
+
+  # tests config
+  test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  future::plan(future::multisession, workers = 3)
+  withr::defer(future::plan(future::sequential))
+
+  # tests data
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+    "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
+    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "soils"
+  )
+  test_years <- c(2005, 2010)
+
+  # object
+  expect_s3_class(
+    test_res <- suppressWarnings(ffi_to_tibble(
+      test_departments, test_years, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_res, expected_names)
+  expect_false("tururu" %in% unique(test_res$DEP))
+  expect_identical(nrow(test_res), 62L) # two plots dont exist, so 2x2=4 rows less
+  expect_true(all(unique(test_res$DEP) %in% names(test_plots)))
+  expect_true(all(unique(test_res$YEAR) %in% test_years))
+})

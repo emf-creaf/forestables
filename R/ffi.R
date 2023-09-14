@@ -66,7 +66,7 @@ ffi_to_tibble <- function(
   ## Assertions and checks ##
   # departments
   assertthat::assert_that(
-    is.numeric(departments), length(departments) > 0,
+    is.character(departments), length(departments) > 0,
     msg = cli::cli_abort("departments must be a character vector with at least one department code")
   )
   ## TODO
@@ -498,8 +498,8 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
 
 
   plot_info <- dplyr::left_join(
-    plot_processed,
-    eco_filtered_data
+    plot_processed, eco_filtered_data,
+    by = c("PLOT", "PLOT_ORIGINAL", "YEAR")
   ) |>
     dplyr::mutate(
       PLOT  = plot,
