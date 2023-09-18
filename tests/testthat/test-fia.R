@@ -646,7 +646,7 @@ test_that("fia_table_process works as intended", {
   expect_true(
     (test_res_missing_files |>
        dplyr::filter(STATEAB == "OR") |>
-       dplyr::pull(seedling) |>
+       dplyr::pull(regen) |>
        purrr::list_rbind() |>
        nrow()) < 1
   )
@@ -655,12 +655,35 @@ test_that("fia_table_process works as intended", {
        dplyr::filter(STATEAB == "AL") |>
        dplyr::pull(soils) |>
        purrr::list_rbind() |>
+       dplyr::pull(soils_lab) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "AL") |>
+       dplyr::pull(soils) |>
+       purrr::list_rbind() |>
+       dplyr::pull(soils_loc) |>
+       purrr::list_rbind() |>
        nrow()) < 1
   )
   expect_true(
     (test_res_missing_files |>
        dplyr::filter(STATEAB == "MO") |>
        dplyr::pull(understory) |>
+       purrr::list_rbind() |>
+       dplyr::pull(shrub) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "MO") |>
+       dplyr::pull(understory) |>
+       purrr::list_rbind() |>
+       dplyr::pull(herbs) |>
        purrr::list_rbind() |>
        nrow()) < 1
   )

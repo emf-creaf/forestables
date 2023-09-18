@@ -194,6 +194,13 @@ fia_tables_process <- function(
         plot_table_file, survey_table_file, cond_table_file, plots, county, year
       )
 
+      # if there is no info for the plot (missing files) there is no need to continue,
+      # so we check and return an empty tibble which is ignored after the loop when rbinding
+      # the results
+      if (nrow(plot_info) < 1) {
+        return(tibble::tibble())
+      }
+
       P3PANEL <- plot_info[["P3PANEL"]]
       state <- plot_info[["STATECD"]]
 
