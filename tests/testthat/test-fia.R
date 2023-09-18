@@ -589,6 +589,61 @@ test_that("fia_table_process works as intended", {
   expect_false("tururu" %in% unique(test_res$STATEAB))
   expect_identical(nrow(test_res), 26L)
 
+  ### missing random files
+  # This is done with files in a folder for testing that lacks some files:
+  # MN -> No TREE, we expect results, but all the tree tibbles for MN are empty tibbles
+  # CA -> No COND, we expect no plots from CA as all PLOT info is missing
+  # OR -> No SEEDLING, we expect results, but all the seedling tibbles for MN are empty tibbles
+  # AL -> No SOIL (both), we expect results, but all the soil tibbles for AL are empty tibbles
+  # MO -> No VEG_SUBPLOT, we expect_results, but understory should be empty tibbles for MO
+  # OH -> No SUBPLOT, we expect_results, but subplot should be empty tibbles for OH
+  test_folder <- fs::path(Sys.getenv("fia_path"), "missing_files_test")
+  expect_s3_class(
+    test_res_missing_files <- suppressWarnings(fia_tables_process(
+      test_year, test_states, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "tbl"
+  )
+
+  expect_true(
+    (test_res_missing_files |>
+      dplyr::filter(STATEAB == "MN") |>
+      dplyr::pull(tree) |>
+      purrr::list_rbind() |>
+      nrow()) < 1
+  )
+  expect_false(all(c("tururu", "CA") %in% unique(test_res_missing_files$STATEAB)))
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "OR") |>
+       dplyr::pull(seedling) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "AL") |>
+       dplyr::pull(soils) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "MO") |>
+       dplyr::pull(understory) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+  expect_true(
+    (test_res_missing_files |>
+       dplyr::filter(STATEAB == "OH") |>
+       dplyr::pull(subplot) |>
+       purrr::list_rbind() |>
+       nrow()) < 1
+  )
+
 })
 
 # fia_to_tibble -------------------------------------------------------------------------------
