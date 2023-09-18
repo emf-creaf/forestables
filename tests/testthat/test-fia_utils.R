@@ -146,7 +146,7 @@ test_that(".get_plots_from_state works as intended", {
 
   ## wrong state
   expect_error(
-    .get_plots_from_state(test_states[4], test_folder),
+    suppressWarnings(.get_plots_from_state(test_states[4], test_folder)),
     "aborting"
   )
 })
