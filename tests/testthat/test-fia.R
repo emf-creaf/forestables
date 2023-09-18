@@ -89,12 +89,40 @@ test_that("fia_plot_table_process works as intended", {
   expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
 
   # errors
-  # No table
+  # No tables
   expect_warning(
     test_error <- fia_plot_table_process(
       NA_character_,
       test_input$survey_table[1],
       test_input$cond_table[1],
+      test_input$plots[1],
+      test_input$county[1],
+      test_year
+    ),
+    "Some files"
+  )
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+
+  expect_warning(
+    test_error <- fia_plot_table_process(
+      test_input$plot_table[1],
+      NA_character_,
+      test_input$cond_table[1],
+      test_input$plots[1],
+      test_input$county[1],
+      test_year
+    ),
+    "Some files"
+  )
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+
+  expect_warning(
+    test_error <- fia_plot_table_process(
+      test_input$plot_table[1],
+      test_input$survey_table[1],
+      NA_character_,
       test_input$plots[1],
       test_input$county[1],
       test_year
