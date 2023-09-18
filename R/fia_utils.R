@@ -18,11 +18,30 @@
 
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
+
+    # create safe versions of .get_plots_from_state and .transform_plot_summary
+    get_plots_safe <- purrr::safely(
+      .get_plots_from_state,
+      otherwise = tibble::tibble(
+        "INVYR" = vector(),
+        "STATECD" = vector(),
+        "COUNTYCD" = vector(),
+        "PLOT" = vector(),
+        "STATEAB" = vector(),
+        "geometry" = vector()
+      )
+    )
+    transform_safe <- purrr::safely(
+      .transform_plot_summary,
+      otherwise = list()
+    )
+
     filter_list <- purrr::map(
       states,
       .f = \(state) {
-        .get_plots_from_state(state, folder, .call = .call) |>
-          .transform_plot_summary(year, state)
+        res <- get_plots_safe(state, folder, .call = .call)[["result"]] |>
+          transform_safe(year, state)
+        res[["result"]]
       }
     ) |>
       purrr::flatten()

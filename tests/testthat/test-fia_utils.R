@@ -108,14 +108,20 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
     test_res[["plot_table"]][31], NA_character_
   )
 
-
-  ### TODO
-  # - tests for filter list NULL
+  ## Test filter_list = NULL
+  expect_s3_class(
+    test_res_filter_list <- suppressWarnings(
+      .build_fia_input_with(test_year, test_states, NULL, test_folder, .verbose = FALSE)
+    ),
+    "tbl"
+  )
+  expect_false("tururu" %in% (test_res_filter_list$state |> unique()))
+  expect_true(all((test_res_filter_list$state |> unique()) %in% test_states))
 })
 
 test_that(".get_plots_from_state works as intended", {
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "WA", "CA")
+  test_states <- c("OR", "WA", "CA", "tururu")
 
   # error
   expect_error(
@@ -137,6 +143,12 @@ test_that(".get_plots_from_state works as intended", {
   expect_identical(unique(test_res_ok$STATEAB), "OR")
   expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATECD), 6L)
   expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATEAB), "CA")
+
+  ## wrong state
+  expect_error(
+    .get_plots_from_state(test_states[4], test_folder),
+    "aborting"
+  )
 })
 
 
@@ -226,6 +238,21 @@ test_that(".transform_plot_summary works as intended", {
       unique() |>
       as.character(),
     ignore.order = TRUE
+  )
+
+  ## error
+  expect_error(
+    .transform_plot_summary(
+      tibble::tibble(
+        "INVYR" = vector(),
+        "STATECD" = vector(),
+        "COUNTYCD" = vector(),
+        "PLOT" = vector(),
+        "STATEAB" = vector(),
+        "geometry" = vector()
+      ),
+      test_years[1], test_states[1]
+    )
   )
 })
 
