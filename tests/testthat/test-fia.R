@@ -133,19 +133,25 @@ test_that("fia_plot_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  # expect_warning(
-  #   test_no_plot_error <- fia_plot_table_process(
-  #     test_input$plot_table[1],
-  #     test_input$survey_table[1],
-  #     test_input$cond_table[1],
-  #     "tururu",
-  #     test_input$county[1],
-  #     test_year
-  #   ),
-  #   "Some plots"
-  # )
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_plot_table_process(
+      test_input$plot_table[30],
+      test_input$survey_table[30],
+      test_input$cond_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year
+    )),
+    "tbl"
+  )
   # expect_s3_class(test_no_plot_error, "tbl")
-  # expect_true(nrow(test_no_plot_error) < 1)
+  expect_true(nrow(test_no_plot_error) == 1L)
+  expect_true(all(
+    is.na(test_no_plot_error[["LON"]]),
+    is.na(test_no_plot_error[["LON_ORIGINAL"]]),
+    is.na(test_no_plot_error[["LAT"]]),
+    is.na(test_no_plot_error[["LAT_ORIGINAL"]])
+  ))
 })
 
 test_that("fia_tree_table_process works as intended", {
@@ -192,6 +198,20 @@ test_that("fia_tree_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_tree_table_process(
+      test_input$tree_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year,
+      test_ref_species
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 test_that("fia_p3_understory_table_process works as intended", {
@@ -281,6 +301,20 @@ test_that("fia_p3_understory_table_process works as intended", {
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
 
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_p3_understory_table_process(
+      test_input$p3_understory_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year,
+      "Shrub",
+      test_ref_plant_dictionary
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 
   ### TODO
   # tests for the combination warning
@@ -376,6 +410,21 @@ test_that("fia_p2_understory_table_process works as intended", {
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
 
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_p2_understory_table_process(
+      test_input$p2_veg_subplot_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year,
+      "SH",
+      test_ref_plant_dictionary
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
+
 
   ### TODO
   # tests for the combination warning
@@ -425,6 +474,20 @@ test_that("fia_seedling_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_seedling_table_process(
+      test_input$seedling_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year,
+      test_ref_species
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 test_that("fia_subplot_table_process works as intended", {
@@ -469,6 +532,19 @@ test_that("fia_subplot_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_subplot_table_process(
+      test_input$subplot_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_year
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 test_that("fia_soils_lab_table_process works as intended", {
@@ -517,6 +593,20 @@ test_that("fia_soils_lab_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_soils_lab_table_process(
+      test_input$soils_lab_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_input$state[30],
+      test_year
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 test_that("fia_soils_loc_table_process works as intended", {
@@ -567,6 +657,21 @@ test_that("fia_soils_loc_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
+
+  # No plot
+  expect_warning(
+    test_no_plot_error <- fia_soils_loc_table_process(
+      test_input$soils_loc_table[30],
+      test_input$veg_subplot_table[30],
+      test_input$plots[30],
+      test_input$county[30],
+      test_input$state[30],
+      test_year
+    ),
+    "combination of plot, county and year"
+  )
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 # table process -------------------------------------------------------------------------------
@@ -735,5 +840,88 @@ test_that("fia_to_tibble works as intended", {
       (purrr::map_depth(test_plots, .depth = 1, names) |> purrr::flatten_chr() |> unique())
   ))
   expect_true(all(unique(test_res$YEAR) %in% test_years))
+
+  ### test all assertions done in fia_to_tibble
+  # states
+  expect_error(
+    fia_to_tibble(
+      test_years, 1:7, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "states must be a character vector with at least one"
+  )
+  expect_error(
+    fia_to_tibble(
+      test_years, character(), test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "states must be a character vector with at least one"
+  )
+  # years
+  expect_error(
+    fia_to_tibble(
+      as.character(test_years), test_states, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "years must be a numeric vector with at least one"
+  )
+  expect_error(
+    fia_to_tibble(
+      numeric(), test_states, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "years must be a numeric vector with at least one"
+  )
+  # folder
+  expect_error(
+    fia_to_tibble(
+      test_years, test_states, test_plots, "nonexistentfolder",
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "Folder especified"
+  )
+  # filter list (TODO as testng interactive commands is tricky)
+  # parallel options
+  expect_error(
+    fia_to_tibble(
+      test_years, test_states, test_plots, test_folder,
+      .parallel_options = list(scheduling = 2L, stdout = TRUE),
+      .verbose = FALSE
+    ),
+    ".parallel_options"
+  )
+  # verbose
+  expect_error(
+    fia_to_tibble(
+      test_years, test_states, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = "FALSE"
+    ),
+    ".verbose"
+  )
+  # ancillary data (tested just by providing an existing wrong folder)
+  expect_error(
+    fia_to_tibble(
+      test_years, test_states, test_plots, ".",
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "must be present"
+  )
+
+  # what to expect if states or filter list are all wrong
+  expect_error(
+    suppressWarnings(fia_to_tibble(
+      test_years, test_states[7], test_plots[7], test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "Ooops!"
+  )
 
 })

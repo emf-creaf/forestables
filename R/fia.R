@@ -66,10 +66,10 @@ fia_to_tibble <- function(
   # states
   assertthat::assert_that(
     is.character(states), length(states) > 0,
-    msg = cli::cli_abort("years must be a character vector with at least one state code")
+    msg = cli::cli_abort("states must be a character vector with at least one state code")
   )
   ## TODO
-  # check all states are valid
+  # check all states are valid (create a dictionary of states)
 
   # years
   assertthat::assert_that(
@@ -77,7 +77,7 @@ fia_to_tibble <- function(
     msg = cli::cli_abort("years must be a numeric vector with at least one year")
   )
   ## TODO
-  # check years are valid
+  # check years are valid (create a dictionary of years)
 
   # folder
   assertthat::assert_that(
@@ -106,8 +106,6 @@ fia_to_tibble <- function(
   # Check counties and plots??
 
   ## TODO
-  # Check ancillary data is present!!
-
   # parallel options
   assertthat::assert_that(
     inherits(.parallel_options, "furrr_options"),
@@ -177,7 +175,7 @@ fia_tables_process <- function(
   ref_species <- .read_inventory_data(fs::path(folder, "REF_SPECIES.csv")) |> dplyr::as_tibble()
   ref_plant_dictionary <- .read_inventory_data(fs::path(folder, "REF_PLANT_DICTIONARY.csv")) |> dplyr::as_tibble()
 
-  furrr::future_pmap(
+  temp_res <- furrr::future_pmap(
   # purrr::pmap(
     .progress = .verbose,
     .l = input_df,
@@ -289,7 +287,15 @@ fia_tables_process <- function(
         )
     }
   ) |>
-    purrr::list_rbind() |>
+    purrr::list_rbind()
+
+  # something went wrong (bad counties and plots, wrong filter list...)
+  if (nrow(temp_res) < 1) {
+    cli::cli_abort("Ooops! Something went wrong, exiting...")
+  }
+
+  # return the res, but filtering first
+  temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
     dplyr::filter(!(is.na(LAT) & is.na(LAT_ORIGINAL) & is.na(LON) & is.na(LON_ORIGINAL)))
