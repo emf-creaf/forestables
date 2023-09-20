@@ -59,7 +59,8 @@ test_that("fia_plot_table_process works as intended", {
 
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
+    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
   )
 
@@ -679,9 +680,7 @@ test_that("fia_soils_loc_table_process works as intended", {
 test_that("fia_table_process works as intended", {
 
   ### TODO
-  # - test what happens when some tables are NAs (not found when building the input)
-  # -
-  #
+  # - test new understory logic
 
   # tests config
   test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
@@ -691,7 +690,8 @@ test_that("fia_table_process works as intended", {
   # tests data
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
+    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
     "tree", "understory", "regen", "subplot", "soils"
   )
@@ -814,7 +814,8 @@ test_that("fia_to_tibble works as intended", {
   # tests data
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
+    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
     "tree", "understory", "regen", "subplot", "soils"
   )

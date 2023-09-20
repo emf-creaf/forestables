@@ -199,32 +199,45 @@ fia_tables_process <- function(
         return(tibble::tibble())
       }
 
-      P3PANEL <- plot_info[["P3PANEL"]]
+      # P3PANEL <- plot_info[["P3PANEL"]]
       state <- plot_info[["STATECD"]]
 
       # tree data
       tree <- fia_tree_table_process(tree_table_file, plots, county, year, ref_species)
 
       # understory
-      if (!is.na(P3PANEL)) {
-        shrub <- fia_p3_understory_table_process(
-          p3_understory_table_file, plots, county, year,
-          growth_habit = "Shrub", ref_plant_dictionary
-        )
-        herbs <- fia_p3_understory_table_process(
-          p3_understory_table_file, plots, county, year,
-          growth_habit = c("Forb/herb", "Graminoids"), ref_plant_dictionary
-        )
-      } else {
-        shrub <- fia_p2_understory_table_process(
-          p2_veg_subplot_table_file, plots, county, year,
-          growth_habit = "SH", ref_plant_dictionary
-        )
-        herbs <- fia_p2_understory_table_process(
-          p2_veg_subplot_table_file, plots, county, year,
-          growth_habit = c("FB", "GR"), ref_plant_dictionary
-        )
-      }
+      shrub <- fia_understory_table_process(
+        p3_understory_table_file, p2_veg_subplot_table_file, plot_info,
+        plots, county, year,
+        growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
+        ref_plant_dictionary
+      )
+      herbs <- fia_understory_table_process(
+        p3_understory_table_file, p2_veg_subplot_table_file, plot_info,
+        plots, county, year,
+        growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
+        ref_plant_dictionary
+      )
+      # if (!is.na(P3PANEL)) {
+      #   shrub <- fia_p3_understory_table_process(
+      #     p3_understory_table_file, plots, county, year,
+      #     growth_habit = "Shrub", ref_plant_dictionary
+      #   )
+      #   herbs <- fia_p3_understory_table_process(
+      #     p3_understory_table_file, plots, county, year,
+      #     growth_habit = c("Forb/herb", "Graminoids"), ref_plant_dictionary
+      #   )
+      # } else {
+      #   shrub <- fia_p2_understory_table_process(
+      #     p2_veg_subplot_table_file, plots, county, year,
+      #     growth_habit = "SH", ref_plant_dictionary
+      #   )
+      #   herbs <- fia_p2_understory_table_process(
+      #     p2_veg_subplot_table_file, plots, county, year,
+      #     growth_habit = c("FB", "GR"), ref_plant_dictionary
+      #   )
+      # }
+
 
       # seedlings
       regen <- fia_seedling_table_process(seedling_table_file, plots, county, year, ref_species)
@@ -378,6 +391,8 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
                "SAMP_METHOD_CD",
                "SUBP_EXAMINE_CD",
                "P3PANEL",
+               "P2VEG_SAMPLING_STATUS_CD",
+               "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
                "DESIGNCD"
     )
   ) |>
@@ -396,6 +411,8 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       STATECD,
       COUNTYCD,
       P3PANEL,
+      P2VEG_SAMPLING_STATUS_CD,
+      P2VEG_SAMPLING_LEVEL_DETAIL_CD,
       ELEV,
       #LON, NAD 83 datum ;   EXCEPTIONS depending on  RSCD:
       LON,
@@ -406,7 +423,13 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       DESIGNCD
     ) |>
     data.table::as.data.table() |>
-    .extract_fia_metadata(c("LAT", "LON", "ELEV","P3PANEL","DESIGNCD","COORD_SYS"), county, plot, year, .soil_mode = FALSE) |>
+    .extract_fia_metadata(
+      c(
+        "LAT", "LON", "ELEV", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD",
+        "P2VEG_SAMPLING_LEVEL_DETAIL_CD", "DESIGNCD", "COORD_SYS"
+      ),
+      county, plot, year, .soil_mode = FALSE
+    ) |>
     dplyr::mutate(
       PLOT  = plot,
       INVYR  = year,
@@ -494,6 +517,8 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       COUNTYCD,
       PLOT,
       P3PANEL,
+      P2VEG_SAMPLING_STATUS_CD,
+      P2VEG_SAMPLING_LEVEL_DETAIL_CD,
       RSCD,
       DESIGNCD,
       LAT,
@@ -619,6 +644,53 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
   # Return tree
   return(tree)
 }
+
+#' General understory workflow
+#' @describeIn tables_processing Process to guess which understory data is available and launch the
+#'   corresponding function.
+fia_understory_table_process <- function(
+    understory_data, understory_p2, plot_md,
+    plot, county, year, growth_habit_p3, growth_habit_p2, ref_plant_dictionary
+) {
+
+  # debug
+  # browser()
+
+  # Based on Adriana's scheme:
+  #   - P3PANEL > 0 && nrow(veg_subplot_spp > 0) -> p3_understory
+  #   - (P3PANEL == 0 | NA) && p2veg_sampling_status_cd && p2veg_sampling_level_detail_cd > 2 && nrow(p2veg_subplot_spp) > 0 -> p2_understory
+  #   - else, no data, so NAs
+
+  # get the metadata needed to check which understory we need
+  p3plot <- plot_md[["P3PANEL"]]
+  p2veg_ss <- plot_md[["P2VEG_SAMPLING_STATUS_CD"]]
+  p2veg_sld <- plot_md[["P2VEG_SAMPLING_LEVEL_DETAIL_CD"]]
+
+  # read the p3 and p2 data to check nrows
+  p3_info <- fia_p3_understory_table_process(
+    understory_data, plot, county, year, growth_habit_p3, ref_plant_dictionary
+  )
+  p2_info <- fia_p2_understory_table_process(
+    understory_p2, plot, county, year, growth_habit_p2, ref_plant_dictionary
+  )
+  p3_rows <- nrow(p3_info)
+  p2_rows <- nrow(p2_info)
+
+  # now we check the assumptions and deliver the corresponding data
+  if ((is.na(p3plot) || p3plot < 1) && p3_rows < 1) {
+    # go for p2 if exists
+    if (p2veg_ss > 0 && p2veg_sld > 1 && p2_rows > 0) {
+      return(p2_info)
+    } else {
+      # no p2 or p3, then empty tibble
+      return(tibble::tibble())
+    }
+  }
+
+  # if p3 return it
+  return(p3_info)
+}
+
 
 #' @describeIn tables_processing Process to gather needed data from veg subplot spp table
 fia_p3_understory_table_process <- function(understory_data, plot, county, year, growth_habit, ref_plant_dictionary) {

@@ -7,6 +7,7 @@
 \alias{ffi_shrub_table_process}
 \alias{fia_plot_table_process}
 \alias{fia_tree_table_process}
+\alias{fia_understory_table_process}
 \alias{fia_p3_understory_table_process}
 \alias{fia_p2_understory_table_process}
 \alias{fia_seedling_table_process}
@@ -31,6 +32,18 @@ ffi_shrub_table_process(
 fia_plot_table_process(plot_data, survey_data, cond_data, plot, county, year)
 
 fia_tree_table_process(tree_data, plot, county, year, ref_species)
+
+fia_understory_table_process(
+  understory_data,
+  understory_p2,
+  plot_md,
+  plot,
+  county,
+  year,
+  growth_habit_p3,
+  growth_habit_p2,
+  ref_plant_dictionary
+)
 
 fia_p3_understory_table_process(
   understory_data,
@@ -108,6 +121,9 @@ These functions retrieve the data for a plot in one year.
 \item \code{fia_plot_table_process()}: Process to gather needed data from plot, survey and cond tables
 
 \item \code{fia_tree_table_process()}: Process to gather needed data from tree table
+
+\item \code{fia_understory_table_process()}: Process to guess which understory data is available and launch the
+corresponding function.
 
 \item \code{fia_p3_understory_table_process()}: Process to gather needed data from veg subplot spp table
 
