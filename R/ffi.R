@@ -64,6 +64,11 @@ ffi_to_tibble <- function(
 ) {
 
   ## Assertions and checks ##
+  # grep
+  assertthat::assert_that(
+    .sys_cmd_warning()
+  )
+
   # departments
   assertthat::assert_that(
     is.character(departments), length(departments) > 0,

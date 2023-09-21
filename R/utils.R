@@ -57,6 +57,11 @@ verbose_msg <- function(msg, .verbose) {
 show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ...) {
 
   # General Assertions
+  # grep
+  assertthat::assert_that(
+    .sys_cmd_warning()
+  )
+
   inventory <- match.arg(inventory)
   assertthat::assert_that(
     fs::dir_exists(folder),

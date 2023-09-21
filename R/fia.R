@@ -63,6 +63,11 @@ fia_to_tibble <- function(
 ) {
 
   ## Assertions and checks ##
+  # grep
+  assertthat::assert_that(
+    .sys_cmd_warning()
+  )
+
   # states
   assertthat::assert_that(
     is.character(states), length(states) > 0,
