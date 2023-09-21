@@ -101,7 +101,7 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # a correct custom one
   expect_identical(
     test_res[["plot_table"]][1],
-    paste0("grep -E ',INVYR,|,137,(29396|29396.0),' ", test_folder, names(test_plots)[1], "_PLOT.csv")
+    paste0("grep -P \",INVYR,|,137,(29396|29396.0),\" ", test_folder, names(test_plots)[1], "_PLOT.csv")
   )
   # an incorrect one
   expect_identical(

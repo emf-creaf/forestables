@@ -366,11 +366,13 @@ create_filter_list_fia <- function(plots_info) {
       if (.custom) {
         if (type %in% c("tree", "p3_understory", "veg_subplot", "p2_veg_subplot", "seedling", "subplot"))
         customized_path <- glue::glue(
-          "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
+          'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+          # "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
         ) else {
           if (type %in% c("soils_lab", "soils_loc", "veg_subplot", "plot", "survey", "cond")) {
             customized_path <- glue::glue(
-              "grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"
+              'grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}'
+              # "grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"
             )
           }
         }
