@@ -212,13 +212,13 @@ fia_tables_process <- function(
 
       # understory
       shrub <- fia_understory_table_process(
-        p3_understory_table_file, p2_veg_subplot_table_file, plot_info,
+        p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
         growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
         ref_plant_dictionary
       )
       herbs <- fia_understory_table_process(
-        p3_understory_table_file, p2_veg_subplot_table_file, plot_info,
+        p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
         growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
         ref_plant_dictionary
@@ -654,7 +654,7 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
 #' @describeIn tables_processing Process to guess which understory data is available and launch the
 #'   corresponding function.
 fia_understory_table_process <- function(
-    understory_data, understory_p2, plot_md,
+    understory_data, understory_p2,
     plot, county, year, growth_habit_p3, growth_habit_p2, ref_plant_dictionary
 ) {
 
@@ -757,8 +757,6 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
     dplyr::mutate(ID_UNIQUE_PLOT = paste("US",STATECD,COUNTYCD,PLOT,sep="_")) |>
     #we group by species to calculate means (height, cover)
     dplyr::group_by(SPECIES_SYMBOL) |>
-
-
     # here we calculate an averaged height by species, for that we select the height that has
     # the maximum percentage cover and we assign as a height the midle value of the interval of that layer
     # in meters layer 1-2  = 0- 1,8288meters,
@@ -811,7 +809,7 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
     dplyr::mutate(
       SP_NAME = paste(GENUS, SPECIES, sep=" ")
     ) |>
-    dplyr::arrange(SPECIES_SYMBOL,SUBP)|>
+    dplyr::arrange(SPECIES_SYMBOL,SUBP) |>
     dplyr::select(
       ID_UNIQUE_PLOT,
       INVYR,
