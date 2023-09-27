@@ -471,9 +471,13 @@ test_that("fia_understory_table_process works as intended", {
     dplyr::as_tibble()
   test_input <-
     .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
-  expected_names <- c(
+  expected_names_p2 <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
     "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER", "GROWTH_HABIT"
+  )
+  expected_names_p3 <- c(
+    "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
+    "SP_CODE", "SP_NAME", "HT", "COVER", "GROWTH_HABIT"
   )
   # p2 shrubs
   expect_s3_class(
@@ -485,20 +489,21 @@ test_that("fia_understory_table_process works as intended", {
       test_year,
       "Shrub", "SH",
       test_ref_plant_dictionary
-    )
+    ),
+    "tbl"
   )
   # data integrity
   expect_true(nrow(test_res) > 1)
-  expect_named(test_res, expected_names)
+  expect_named(test_res, expected_names_p2)
   expect_identical(test_res$YEAR |> unique(), test_year)
   expect_identical(test_res$STATECD |> unique(), 2L)
-  expect_identical(test_res$COUNTYCD |> unique(), test_input$county[7])
+  expect_identical(test_res$COUNTYCD |> unique() |> as.character(), test_input$county[7])
   expect_identical(test_res$GROWTH_HABIT_CD |> unique(), "SH")
   # We expect the same results in the general understory function than in the individual
   # ones
   expect_identical(
     test_res,
-    fia_p2_understory_table(
+    fia_p2_understory_table_process(
       test_input$p2_veg_subplot_table[7],
       test_input$plots[7],
       test_input$county[7],
@@ -524,7 +529,7 @@ test_that("fia_understory_table_process works as intended", {
   expect_true(nrow(test_empty) < 1)
 
   # p3 shrubs
-  test_year <- 2010
+  test_year <- 2010L
   test_input <-
     .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
   expect_s3_class(
@@ -536,20 +541,21 @@ test_that("fia_understory_table_process works as intended", {
       2010,
       "Shrub", "SH",
       test_ref_plant_dictionary
-    )
+    ),
+    "tbl"
   )
   # data integrity
   expect_true(nrow(test_res_p3) > 1)
-  expect_named(test_res, expected_names)
+  expect_named(test_res_p3, expected_names_p3)
   expect_identical(test_res_p3$YEAR |> unique(), test_year)
   expect_identical(test_res_p3$STATECD |> unique(), 27L)
-  expect_identical(test_res_p3$COUNTYCD |> unique(), test_input$county[13])
-  expect_identical(test_res_p3$GROWTH_HABIT_CD |> unique(), "SH")
+  expect_identical(test_res_p3$COUNTYCD |> unique() |> as.character(), test_input$county[16])
+  expect_true(stringr::str_detect(test_res_p3$GROWTH_HABIT |> unique(), "Shrub"))
   # We expect the same results in the general understory function than in the individual
   # ones
   expect_identical(
-    test_res,
-    fia_p3_understory_table(
+    test_res_p3,
+    fia_p3_understory_table_process(
       test_input$p3_understory_table[16],
       test_input$plots[16],
       test_input$county[16],
