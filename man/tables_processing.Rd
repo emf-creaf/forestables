@@ -36,7 +36,6 @@ fia_tree_table_process(tree_data, plot, county, year, ref_species)
 fia_understory_table_process(
   understory_data,
   understory_p2,
-  plot_md,
   plot,
   county,
   year,

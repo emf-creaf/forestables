@@ -431,6 +431,135 @@ test_that("fia_p2_understory_table_process works as intended", {
   # tests for the combination warning
 })
 
+test_that("fia_understory_table_process works as intended", {
+  # test data
+  test_plots <- list(
+    "MT" = list(
+      "39" = 9358, # in 2018
+      "99" = 90332, # in 2015
+      "89" = 81566 # in 2013
+    ),
+    "CA" = list(
+      "36" = 73711, # in 2019
+      "107" = 70234, # in 2019
+      "23" = 61746 # in 2018
+    ),
+    "AK" = list(
+      "261" = 29480, # in 2019
+      "100" = 16966, # in 2013
+      "110" = 48368 # in 2010
+    ),
+    "CO" = list(
+      "19" = 80254, # in 2015
+      "69" = 86019, # in 2010
+      "83" = 84264 # in 2013
+    ),
+    "OR" = list(
+      "9" = 60747, # in 2019 -> these, as per plot table should have both p3 and p2 in 2019
+      "57" = 91924, # in 2019 -> these, as per plot table should have both p3 and p2 in 2019
+      "71" = 87064 # in 2019 -> these, as per plot table should have both p3 and p2 in 2019
+    ),
+    "MN" = list("137" = 29396) # this for 2010 should have only p3
+  )
+  test_year <- 2019L
+  # test_years <- c(2010, 2013, 2015, 2018, 2019)
+  test_states <- names(test_plots)
+  test_folder <- Sys.getenv("fia_path")
+  test_ref_species <- .read_inventory_data(fs::path(test_folder, "REF_SPECIES.csv")) |>
+    dplyr::as_tibble()
+  test_ref_plant_dictionary <- .read_inventory_data(fs::path(test_folder, "REF_PLANT_DICTIONARY.csv")) |>
+    dplyr::as_tibble()
+  test_input <-
+    .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
+  expected_names <- c(
+    "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
+    "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER", "GROWTH_HABIT"
+  )
+  # p2 shrubs
+  expect_s3_class(
+    test_res <- fia_understory_table_process(
+      test_input$p3_understory_table[7],
+      test_input$p2_veg_subplot_table[7],
+      test_input$plots[7],
+      test_input$county[7],
+      test_year,
+      "Shrub", "SH",
+      test_ref_plant_dictionary
+    )
+  )
+  # data integrity
+  expect_true(nrow(test_res) > 1)
+  expect_named(test_res, expected_names)
+  expect_identical(test_res$YEAR |> unique(), test_year)
+  expect_identical(test_res$STATECD |> unique(), 2L)
+  expect_identical(test_res$COUNTYCD |> unique(), test_input$county[7])
+  expect_identical(test_res$GROWTH_HABIT_CD |> unique(), "SH")
+  # We expect the same results in the general understory function than in the individual
+  # ones
+  expect_identical(
+    test_res,
+    fia_p2_understory_table(
+      test_input$p2_veg_subplot_table[7],
+      test_input$plots[7],
+      test_input$county[7],
+      test_year,
+      "SH",
+      test_ref_plant_dictionary
+    )
+  )
+
+  # no p2 no p3 warnings
+  expect_warning(
+    test_empty <- fia_understory_table_process(
+      test_input$p3_understory_table[1],
+      test_input$p2_veg_subplot_table[1],
+      test_input$plots[1],
+      test_input$county[1],
+      test_year,
+      "Shrub", "SH",
+      test_ref_plant_dictionary
+    ),
+    "No understory detected"
+  )
+  expect_true(nrow(test_empty) < 1)
+
+  # p3 shrubs
+  test_year <- 2010
+  test_input <-
+    .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
+  expect_s3_class(
+    test_res_p3 <- fia_understory_table_process(
+      test_input$p3_understory_table[16],
+      test_input$p2_veg_subplot_table[16],
+      test_input$plots[16],
+      test_input$county[16],
+      2010,
+      "Shrub", "SH",
+      test_ref_plant_dictionary
+    )
+  )
+  # data integrity
+  expect_true(nrow(test_res_p3) > 1)
+  expect_named(test_res, expected_names)
+  expect_identical(test_res_p3$YEAR |> unique(), test_year)
+  expect_identical(test_res_p3$STATECD |> unique(), 27L)
+  expect_identical(test_res_p3$COUNTYCD |> unique(), test_input$county[13])
+  expect_identical(test_res_p3$GROWTH_HABIT_CD |> unique(), "SH")
+  # We expect the same results in the general understory function than in the individual
+  # ones
+  expect_identical(
+    test_res,
+    fia_p3_understory_table(
+      test_input$p3_understory_table[16],
+      test_input$plots[16],
+      test_input$county[16],
+      test_year,
+      "Shrub",
+      test_ref_plant_dictionary
+    )
+  )
+})
+
 test_that("fia_seedling_table_process works as intended", {
 
   expected_names <- c(
