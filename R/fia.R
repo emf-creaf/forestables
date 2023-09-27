@@ -661,15 +661,10 @@ fia_understory_table_process <- function(
   # debug
   # browser()
 
-  # Based on Adriana's scheme:
-  #   - P3PANEL > 0 && nrow(veg_subplot_spp > 0) -> p3_understory
-  #   - (P3PANEL == 0 | NA) && p2veg_sampling_status_cd && p2veg_sampling_level_detail_cd > 2 && nrow(p2veg_subplot_spp) > 0 -> p2_understory
-  #   - else, no data, so NAs
-
-  # get the metadata needed to check which understory we need
-  p3plot <- plot_md[["P3PANEL"]]
-  p2veg_ss <- plot_md[["P2VEG_SAMPLING_STATUS_CD"]]
-  p2veg_sld <- plot_md[["P2VEG_SAMPLING_LEVEL_DETAIL_CD"]]
+  # Final logic to decide between p3 and p2
+  #   - p3 is always preferred
+  #   - p2 is taken if no p3 is found
+  #   - if not p3 or p2 is found for plot/year combination, return empty tibble
 
   # read the p3 and p2 data to check nrows
   p3_info <- fia_p3_understory_table_process(
@@ -681,18 +676,14 @@ fia_understory_table_process <- function(
   p3_rows <- nrow(p3_info)
   p2_rows <- nrow(p2_info)
 
-  # now we check the assumptions and deliver the corresponding data
-  if ((is.na(p3plot) || p3plot < 1) && p3_rows < 1) {
-    # go for p2 if exists
-    if (p2veg_ss > 0 && p2veg_sld > 1 && p2_rows > 0) {
+  # check rows and return the corresponding data
+  if (p3_rows < 1) {
+    if (p2_rows > 0) {
       return(p2_info)
-    } else {
-      # no p2 or p3, then empty tibble
-      return(tibble::tibble())
     }
+    return(tibble::tibble())
   }
 
-  # if p3 return it
   return(p3_info)
 }
 
