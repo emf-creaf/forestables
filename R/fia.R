@@ -665,6 +665,7 @@ fia_understory_table_process <- function(
   #   - p3 is always preferred
   #   - p2 is taken if no p3 is found
   #   - if not p3 or p2 is found for plot/year combination, return empty tibble
+  #   - if p3 and p2 are found, complete info with species in p2 not present in p3
 
   # read the p3 and p2 data to check nrows
   p3_info <- fia_p3_understory_table_process(
@@ -680,8 +681,17 @@ fia_understory_table_process <- function(
   if (p3_rows < 1) {
     if (p2_rows > 0) {
       return(p2_info)
+    } else {
+      return(tibble::tibble())
     }
-    return(tibble::tibble())
+  } else {
+    if (p2_rows > 0) {
+      # join p3 and those species of p2 not present in p3
+      understory_info <- p2_info |>
+        dplyr::filter(!SP_NAME %in% unique(p3_info$SP_NAME)) |>
+        dplyr::bind_rows(p3_info)
+      return(understory_info)
+    }
   }
 
   return(p3_info)
