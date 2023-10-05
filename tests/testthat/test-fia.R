@@ -324,7 +324,7 @@ test_that("fia_p3_understory_table_process works as intended", {
 
 test_that("fia_p2_understory_table_process works as intended", {
 
-  skip()
+  # skip()
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SPECIES_SYMBOL",
@@ -481,7 +481,7 @@ test_that("fia_understory_table_process works as intended", {
   )
   # p2 shrubs
   expect_s3_class(
-    test_res <- fia_understory_table_process(
+    test_res <- suppressWarnings(fia_understory_table_process(
       test_input$p3_understory_table[7],
       test_input$p2_veg_subplot_table[7],
       test_input$plots[7],
@@ -489,7 +489,7 @@ test_that("fia_understory_table_process works as intended", {
       test_year,
       "Shrub", "SH",
       test_ref_plant_dictionary
-    ),
+    )),
     "tbl"
   )
   # data integrity
@@ -524,7 +524,7 @@ test_that("fia_understory_table_process works as intended", {
       "Shrub", "SH",
       test_ref_plant_dictionary
     ),
-    "No understory detected"
+    "Skipping understory data for plot"
   )
   expect_true(nrow(test_empty) < 1)
 
@@ -533,7 +533,7 @@ test_that("fia_understory_table_process works as intended", {
   test_input <-
     .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
   expect_s3_class(
-    test_res_p3 <- fia_understory_table_process(
+    test_res_p3 <- suppressWarnings(fia_understory_table_process(
       test_input$p3_understory_table[16],
       test_input$p2_veg_subplot_table[16],
       test_input$plots[16],
@@ -541,7 +541,7 @@ test_that("fia_understory_table_process works as intended", {
       2010,
       "Shrub", "SH",
       test_ref_plant_dictionary
-    ),
+    )),
     "tbl"
   )
   # data integrity
@@ -564,6 +564,31 @@ test_that("fia_understory_table_process works as intended", {
       test_ref_plant_dictionary
     )
   )
+
+  # p3 and p2
+  test_year <- 2009L
+  test_input <-
+    .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
+  expect_s3_class(
+    test_res_p3_p2 <- fia_understory_table_process(
+      test_input$p3_understory_table[13],
+      test_input$p2_veg_subplot_table[13],
+      test_input$plots[13],
+      test_input$county[13],
+      test_year,
+      "Shrub", "SH",
+      test_ref_plant_dictionary
+    ),
+    "tbl"
+  )
+  # data integrity
+  expect_true(nrow(test_res_p3_p2) > 1)
+  # we expect the p2 names, as some of the data comes from p2
+  expect_named(test_res_p3_p2, expected_names_p2)
+
+  expect_identical(test_res_p3_p2$YEAR |> unique(), test_year)
+  expect_identical(test_res_p3_p2$STATECD |> unique(), 41L)
+  expect_identical(test_res_p3_p2$COUNTYCD |> unique() |> as.character(), test_input$county[13])
 })
 
 test_that("fia_seedling_table_process works as intended", {

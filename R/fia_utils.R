@@ -221,11 +221,25 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 
 #' helper for translating numeric state codes to names
 #' @noRd
-.translate_fia_states <- function(states_numeric) {
-  fia_states_dictionary |>
-    dplyr::filter(VALUE %in% states_numeric) |>
-    dplyr::pull(ABBR) |>
-    unique()
+.translate_fia_states <- function(states_numeric = NULL, states_abbr = NULL) {
+
+  res <- NA
+
+  if (is.null(states_abbr) && (!is.null(states_numeric))) {
+    res <- fia_states_dictionary |>
+      dplyr::filter(VALUE %in% states_numeric) |>
+      dplyr::pull(ABBR) |>
+      unique()
+  }
+
+  if ((!is.null(states_abbr)) && is.null(states_numeric)) {
+    res <- fia_states_dictionary |>
+      dplyr::filter(ABBR %in% states_abbr) |>
+      dplyr::pull(VALUE) |>
+      unique()
+  }
+
+  return(res)
 }
 
 #' Create the \code{filter_list} for FIA inventory

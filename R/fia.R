@@ -668,12 +668,12 @@ fia_understory_table_process <- function(
   #   - if p3 and p2 are found, complete info with species in p2 not present in p3
 
   # read the p3 and p2 data to check nrows
-  p3_info <- fia_p3_understory_table_process(
+  p3_info <- suppressWarnings(fia_p3_understory_table_process(
     understory_data, plot, county, year, growth_habit_p3, ref_plant_dictionary
-  )
-  p2_info <- fia_p2_understory_table_process(
+  ))
+  p2_info <- suppressWarnings(fia_p2_understory_table_process(
     understory_p2, plot, county, year, growth_habit_p2, ref_plant_dictionary
-  )
+  ))
   p3_rows <- nrow(p3_info)
   p2_rows <- nrow(p2_info)
 
@@ -682,6 +682,10 @@ fia_understory_table_process <- function(
     if (p2_rows > 0) {
       return(p2_info)
     } else {
+      cli::cli_warn(c(
+        "No understory data found",
+        "i" = "Skipping understory data for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
+      ))
       return(tibble::tibble())
     }
   } else {
