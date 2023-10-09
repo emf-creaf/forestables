@@ -117,6 +117,7 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   )
   expect_false("tururu" %in% (test_res_filter_list$state |> unique()))
   expect_true(all((test_res_filter_list$state |> unique()) %in% test_states))
+  expect_length(test_res_filter_list$state |> unique(), length(test_states) - 1)
 })
 
 test_that(".get_plots_from_state works as intended", {
@@ -175,7 +176,7 @@ test_that("show_plots_from_fia works as intended", {
   )
   # we must have 3 states
   expect_identical(
-    test_res_ok$STATECD |> unique() |> length(), 3L
+    test_res_ok$STATEAB |> unique(), test_states
   )
 })
 
