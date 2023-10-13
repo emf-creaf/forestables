@@ -95,13 +95,21 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv')
   )
 
-  ### TODO
-  # - test when filter list NULL
+  ## Test filter_list = NULL
+  expect_s3_class(
+    test_res_filter_list <- suppressWarnings(
+      .build_ffi_input_with(test_departments, test_year, NULL, test_folder, .verbose = FALSE)
+    ),
+    "tbl"
+  )
+  expect_false("tururu" %in% (test_res_filter_list$department |> unique()))
+  expect_true(all((test_res_filter_list$department |> unique()) %in% test_departments))
+  expect_length(test_res_filter_list$department |> unique(), length(test_departments) - 1)
 })
 
 test_that(".get_plots_from_department works as intended", {
   test_folder <- Sys.getenv("ffi_path")
-  test_departments <- c("01", "10", "11")
+  test_departments <- c("01", "10", "11", "tururu")
 
   # error
   expect_error(
@@ -122,12 +130,34 @@ test_that(".get_plots_from_department works as intended", {
   # expect values
   expect_identical(unique(test_res_ok$DEP), "01")
   expect_identical(unique(.get_plots_from_department(test_departments[3], test_folder)$DEP), "11")
+
+  ## wrong department
+  expect_error(
+    suppressWarnings(.get_plots_from_department(test_departments[4], test_folder)),
+    "aborting"
+  )
+  # multiple departments
+  expect_s3_class(
+    test_res_multiple <- .get_plots_from_department(test_departments, test_folder),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_multiple), sf::st_crs(4326))
+  # names
+  expect_named(test_res_multiple,c("CAMPAGNE", "IDP", "DEP", "geometry"))
+  # expect rows
+  expect_true(
+    nrow(test_res_multiple) > 0
+  )
+  # expect values
+  expect_false("tururu" %in% (test_res_multiple$DEP |> unique()))
+  expect_identical(unique(test_res_multiple$DEP) |> sort(), test_departments[-4] |> sort())
 })
 
 #
 test_that("show_plots_from_ffi works as intended", {
   test_folder <- Sys.getenv("ffi_path")
-  test_departments <- c("01", "10", "11")
+  test_departments <- c("01", "10", "11", "tururu")
 
   # error
   expect_error(
@@ -148,7 +178,7 @@ test_that("show_plots_from_ffi works as intended", {
   )
   # we must have 3 states
   expect_identical(
-    test_res_ok$DEP |> unique() |> length(), 3L
+    test_res_ok$DEP |> unique() |> sort(), test_departments[-4] |> sort()
   )
 })
 
@@ -214,7 +244,7 @@ test_that(".transform_plot_summary_ffi works as intended", {
 test_that("create_filter_list_ffi works as inteded", {
   # test data
   test_folder <- Sys.getenv("ffi_path")
-  test_departments <- c("01", "10", "11")
+  test_departments <- c("01", "10", "11", "tururu")
   test_summary <- show_plots_from_ffi(test_folder, test_departments) |>
     dplyr::filter(CAMPAGNE %in% c(2005, 2010, 2015))
 

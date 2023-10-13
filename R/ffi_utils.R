@@ -21,16 +21,11 @@
    # browser()
 
   if (is.null(filter_list)) {
-
-
-      filter_list <-  .get_plots_from_department( departments, folder , .call = .call) |>
-          .transform_plot_summary_ffi(year,departments)
-
+      filter_list <-  .get_plots_from_department(departments, folder , .call = .call) |>
+          .transform_plot_summary_ffi(year, departments)
   }
 
-
-
-  # # inform the user about the amount of plots for this year
+  # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
       "Getting ready to retrieve {.strong {filter_list |>  length()}} plots for {.val {year}}"
@@ -117,7 +112,7 @@
   plot_data <- plot_path |>
     .read_inventory_data(select = c("CAMPAGNE", "IDP", "XL", "YL", "DEP")) |>
     dplyr::group_by(DEP, IDP) |>
-    dplyr::filter(DEP == department) |>
+    dplyr::filter(DEP %in% department) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(XL))) |>
     dplyr::arrange(CAMPAGNE) |>
@@ -125,6 +120,12 @@
       c(XL, YL), .direction = "updown"
     ) |>
     dplyr::as_tibble()
+
+  if (nrow(plot_data) < 1) {
+    cli::cli_abort(c(
+      "{.path PLACETTE.csv} file doesn't contain any plot for {.val {department}} department, aborting."
+    ), call = .call)
+  }
 
   # crs to build the sf and transform to 4326 to have all in the same coordinate system.
   epgs <- 2154
@@ -140,20 +141,25 @@
 
 #' show plots from department ffi helper
 #'
-#' Iterate for states and retrieve all the plots
+#' Retrieve all the plots for selected departments
+#'
+#' Opposite to what happens in \code{\link{show_plots_from_fia}}, here we don't need to
+#' iterate by the departments, as all the plots are in one file and
+#' \code{\link{.get_plots_from_department}} already works with multiple departments
 #'
 #' @param folder Character, path to folder containing FFI csv files
-#' @param states Character vector with two-letter code for states
+#' @param departments Character vector with numeric department code
 #' @noRd
 show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()) {
-  withCallingHandlers(
-    purrr::map(departments, .f = .get_plots_from_department, folder = folder) |>
-      purrr::list_rbind() |>
-      sf::st_as_sf(),
-    purrr_error_indexed = function(err) {
-      rlang::cnd_signal(err$parent)
-    }
-  )
+  # withCallingHandlers(
+  #   purrr::map(departments, .f = .get_plots_from_department, folder = folder) |>
+  #     purrr::list_rbind() |>
+  #     sf::st_as_sf(),
+  #   purrr_error_indexed = function(err) {
+  #     rlang::cnd_signal(err$parent)
+  #   }
+  # )
+  .get_plots_from_department(departments, folder)
 }
 
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_department}} in a
@@ -222,7 +228,8 @@ create_filter_list_ffi <- function(plots_info) {
     unique()
   departments_names <- plots_info[["DEP"]] |>
     unique() |>
-    as.character()
+    as.character() |>
+    sort()
 
   res <- plots_info |>
     dplyr::group_by(DEP) |>
