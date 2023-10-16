@@ -253,7 +253,7 @@ ffi_tables_process <- function(
     unique()
 
   # loop for each row of the input_df
-  furrr::future_pmap(
+  temp_res <- furrr::future_pmap(
   # purrr::pmap(
     .progress = .verbose,
     .l = input_df,
@@ -268,12 +268,7 @@ ffi_tables_process <- function(
       # plot table is missing, the plot_info will be an empty tibble. This will create errors when
       # selecting herbs, creating the final tibble... So we cut it here
       if (nrow(plot_info) < 1) {
-        return(tibble::tibble(
-          YL = NA,
-          YL_ORIGINAL = NA,
-          XL = NA,
-          XL_ORIGINAL = NA
-        ))
+        return(tibble::tibble())
       }
 
       # we select herbs
@@ -341,7 +336,14 @@ ffi_tables_process <- function(
         )
     }
   ) |>
-    purrr::list_rbind() |>
+    purrr::list_rbind()
+
+  # something went wrong (bad counties and plots, wrong filter list...)
+  if (nrow(temp_res) < 1) {
+    cli::cli_abort("Ooops! Something went wrong, exiting...")
+  }
+
+  temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
     dplyr::filter(!(is.na(YL) & is.na(YL_ORIGINAL) & is.na(XL) & is.na(XL_ORIGINAL)))

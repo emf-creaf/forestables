@@ -491,13 +491,13 @@ test_that("ffi_tables_process works as intended", {
       fs::file_move(fs::path(test_folder, "_ECOLOGIE.csv"), fs::path(test_folder, "ECOLOGIE.csv"))
     }
   })
-  expect_true(
+  expect_error(
     suppressWarnings(ffi_tables_process(
       test_departments, test_year, test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
-    ) |>
-      nrow()) < 1
+    )),
+    "Ooops!"
   )
   fs::file_move(fs::path(test_folder, "_ECOLOGIE.csv"), fs::path(test_folder, "ECOLOGIE.csv"))
 
@@ -536,4 +536,87 @@ test_that("ffi_to_tibble works as intended", {
   expect_identical(nrow(test_res), 62L) # two plots dont exist, so 2x2=4 rows less
   expect_true(all(unique(test_res$DEP) %in% names(test_plots)))
   expect_true(all(unique(test_res$YEAR) %in% test_years))
+
+  ### test all assertions done in fia_to_tibble
+  # departments
+  expect_error(
+    ffi_to_tibble(
+      1:7, test_years, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "departments must be a character vector with at least one"
+  )
+  expect_error(
+    ffi_to_tibble(
+      character(), test_years, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "departments must be a character vector with at least one"
+  )
+  # years
+  expect_error(
+    ffi_to_tibble(
+      test_departments, as.character(test_years), test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "years must be a numeric vector with at least one"
+  )
+  expect_error(
+    ffi_to_tibble(
+      test_departments, numeric(), test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "years must be a numeric vector with at least one"
+  )
+  # folder
+  expect_error(
+    ffi_to_tibble(
+      test_departments, test_years, test_plots, "nonexistantfolder",
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "Folder especified"
+  )
+  # filter list (TODO as testng interactive commands is tricky)
+  # parallel options
+  expect_error(
+    ffi_to_tibble(
+      test_departments, test_years, test_plots, test_folder,
+      .parallel_options = list(scheduling = 2L, stdout = TRUE),
+      .verbose = FALSE
+    ),
+    ".parallel_options"
+  )
+  # verbose
+  expect_error(
+    ffi_to_tibble(
+      test_departments, test_years, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = "FALSE"
+    ),
+    ".verbose"
+  )
+  # ancillary data (tested just by providing an existing wrong folder)
+  expect_error(
+    ffi_to_tibble(
+      test_departments, test_years, test_plots, ".",
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ),
+    "must be present"
+  )
+
+  # what to expect if departments or filter list are all wrong
+  expect_error(
+    suppressWarnings(ffi_to_tibble(
+      test_departments[25], test_years, test_plots[25], test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "Ooops!"
+  )
 })
