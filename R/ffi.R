@@ -264,6 +264,18 @@ ffi_tables_process <- function(
       shrub <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref)
       soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
 
+      # nrows for plot_info. As the plot info is also generated with soil info, if soil table and/or
+      # plot table is missing, the plot_info will be an empty tibble. This will create errors when
+      # selecting herbs, creating the final tibble... So we cut it here
+      if (nrow(plot_info) < 1) {
+        return(tibble::tibble(
+          YL = NA,
+          YL_ORIGINAL = NA,
+          XL = NA,
+          XL_ORIGINAL = NA
+        ))
+      }
+
       # we select herbs
       herbs <- plot_info |>
         dplyr::select(
@@ -363,7 +375,7 @@ NULL
 ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnees) {
 
   ## Debug
-     # browser()
+  # browser()
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(

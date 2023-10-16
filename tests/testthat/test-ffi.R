@@ -440,6 +440,67 @@ test_that("ffi_tables_process works as intended", {
   # be present, so 31 of 33 elements in filter list
   expect_false("tururu" %in% unique(test_res$DEP))
   expect_identical(nrow(test_res), 31L)
+
+  ### missing random files
+  # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)
+  test_folder <- fs::path(Sys.getenv("ffi_path"), "missing_files_test")
+  # FLORE, without flore, the understory should be empty
+  fs::file_move(fs::path(test_folder, "FLORE.csv"), fs::path(test_folder, "_FLORE.csv"))
+  withr::defer({
+    if (fs::file_exists(fs::path(test_folder, "_FLORE.csv"))) {
+      fs::file_move(fs::path(test_folder, "_FLORE.csv"), fs::path(test_folder, "FLORE.csv"))
+    }
+  })
+  expect_true(
+    suppressWarnings(ffi_tables_process(
+      test_departments, test_year, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ) |>
+      dplyr::pull(understory) |>
+      purrr::list_rbind() |>
+      dplyr::pull(shrub) |>
+      purrr::list_rbind() |>
+      nrow()) < 1
+  )
+  fs::file_move(fs::path(test_folder, "_FLORE.csv"), fs::path(test_folder, "FLORE.csv"))
+
+  # ARBRE, without ARBRE, the tree should be empty
+  fs::file_move(fs::path(test_folder, "ARBRE.csv"), fs::path(test_folder, "_ARBRE.csv"))
+  withr::defer({
+    if (fs::file_exists(fs::path(test_folder, "_ARBRE.csv"))) {
+      fs::file_move(fs::path(test_folder, "_ARBRE.csv"), fs::path(test_folder, "ARBRE.csv"))
+    }
+  })
+  expect_true(
+    suppressWarnings(ffi_tables_process(
+      test_departments, test_year, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ) |>
+      dplyr::pull(tree) |>
+      purrr::list_rbind() |>
+      nrow()) < 1
+  )
+  fs::file_move(fs::path(test_folder, "_ARBRE.csv"), fs::path(test_folder, "ARBRE.csv"))
+
+  # ECOLOGIE, without ECOLOGIE, the soils should be empty, but also the plot info.
+  fs::file_move(fs::path(test_folder, "ECOLOGIE.csv"), fs::path(test_folder, "_ECOLOGIE.csv"))
+  withr::defer({
+    if (fs::file_exists(fs::path(test_folder, "_ECOLOGIE.csv"))) {
+      fs::file_move(fs::path(test_folder, "_ECOLOGIE.csv"), fs::path(test_folder, "ECOLOGIE.csv"))
+    }
+  })
+  expect_true(
+    suppressWarnings(ffi_tables_process(
+      test_departments, test_year, test_plots, test_folder,
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    ) |>
+      nrow()) < 1
+  )
+  fs::file_move(fs::path(test_folder, "_ECOLOGIE.csv"), fs::path(test_folder, "ECOLOGIE.csv"))
+
 })
 
 # ffi_to_tibble -------------------------------------------------------------------------------
