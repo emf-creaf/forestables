@@ -611,12 +611,11 @@ test_that("ffi_to_tibble works as intended", {
   )
 
   # what to expect if departments or filter list are all wrong
-  expect_error(
+  expect_true(
     suppressWarnings(ffi_to_tibble(
-      test_departments[25], test_years, test_plots[25], test_folder,
+      "tururu", test_years, list("tururu" = 0), test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
-    )),
-    "Ooops!"
+    ) |> nrow()) < 1
   )
 })

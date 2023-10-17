@@ -254,7 +254,7 @@ ffi_tables_process <- function(
 
   # loop for each row of the input_df
   temp_res <- furrr::future_pmap(
-  # purrr::pmap(
+  # temp_res <- purrr::pmap(
     .progress = .verbose,
     .l = input_df,
     .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table) {
@@ -264,9 +264,8 @@ ffi_tables_process <- function(
       shrub <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref)
       soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
 
-      # nrows for plot_info. As the plot info is also generated with soil info, if soil table and/or
-      # plot table is missing, the plot_info will be an empty tibble. This will create errors when
-      # selecting herbs, creating the final tibble... So we cut it here
+      # if for some reason plot info return an empty tibble (missing files), detect it here to avoid
+      # transformation of emtpy data errors
       if (nrow(plot_info) < 1) {
         return(tibble::tibble())
       }
@@ -334,6 +333,7 @@ ffi_tables_process <- function(
           SLOPE_ORIGINAL = PENT2_ORIGINAL,
           soils = soil
         )
+      return(plot_info)
     }
   ) |>
     purrr::list_rbind()
