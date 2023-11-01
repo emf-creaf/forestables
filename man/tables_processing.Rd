@@ -5,6 +5,8 @@
 \alias{ffi_plot_table_process}
 \alias{ffi_tree_table_process}
 \alias{ffi_shrub_table_process}
+\alias{ffi_soil_table_process}
+\alias{ffi_regen_table_process}
 \alias{fia_plot_table_process}
 \alias{fia_tree_table_process}
 \alias{fia_understory_table_process}
@@ -28,6 +30,10 @@ ffi_shrub_table_process(
   growth_form_lignified_france,
   idp_dep_ref
 )
+
+ffi_soil_table_process(soils_data, plot, year, metadonnees, idp_dep_ref)
+
+ffi_regen_table_process(shrub_data, couver_data, plot, year, espar_cdref)
 
 fia_plot_table_process(plot_data, survey_data, cond_data, plot, county, year)
 
@@ -78,7 +84,7 @@ fia_soils_loc_table_process(soils_loc, veg_subplot, plot, county, state, year)
 \item{year}{Numeric, year to extract}
 
 \item{espar_cdref, metadonnees, growth_form_lignified_france}{tables. These tables
-are automatically read in \code{\link{fia_tables_process}} based on the folder provided.}
+are automatically read in \code{\link{ffi_tables_process}} based on the folder provided.}
 
 \item{county}{COUNTYCD code}
 
@@ -116,6 +122,10 @@ These functions retrieve the data for a plot in one year.
 \item \code{ffi_tree_table_process()}: Process to gather needed data from tree table
 
 \item \code{ffi_shrub_table_process()}: Process to gather needed data from shrub table
+
+\item \code{ffi_soil_table_process()}: Process to gather needed data from soil table
+
+\item \code{ffi_regen_table_process()}: Process to gather needed data from soil table
 
 \item \code{fia_plot_table_process()}: Process to gather needed data from plot, survey and cond tables
 

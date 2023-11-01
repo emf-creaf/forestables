@@ -88,7 +88,7 @@ ffi_to_tibble <- function(
   # folder
   assertthat::assert_that(
     fs::dir_exists(folder),
-    msg = cli::cli_abort( "Folder especified ({.path {folder}}) doesn't exists. Please create the folder first and populate it with the needed FIA csv files")
+    msg = cli::cli_abort( "Folder especified ({.path {folder}}) doesn't exists. Please create the folder first and populate it with the needed FFI csv files")
   )
 
   # filter_list
@@ -163,7 +163,7 @@ ffi_to_tibble <- function(
 #'
 #' Processing all tables for one year
 #'
-#' This function is intended to be called internally by \code{\link{fia_to_tibble}} for each
+#' This function is intended to be called internally by \code{\link{ffi_to_tibble}} for each
 #' year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 #'
 #' @describeIn ffi_to_tibble Process one year
@@ -362,7 +362,7 @@ ffi_tables_process <- function(
 #' @param dep department code
 #' @param year Numeric, year to extract
 #' @param espar_cdref,metadonnees,growth_form_lignified_france tables. These tables
-#'   are automatically read in \code{\link{fia_tables_process}} based on the folder provided.
+#'   are automatically read in \code{\link{ffi_tables_process}} based on the folder provided.
 #' @param growth_habit Character, growth habit value to filter data (to distinguish between herbs
 #'   and shrubs)
 #'
@@ -827,8 +827,13 @@ ffi_shrub_table_process <- function(
 
 
   return(shrub_no_herbs)
+  
+  
+  #another way of eliminating is is with spar_cdref species that only have trees
 }
 
+
+#' @describeIn tables_processing Process to gather needed data from soil table
 
 ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_ref){
 
@@ -983,5 +988,210 @@ ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_r
     dplyr::as_tibble()
 
   return(soil_info)
+}
+
+
+#' @describeIn tables_processing Process to gather needed data from soil table
+
+
+# TABLE FOR REGEN DEPEND ON YEAR , BEFORE 2015 COUVERT SHOULD BE USED, AFTER 2015 FLORE SHOULD (SAME AS SHRUB PROCESS) SHALL WE INTEGRATE PART OF THIS PROCESS IN SHRUB PROCESS O "REPET" READING OF TABLE IN REGEN ?
+ffi_regen_table_process <- function(shrub_data, couver_data, plot, year, espar_cdref){
+  # Debug
+  # browser()
+  
+  # Assertions  and checks/validations
+  files_validation <- assertthat::validate_that(
+    !any(is.na(c(shrub_data,couver_data)))
+    # !any(c(understory_data) == NA_character_)
+  )
+  
+  # If any file is missing abort and return an empty tibble??
+  if (is.character(files_validation)) {
+    cli::cli_warn(c(
+      "Some files can't be found",
+      "i" = "Skipping tree data for plot {.var {plot}}  for {.var {year}}"
+    ))
+    
+    return(dplyr::tibble())
+  }
+ 
+  
+  if (year > 2015) { 
+  # 2. col names
+  
+  regen_filtered_data <- .read_inventory_data(
+    shrub_data,
+    select = c(
+      "CAMPAGNE",
+      "IDP",
+      "CD_REF",
+      "ABOND"
+    ),
+    header = TRUE,
+    colClasses = list(character = c("IDP", "CD_REF"))
+  ) |>
+    # we  filtering the data for plot/year and status (alive)
+    dplyr::filter(
+      IDP == plot,
+      CAMPAGNE == year
+    ) |>
+    dplyr::as_tibble()
+  
+  
+  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  if (nrow(regen_filtered_data) < 1) {
+    # warn the user
+    cli::cli_warn(c(
+      "Data missing for that combination of plot and year",
+      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
+    ))
+    return(dplyr::tibble())
+  }
+  
+ 
+  # transformations and filters
+  regen <- regen_filtered_data |>
+    dplyr::mutate(
+      YEAR = CAMPAGNE,
+      # ID_UNIQUE_PLOT= (paste("FR", IDP, sep="_")),
+      # cd_ref = as.character(CD_REF),
+      #conversion to percentage
+      ABOND = dplyr::case_when(
+        # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.
+        ABOND == 1 ~ 5,
+        #présence nette	Taux de recouvrement de l'espèce inférieur à 25 % mais présence nette.
+        ABOND == 	2	~ 12.5,
+        #Taux de recouvrement de l'espèce compris entre 25 et 50 %
+        ABOND	== 3 ~	37.5,
+        #Taux de recouvrement de l'espèce compris entre 25 et 50 %
+        #Taux de recouvrement de l'espèce compris entre 50% et 75 %.
+        ABOND	== 4 ~	62.5,
+        #	Taux de recouvrement de l'espèce supérieur à 75%.
+        ABOND	== 5 ~	87.5
+      )
+    ) |>
+    dplyr::left_join(
+      y = idp_dep_ref,
+      by = "IDP"
+    ) |>
+    #join with espar_cdref
+    dplyr::left_join(
+      y = espar_cdref |>
+        dplyr::select(
+          cd_ref,
+          lib_cdref
+        ) |>
+        dplyr::rename(
+          CD_REF = cd_ref
+        ) |> 
+        dplyr::as_tibble(),
+      by = "CD_REF"
+    ) |>
+  
+    dplyr::mutate(
+      ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_"))
+    ) |>
+    dplyr::rename(
+      PLOT = IDP,
+      SP_NAME = lib_cdref,
+      SP_CODE = CD_REF,
+      COVER = ABOND
+    ) |>
+    #selection of final variables
+    dplyr::select(
+      ID_UNIQUE_PLOT,
+      PLOT,
+      DEP,
+      YEAR,
+      SP_CODE,
+      SP_NAME,
+      COVER
+    ) |>
+    dplyr::as_tibble()
+  }else{
+    
+    
+    regen_filtered_data <- .read_inventory_data(
+      couvert_data,
+      select = c(
+        "CAMPAGNE",
+        "IDP",
+        "ESPAR_C",
+        "TCA",
+        "STRATE"
+      ),
+      header = TRUE,
+      colClasses = list(character = c("IDP", "ESPAR_C"))
+    ) |>
+      # we  filtering the data for plot/year and status (alive)
+      dplyr::filter(
+        IDP == plot,
+        CAMPAGNE == year
+      ) |>
+      dplyr::as_tibble()
+    
+    
+    ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+    if (nrow(regen_filtered_data) < 1) {
+      # warn the user
+      cli::cli_warn(c(
+        "Data missing for that combination of plot and year",
+        "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
+      ))
+      return(dplyr::tibble())
+    }
+    
+    # transformations and filters
+    regen <- regen_filtered_data |>
+      dplyr::mutate(
+        YEAR = CAMPAGNE,
+        COVER = TCA,
+        ESPAR = ESPAR_C
+      ) |>
+      dplyr::filter(
+        STRATE = "NR"
+      ) |> 
+      dplyr::left_join(
+        y = idp_dep_ref,
+        by = "IDP"
+      ) |>
+      #join with espar_cdref
+      dplyr::left_join(
+        y = espar_cdref |>
+          dplyr::select(
+            cd_ref,
+            lib_cdref,
+            ESPAR
+          ) |>
+          dplyr::rename(
+            CD_REF = cd_ref
+          ) |> 
+          dplyr::as_tibble(),
+        by = "ESPAR"
+      ) |>
+      
+      dplyr::mutate(
+        ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_"))
+      ) |>
+      dplyr::rename(
+        PLOT = IDP,
+        SP_NAME = lib_cdref,
+        SP_CODE = CD_REF
+      ) |>
+      #selection of final variables
+      dplyr::select(
+        ID_UNIQUE_PLOT,
+        PLOT,
+        DEP,
+        YEAR,
+        SP_CODE,
+        SP_NAME,
+        COVER
+      ) |>
+      dplyr::as_tibble()
+  }
+
+  
+  return(regen)
 }
 
