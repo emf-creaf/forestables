@@ -33,7 +33,7 @@ ffi_shrub_table_process(
 
 ffi_soil_table_process(soils_data, plot, year, metadonnees, idp_dep_ref)
 
-ffi_regen_table_process(shrub_data, couver_data, plot, year, espar_cdref)
+ffi_regen_table_process(regen_data, plot, year, espar_cdref, idp_dep_ref)
 
 fia_plot_table_process(plot_data, survey_data, cond_data, plot, county, year)
 

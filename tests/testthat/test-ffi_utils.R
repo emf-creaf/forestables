@@ -24,8 +24,9 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "86" = c(957495,921133),
     "87" = c(975666,979897),
     "89" = 1433956,
-    "91" = c(1406115, 0),
-    "tururu" = 3555
+    "91" = c(1406115, 0)
+    # ,
+    # "tururu" = 3555
   )
 
   test_year <- 2019

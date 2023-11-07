@@ -80,6 +80,15 @@
             .year = year,
             .custom = TRUE,
             .call = .call
+          ),
+          regen_table = .build_ffi_file_path(
+            department,
+            "regen",
+            folder,
+            .plot = plots,
+            .year = year,
+            .custom = TRUE,
+            .call = .call
           )
         )
 
@@ -273,7 +282,7 @@ create_filter_list_ffi <- function(plots_info) {
 #' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
 #' because some states have this variable as a double value.
 #'
-#' @param type Character, table type. One of "tree", "plot", "soils" or "shrub"
+#' @param type Character, table type. One of "tree", "plot", "soils",  "shrub" or "regen"
 #' @param folder Character, path to the folder with the FFI csv files.
 #' @param .custom Logical indicating that a custom path, with \code{grep} must be created
 #' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
@@ -303,7 +312,8 @@ create_filter_list_ffi <- function(plots_info) {
     "tree" = "ARBRE.csv",
     "plot" = "PLACETTE.csv",
     "shrub" = "FLORE.csv",
-    "soils" = "ECOLOGIE.csv"
+    "soils" = "ECOLOGIE.csv",
+    "regen" = "COUVERT.csv"
   )
 
   # return path
@@ -330,7 +340,7 @@ create_filter_list_ffi <- function(plots_info) {
     #   )
     # }
 
-    if (type %in% c("tree", "shrub", "soils")) {
+    if (type %in% c("tree", "shrub", "soils", "regen")) {
       customized_path <- glue::glue(
         'grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'
       )
