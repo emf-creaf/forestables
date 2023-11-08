@@ -37,7 +37,10 @@ test_input <- .build_ffi_input_with(
 )
 
 test_metadonnees <- suppressWarnings(
-  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
+  #old file 2021
+  # readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
+    # at new file (2022)
+    readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 )
