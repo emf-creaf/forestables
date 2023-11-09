@@ -282,29 +282,6 @@ ffi_tables_process <- function(
         }
       }
       
-      
-      # if (nrow(shrub_regen) < 1) { 
-      #   shrub_regen = tibble::tibble() 
-      #   shrub = tibble::tibble()
-      #   } else {
-      #   shrub <- shrub_regen |>  dplyr::filter(GrowthForm == "shrub")
-      # }
-      # soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
-      #  
-      #  if (year < 2015) {
-      #    regen <- ffi_regen_table_process(regen_table, plots, year, espar_cdref,idp_dep_ref)
-      #   }else{
-      #     if (nrow(shrub_regen) >= 1) {
-      #   regen <- shrub_regen |>  dplyr::filter(GrowthForm == "tree")
-      #   
-      #     } else { 
-      #       regen = tibble::tibble() 
-      #       }
-      #   }
-      # if (nrow(regen) < 1) { 
-      #   regen = tibble::tibble() 
-      #   }
-        
       # if for some reason plot info return an empty tibble (missing files), detect it here to avoid
       # transformation of empty data errors
       if (nrow(plot_info) < 1) {
