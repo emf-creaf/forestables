@@ -40,6 +40,11 @@ test_metadonnees <- suppressWarnings(
   #old file 2021
  #readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
     # at new file (2022)
+  #comprobar archivos y la linea donde empiezan -mismo  inicio? 
+  #fread: 
+  #// Définition des modalités pour chaque unité : 			
+  #// Unité	Code	Libellé	Définition
+  
     readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
@@ -404,7 +409,18 @@ test_that("ffi_soil_table_process works as intended", {
 
 
 test_that("ffi_regen_table_process works as intended", {
-  
+  test_plots<- list(
+    "38" = 900306,
+    "59" = 900684,
+    "91" = 0,
+    "tururu" = 3555
+    )
+    test_year <- 2014
+    test_departments <- names(test_plots)
+    test_input <- .build_ffi_input_with(
+    test_departments, test_year, test_plots, test_folder,
+    .verbose = FALSE
+  )
   expected_names <- c(
     "ID_UNIQUE_PLOT",
     "PLOT",
@@ -418,8 +434,8 @@ test_that("ffi_regen_table_process works as intended", {
   # object
   expect_s3_class(
     test_res <- ffi_regen_table_process(
-      test_input$regen_table[2],
-      test_input$plots[2],
+      test_input$regen_table[1],
+      test_input$plots[1],
       test_year,
       test_espar_cdref,
       test_idp_def_ref
@@ -456,8 +472,8 @@ test_that("ffi_regen_table_process works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_error <- suppressWarnings(ffi_regen_table_process(
-      test_input$regen_table[33],
-      test_input$plots[33],
+      test_input$regen_table[4],
+      test_input$plots[4],
       test_year,
       test_espar_cdref,
       test_idp_def_ref
@@ -468,8 +484,8 @@ test_that("ffi_regen_table_process works as intended", {
   # error in plot name, should return an empty tibble
   expect_s3_class(
     test_error <- suppressWarnings(ffi_regen_table_process(
-      test_input$regen_table[32],
-      test_input$plots[32],
+      test_input$regen_table[3],
+      test_input$plots[3],
       test_year,
       test_espar_cdref,
       test_idp_def_ref
