@@ -58,7 +58,7 @@ This function will take every year indicated and retrieve and transform the plot
 plots provided. For that, csv files from FFI must reside in the folder indicated in the
 \code{folder} argument.
 
-This function is intended to be called internally by \code{\link{fia_to_tibble}} for each
+This function is intended to be called internally by \code{\link{ffi_to_tibble}} for each
 year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 }
 \section{Functions}{
