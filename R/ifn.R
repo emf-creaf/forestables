@@ -1320,10 +1320,11 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         province_code = as.character(province_code),
         version = version,
         ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
-        Huso = ifelse("Huso" %in% names(coords_filtered_data), coords_filtered_data$Huso, NA)
-        )
-        
-      
+        Huso = dplyr::case_when(
+          "Huso" %in% names(coords_filtered_data) ~ coords_filtered_data$Huso,
+          TRUE ~ NA_real_
+          )
+      )
 
 
        info_plot <- info_plot|>
