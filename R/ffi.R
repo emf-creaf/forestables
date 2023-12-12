@@ -663,6 +663,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
       SP_NAME = lib_cdref,
       SP_CODE = cd_ref,
       TREE = A,
+     #ht in meters
       HT = HTOT,
       STATUS = VEGET
     ) |>
