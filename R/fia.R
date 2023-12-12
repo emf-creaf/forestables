@@ -779,11 +779,12 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
     dplyr::mutate(
       COVER_PCT = SP_CANOPY_COVER_TOTAL,
       # MEAN_COV = mean(SP_CANOPY_COVER_TOTAL,na.rm = TRUE),
+      #HT in cm
       HT = dplyr::case_when(
-        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==1 ~ 0.91,
-        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==2 ~ 3.4,
+        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==1 ~ 91,
+        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==2 ~ 340,
         # for third layer this is the minimum height not the averaged  ! :)
-        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==3 ~ 5
+        (which.max(c(max(SP_CANOPY_COVER_LAYER_1_2),max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4))))==3 ~ 500
       )
     ) |>
     # 3. ref_plant_dictionary
@@ -940,12 +941,13 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
     dplyr::mutate(
       COVER_PCT,
       # MEAN_COV = mean(COVER_PCT, na.rm = TRUE),
+      #HT in cm
       HT = dplyr::case_when(
-        LAYER == 1 ~  0.3048,
-        LAYER == 2 ~ 1.2192,
-        LAYER == 3 ~ 3.3528,
+        LAYER == 1 ~  30.48,
+        LAYER == 2 ~ 121.92,
+        LAYER == 3 ~ 335.28,
         # for 4TH layer this is the minimum height not the averaged  !
-        LAYER == 4 ~ 5
+        LAYER == 4 ~ 500
       )
     ) |>
     #we join data from plant ref dictionary
