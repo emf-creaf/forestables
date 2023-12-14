@@ -28,7 +28,8 @@ test_that("verbose_msg works as intended", {
 })
 
 test_that(".read_inventory_data returns lazy_dt for fia", {
-  test_file <- fs::path("/data/creaf/projects/emf/international_inventories/data/fia/FIA_DATAMART_MARCH_2023/OR_PLOT.csv")
+  test_folder <- Sys.getenv("fia_path")
+  test_file <- fs::path(paste0(test_folder, "OR_PLOT.csv"))
   test_cmd <- glue::glue("grep -E ',INVYR,|,25,(84167|84167.0),' {test_file}")
 
   expect_s3_class(.read_inventory_data(test_file), "dtplyr_step_first")
