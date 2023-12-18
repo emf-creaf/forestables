@@ -703,9 +703,9 @@ test_that("ifn_regen_table_process for ifn2 works as intended", {
     "PLOT",
     "SP_CODE",
     "SP_NAME",
-    "NUMERO",
-    "Hm",
-    "REGENA"
+    "DBH",
+    "Height",
+    "N"
   )
 
   # object
@@ -796,10 +796,9 @@ test_that("ifn_regen_table_process for ifn3 works as intended", {
     "Subclase",
     "SP_CODE",
     "SP_NAME",
-    "CatDes",
-    "Tipo",
-    "NumPies",
-    "Hm"
+    "DBH",
+    "Height",
+    "N"
   )
 
   # object
@@ -907,10 +906,9 @@ test_that("ifn_regen_table_process for ifn4 works as intended", {
       "Subclase",
       "SP_CODE",
       "SP_NAME",
-      "CatDes",
-      "Tipo",
-      "NumPies",
-      "Hm"
+      "DBH",
+      "Height",
+      "N"
   )
 
   # object

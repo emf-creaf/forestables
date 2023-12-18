@@ -795,7 +795,43 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
     ) |>
     dplyr::arrange(SP_CODE) |>
 
-    #selection of final variables
+
+    dplyr::rename(
+      Numero = NUMERO,
+      Regena = REGENA
+    ) |> 
+    dplyr::slice(rep(dplyr::row_number(), each = 2))|>
+    # dplyr:: mutate(
+    #   Regena = as.character(Regena)
+    # )|>
+    
+    dplyr::mutate(
+      
+      Regena = ifelse(dplyr::row_number() %% 2 != 0, NA, Regena),
+      Numero  = ifelse(dplyr::row_number() %% 2 == 0, NA, Numero ),
+      Hm = ifelse(dplyr::row_number() %% 2 == 0, NA, Hm ),
+      DBH = dplyr::case_when( Numero > 0 ~ 5, 
+                              #default
+                              Regena > 0 ~ 1,
+                              TRUE ~ NA ),
+      N = Numero *127.3239546,  
+      N = dplyr::case_when( Regena == 1 ~ 2.5 *127.3239546,
+                            Regena == 2 ~ 10 *127.3239546,
+                            Regena == 3 ~ 20*127.3239546 ,
+                            N>0 ~ N,
+                            TRUE ~ NA ),
+      Height = dplyr::case_when( Hm > 0 ~ Hm,
+                                 #default
+                                 Regena > 0 ~ 100 ,
+                                 TRUE ~ NA)
+      
+      # Z50 = NA ,
+      # Z95 = NA,
+      # OrdenIf2 = NA
+      ) |> 
+  
+  
+  
 
     dplyr::select(
       ID_UNIQUE_PLOT,
@@ -805,9 +841,15 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       SP_CODE,
       #nombre en latin
       SP_NAME,
-      NUMERO,
-      Hm,
-      REGENA
+      # NUMERO,
+      # Hm,
+      # REGENA
+      DBH,
+      Height,
+      # OrdenIf2,
+      N,
+      # Z95,
+      # Z50
     )
 
   # Return regen
@@ -874,25 +916,58 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
     ) |>
 
 
-    #selection of final variables
-
+    dplyr::mutate(
+      DBH = dplyr::case_when(
+        CatDes == 1 ~ 0.1,
+        CatDes == 2 ~ 0.5,
+        CatDes == 3 ~ 1.5,
+        CatDes == 4 ~ 5,
+        TRUE ~ NA
+      ),
+      
+      N = dplyr::case_when(
+        CatDes == 1 ~ 2.5,
+        CatDes == 2 ~ 10,
+        CatDes == 3 ~ 20,
+        CatDes == 4 ~ NumPies,
+        TRUE ~ NA),
+      
+      Height = dplyr::case_when(
+        CatDes == 1 ~ 10,
+        CatDes == 2 ~ 80,
+        CatDes == 3 ~ 100,
+        CatDes == 4 ~ Hm ,
+        TRUE ~ NA),
+      # nArbol = NA,
+      # OrdenIf2 = NA,
+      # OrdenIf3 = NA,
+      # OrdenIf4 = NA,
+      N = 127.3239546
+      # Z50 = NA ,
+      # Z95 = NA
+      
+      
+    )|>
     dplyr::select(
       ID_UNIQUE_PLOT,
       province_code,
       Clase,
       Subclase,
       PLOT,
-      #codigo
       SP_CODE,
-      #nombre en latin
       SP_NAME,
-      #categoria de desarollo
-      CatDes,
-      #origen de los pies
-      Tipo,
-      NumPies,
-      Hm
-    )
+      DBH,
+      Height,
+      # nArbol,
+      # OrdenIf2,
+      # OrdenIf3,
+      # OrdenIf4,
+      N
+      # Z95,
+      # Z50
+      )
+
+
 
   # Return regen
   return(regeneration)
@@ -1325,10 +1400,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         province_code = as.character(province_code),
         version = version,
         ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
-        Huso = dplyr::case_when(
-          "Huso" %in% names(coords_filtered_data) ~ coords_filtered_data$Huso,
-          TRUE ~ NA_real_
-          )
+        Huso = ifelse("Huso" %in% names(coords_filtered_data), coords_filtered_data$Huso, NA)
       )
 
 
