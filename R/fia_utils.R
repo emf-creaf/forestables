@@ -97,14 +97,14 @@
         state, "seedling", folder,
         .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
       ),
-      soils_loc_table = .build_fia_file_path(
-        state, "soils_loc", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
-      ),
-      soils_lab_table = .build_fia_file_path(
-        state, "soils_lab", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
-      ),
+      # soils_loc_table = .build_fia_file_path(
+      #   state, "soils_loc", folder,
+      #   .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+      # ),
+      # soils_lab_table = .build_fia_file_path(
+      #   state, "soils_lab", folder,
+      #   .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+      # ),
       veg_subplot_table = .build_fia_file_path(
         state, "veg_subplot", folder,
         .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
@@ -358,8 +358,8 @@ create_filter_list_fia <- function(plots_info) {
         "subplot" = "_SUBPLOT.csv",
         "p3_understory" = "_VEG_SUBPLOT_SPP.csv",
         "seedling" = "_SEEDLING.csv",
-        "soils_loc" = "_SOILS_SAMPLE_LOC.csv",
-        "soils_lab" = "_SOILS_LAB.csv",
+        # "soils_loc" = "_SOILS_SAMPLE_LOC.csv",
+        # "soils_lab" = "_SOILS_LAB.csv",
         "veg_subplot" = "_VEG_SUBPLOT.csv",
         "p2_veg_subplot" = "_P2VEG_SUBPLOT_SPP.csv"
       )

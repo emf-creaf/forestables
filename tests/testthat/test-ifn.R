@@ -1040,8 +1040,8 @@ test_that("ifn_plot_table_process for ifn2  works as intended", {
     "PENDIEN2",
     "SLOPE",
     "ELEV",
-    "ASPECT",
-    "soils"
+    "ASPECT"
+    # "soils"
   )
 
   # object
@@ -1166,8 +1166,8 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
     "COORDEX",
     "COORDEY",
     "HOJA",
-    "Huso",
-    "soils"
+    "Huso"
+    # "soils"
   )
 
   # object
@@ -1294,8 +1294,8 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
     "COORDEX",
     "COORDEY",
     "HOJA",
-    "Huso",
-    "soils"
+    "Huso"
+    # "soils"
   )
 
   # object
@@ -1419,8 +1419,8 @@ test_that("ifn_tables_process ifn2 works as intended", {
     "ASPECT",
     "tree",
     "understory",
-    "regen",
-    "soils"
+    "regen"
+    # "soils"
   )
 
   # object
@@ -1517,8 +1517,8 @@ test_that("ifn_tables_process ifn3 works as intended", {
     "ASPECT",
     "tree",
     "understory",
-    "regen",
-    "soils"
+    "regen"
+    # "soils"
   )
 
   # object
@@ -1614,8 +1614,8 @@ test_that("ifn_tables_process ifn4 works as intended", {
     "ASPECT",
     "tree",
     "understory",
-    "regen",
-    "soils"
+    "regen"
+    # "soils"
   )
 
   # object
@@ -1755,7 +1755,7 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
     "tree",
     "understory",
     "regen",
-    "soils",
+    # "soils",
     "Clase",
     "Subclase",
     "Tipo")

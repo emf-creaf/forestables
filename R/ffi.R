@@ -257,12 +257,18 @@ ffi_tables_process <- function(
   # temp_res <- purrr::pmap(
     .progress = .verbose,
     .l = input_df,
-    .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table,regen_table) {
+    .f = \(department,
+           plots, 
+           tree_table, 
+           plot_table, 
+           shrub_table, 
+           soils_table,
+           regen_table) {
         # browser()
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
       tree <- ffi_tree_table_process(tree_table, plots, year,espar_cdref, idp_dep_ref)
       shrub_regen <- ffi_shrub_table_process(shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref)
-      soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
+      # soil <- ffi_soil_table_process(soils_table, plots, year, metadonnees, idp_dep_ref)
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
       if (year < 2015) {
@@ -320,7 +326,7 @@ ffi_tables_process <- function(
           crs = 2154,
           tree = list(tree),
           understory = list(understory),
-          soil = list(soil),
+          # soil = list(soil),
           regen = list(regen)
         ) |>
         dplyr::select(
@@ -343,16 +349,16 @@ ffi_tables_process <- function(
           COORD_SYS,
           tree,
           understory,
-          regen,
-          soil
+          regen
+          # soil
         ) |>
         # HARMONIZATION OF NAMES
         dplyr::rename(
           ASPECT = EXPO,
           ASPECT_ORIGINAL = EXPO_ORIGINAL,
           SLOPE = PENT2,
-          SLOPE_ORIGINAL = PENT2_ORIGINAL,
-          soils = soil
+          SLOPE_ORIGINAL = PENT2_ORIGINAL
+          # soils = soil
         )
       return(plot_info)
     }
@@ -886,160 +892,160 @@ ffi_shrub_table_process <- function(
 
 #' @describeIn tables_processing Process to gather needed data from soil table
 
-ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_ref){
-
-  # Assertions  and checks/validations
-  files_validation <- assertthat::validate_that(
-    !any(is.na(c(soils_data)))
-    # !any(c(soils_data) == NA_character_)
-  )
-
-  # If any file is missing abort and return an empty tibble??
-  if (is.character(files_validation)) {
-    cli::cli_warn(c(
-      "Some files can't be found",
-      "i" = "Skipping plot info for plot {.var {plot}}  for {.var {year}}"
-    ))
-
-    return(dplyr::tibble())
-  }
-
-   # browser()
-  soil_filtered_data <- .read_inventory_data(
-    soils_data,
-    select = c(
-      "CAMPAGNE",
-      "IDP",
-      "DATEECO",
-      "TSOL",
-      # in dm
-      #horizon superieur
-      "PROF1",
-      #horizon inferieur
-      "PROF2",
-      "TEXT1",
-      "TEXT2",
-      "ROCHE",
-
-      # dixiemes
-      "AFFROC",
-      "CAI40",
-      "CAILLOUX",
-      "AFPLA"
-    ),
-    header = TRUE,
-    colClasses = list(character = c("IDP", "TEXT1", "TEXT2", "ROCHE", "TSOL"))
-  ) |>
-    # we  filter the data for plot/year
-    dplyr::filter(
-      IDP == plot,
-      CAMPAGNE == year
-    ) |>
-    dplyr::as_tibble()
-
-  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(soil_filtered_data) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "Data missing for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
-    return(dplyr::tibble())
-  }
-
-  soil_meta <- metadonnees |>
-    dplyr::filter(
-      UNITE  %in% c("TSOL", "TEXT1", "ROCHED0"))
-
-  soil <- soil_filtered_data |>
-    dplyr::mutate(
-      YEAR = CAMPAGNE,
-      #dm to cm
-      PROF1 = PROF1*10,
-      PROF2 = PROF2*10
-    ) |>
-    dplyr::left_join(
-      soil_meta |>
-        dplyr::filter(UNITE == "TEXT1") |>
-        dplyr::rename(TEXT1 = Code,
-                      TEXT1_DES = Libellé) |>
-        dplyr::select(TEXT1,TEXT1_DES),
-      by = "TEXT1"
-    ) |>
-    dplyr::left_join(
-      soil_meta |>
-        dplyr::filter(UNITE == "TEXT1") |>
-        dplyr::rename(TEXT2 = Code,
-                      TEXT2_DES = Libellé) |>
-        dplyr::select(TEXT2,TEXT2_DES),
-      by = "TEXT2"
-    ) |>
-    dplyr::left_join(
-      soil_meta |>
-        dplyr::filter(UNITE == "ROCHED0") |>
-        dplyr::rename(ROCHE = Code,
-                      ROCHE_DES = Libellé) |>
-        dplyr::select(ROCHE,ROCHE_DES),
-      by = "ROCHE"
-    ) |>
-    dplyr::left_join(
-      soil_meta |>
-        dplyr::filter(UNITE == "TSOL") |>
-        dplyr::rename(TSOL = Code, TSOL_DES = Libellé) |>
-        dplyr::select(TSOL,TSOL_DES),
-      by = "TSOL") |>
-    dplyr::left_join(
-      y = idp_dep_ref,
-      by = "IDP"
-    ) |>
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_"))
-    ) |>
-    dplyr::rename(
-      PLOT = IDP
-    )
-
-  soil_field <- list(
-    soil |> dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      DATEECO,
-      TSOL,
-      TSOL_DES,
-      ROCHE,
-      ROCHE_DES,
-      TEXT1,
-      TEXT1_DES,
-      TEXT2,
-      TEXT2_DES,
-      PROF1,
-      PROF2,
-      CAI40,
-      CAILLOUX,
-      AFFROC,
-      AFPLA
-    ))
-
-
-  soil_info <- soil |>
-    dplyr::mutate(
-      soil_field = soil_field
-    ) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      DATEECO,
-      soil_field
-
-    ) |>
-    dplyr::as_tibble()
-
-  return(soil_info)
-}
+# ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_ref){
+# 
+#   # Assertions  and checks/validations
+#   files_validation <- assertthat::validate_that(
+#     !any(is.na(c(soils_data)))
+#     # !any(c(soils_data) == NA_character_)
+#   )
+# 
+#   # If any file is missing abort and return an empty tibble??
+#   if (is.character(files_validation)) {
+#     cli::cli_warn(c(
+#       "Some files can't be found",
+#       "i" = "Skipping plot info for plot {.var {plot}}  for {.var {year}}"
+#     ))
+# 
+#     return(dplyr::tibble())
+#   }
+# 
+#    # browser()
+#   soil_filtered_data <- .read_inventory_data(
+#     soils_data,
+#     select = c(
+#       "CAMPAGNE",
+#       "IDP",
+#       "DATEECO",
+#       "TSOL",
+#       # in dm
+#       #horizon superieur
+#       "PROF1",
+#       #horizon inferieur
+#       "PROF2",
+#       "TEXT1",
+#       "TEXT2",
+#       "ROCHE",
+# 
+#       # dixiemes
+#       "AFFROC",
+#       "CAI40",
+#       "CAILLOUX",
+#       "AFPLA"
+#     ),
+#     header = TRUE,
+#     colClasses = list(character = c("IDP", "TEXT1", "TEXT2", "ROCHE", "TSOL"))
+#   ) |>
+#     # we  filter the data for plot/year
+#     dplyr::filter(
+#       IDP == plot,
+#       CAMPAGNE == year
+#     ) |>
+#     dplyr::as_tibble()
+# 
+#   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+#   if (nrow(soil_filtered_data) < 1) {
+#     # warn the user
+#     cli::cli_warn(c(
+#       "Data missing for that combination of plot and year",
+#       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
+#     ))
+#     return(dplyr::tibble())
+#   }
+# 
+#   soil_meta <- metadonnees |>
+#     dplyr::filter(
+#       UNITE  %in% c("TSOL", "TEXT1", "ROCHED0"))
+# 
+#   soil <- soil_filtered_data |>
+#     dplyr::mutate(
+#       YEAR = CAMPAGNE,
+#       #dm to cm
+#       PROF1 = PROF1*10,
+#       PROF2 = PROF2*10
+#     ) |>
+#     dplyr::left_join(
+#       soil_meta |>
+#         dplyr::filter(UNITE == "TEXT1") |>
+#         dplyr::rename(TEXT1 = Code,
+#                       TEXT1_DES = Libellé) |>
+#         dplyr::select(TEXT1,TEXT1_DES),
+#       by = "TEXT1"
+#     ) |>
+#     dplyr::left_join(
+#       soil_meta |>
+#         dplyr::filter(UNITE == "TEXT1") |>
+#         dplyr::rename(TEXT2 = Code,
+#                       TEXT2_DES = Libellé) |>
+#         dplyr::select(TEXT2,TEXT2_DES),
+#       by = "TEXT2"
+#     ) |>
+#     dplyr::left_join(
+#       soil_meta |>
+#         dplyr::filter(UNITE == "ROCHED0") |>
+#         dplyr::rename(ROCHE = Code,
+#                       ROCHE_DES = Libellé) |>
+#         dplyr::select(ROCHE,ROCHE_DES),
+#       by = "ROCHE"
+#     ) |>
+#     dplyr::left_join(
+#       soil_meta |>
+#         dplyr::filter(UNITE == "TSOL") |>
+#         dplyr::rename(TSOL = Code, TSOL_DES = Libellé) |>
+#         dplyr::select(TSOL,TSOL_DES),
+#       by = "TSOL") |>
+#     dplyr::left_join(
+#       y = idp_dep_ref,
+#       by = "IDP"
+#     ) |>
+#     dplyr::mutate(
+#       ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_"))
+#     ) |>
+#     dplyr::rename(
+#       PLOT = IDP
+#     )
+# 
+#   soil_field <- list(
+#     soil |> dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       PLOT,
+#       DEP,
+#       YEAR,
+#       DATEECO,
+#       TSOL,
+#       TSOL_DES,
+#       ROCHE,
+#       ROCHE_DES,
+#       TEXT1,
+#       TEXT1_DES,
+#       TEXT2,
+#       TEXT2_DES,
+#       PROF1,
+#       PROF2,
+#       CAI40,
+#       CAILLOUX,
+#       AFFROC,
+#       AFPLA
+#     ))
+# 
+# 
+#   soil_info <- soil |>
+#     dplyr::mutate(
+#       soil_field = soil_field
+#     ) |>
+#     dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       PLOT,
+#       DEP,
+#       YEAR,
+#       DATEECO,
+#       soil_field
+# 
+#     ) |>
+#     dplyr::as_tibble()
+# 
+#   return(soil_info)
+# }
 
 
 #' @describeIn tables_processing Process to gather needed data from soil table

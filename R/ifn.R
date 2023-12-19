@@ -246,8 +246,8 @@ ifn_to_tibble <- function(
           "ASPECT",
           "tree",
           "understory",
-          "regen",
-          "soils"
+          "regen"
+          # "soils"
           ))
 
         )
@@ -1111,42 +1111,42 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       by = "province_code")
 
 
-
-  soil_info <- info_plot |>
-
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      province_code,
-      PLOT,
-      YEAR) |>
-    dplyr::mutate(
-      soil_field = list(info_plot |>
-                          dplyr::select(
-                            ID_UNIQUE_PLOT,
-                            province_code,
-                            PLOT,
-                            CLASUELO,
-                            ESPESOR,
-                            CLACOBER,
-                            CUBIERTA))
-    ) |>
-
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      province_code,
-      PLOT,
-      YEAR,
-      soil_field
-
-    ) |>
-    tibble::tibble()
+# 
+#   soil_info <- info_plot |>
+# 
+#     dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       province_code,
+#       PLOT,
+#       YEAR) |>
+#     dplyr::mutate(
+#       soil_field = list(info_plot |>
+#                           dplyr::select(
+#                             ID_UNIQUE_PLOT,
+#                             province_code,
+#                             PLOT,
+#                             CLASUELO,
+#                             ESPESOR,
+#                             CLACOBER,
+#                             CUBIERTA))
+#     ) |>
+# 
+#     dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       province_code,
+#       PLOT,
+#       YEAR,
+#       soil_field
+# 
+#     ) |>
+#     tibble::tibble()
 
 
 
 
   info_plot <- info_plot |>
     dplyr::mutate(
-      soils = list(soil_info),
+      # soils = list(soil_info),
 
       #linea provisional
       # crs = get_crs(info_plot$Huso, info_plot$COORD_SYS)) |>
@@ -1183,8 +1183,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       "PENDIEN2",
       "SLOPE",
       "ELEV",
-      "ASPECT",
-      "soils"
+      "ASPECT"
+      # "soils"
     ))
 
     )
@@ -1246,47 +1246,47 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         province_code = as.character(province_code),
         ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"))
 
-    soil <- plot_filtered_data |>
-
-      dplyr::mutate(
-        # province_code = province,
-        # province_code = as.numeric(province_code),
-        # PLOT = Estadillo,
-        # YEAR = Ano,
-        # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
-          soil_field = list(
-            plot_filtered_data |>
-            # dplyr::mutate(
-            #   PLOT = Estadillo,
-            #   province_code = province,
-            #   province_code = as.numeric(province_code),
-            #   ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"))|>
-              dplyr::select(
-                ID_UNIQUE_PLOT,
-                 province_code,
-                 Clase,
-                 Subclase,
-                 PLOT,
-                 YEAR,
-                 Rocosid,
-                 MatOrg,
-                 TipSuelo1,
-                 TipSuelo2,
-                 TipSuelo3
-                ))) |>
-
-      #selection of final variables
-
-      dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        version,
-        Clase,
-        Subclase,
-        PLOT,
-        YEAR,
-        soil_field
-      )
+    # soil <- plot_filtered_data |>
+    # 
+    #   dplyr::mutate(
+    #     # province_code = province,
+    #     # province_code = as.numeric(province_code),
+    #     # PLOT = Estadillo,
+    #     # YEAR = Ano,
+    #     # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
+    #       soil_field = list(
+    #         plot_filtered_data |>
+    #         # dplyr::mutate(
+    #         #   PLOT = Estadillo,
+    #         #   province_code = province,
+    #         #   province_code = as.numeric(province_code),
+    #         #   ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"))|>
+    #           dplyr::select(
+    #             ID_UNIQUE_PLOT,
+    #              province_code,
+    #              Clase,
+    #              Subclase,
+    #              PLOT,
+    #              YEAR,
+    #              Rocosid,
+    #              MatOrg,
+    #              TipSuelo1,
+    #              TipSuelo2,
+    #              TipSuelo3
+    #             ))) |>
+    # 
+    #   #selection of final variables
+    # 
+    #   dplyr::select(
+    #     ID_UNIQUE_PLOT,
+    #     province_code,
+    #     version,
+    #     Clase,
+    #     Subclase,
+    #     PLOT,
+    #     YEAR,
+    #     soil_field
+    #   )
 
     #we add the id code
     info_plot <- plot_filtered_data |>
@@ -1303,7 +1303,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         #de grados centesimales a sexagesimales??
         ASPECT = as.numeric(ASPECT)* 0.9,
         SLOPE = as.numeric(SLOPE),
-        soils = list(soil),
+        # soils = list(soil),
         COORD_SYS = dplyr::case_when(
           version == "ifn4" & province_code %in% c("01", "07", "08", "15","17","20", "25", "26","27","28","30","32","33","36","39","43","48")  ~ "ED50",
           version == "ifn4" & province_code %in% c("35", "38") ~ "WGS84",
@@ -1338,8 +1338,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         version,
         Tipo,
         ASPECT,
-        SLOPE,
-        soils
+        SLOPE
+        # soils
 
       )
 
@@ -1453,8 +1453,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
          "COORDEX",
          "COORDEY",
          "HOJA",
-         "Huso",
-         "soils"
+         "Huso"
+         # "soils"
        ))
      )
 

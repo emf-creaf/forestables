@@ -185,9 +185,20 @@ fia_tables_process <- function(
     .progress = .verbose,
     .l = input_df,
     .f = \(
-      state, county, plots, tree_table_file, plot_table_file, survey_table_file, cond_table_file,
-      p3_understory_table_file, seedling_table_file, subplot_table_file, soils_loc_table_file,
-      soils_lab_table_file, veg_subplot_table_file, p2_veg_subplot_table_file
+      state,
+      county,
+      plots, 
+      tree_table_file, 
+      plot_table_file, 
+      survey_table_file, 
+      cond_table_file,
+      p3_understory_table_file, 
+      seedling_table_file,
+      subplot_table_file,
+      # soils_loc_table_file,
+      # soils_lab_table_file, 
+      veg_subplot_table_file, 
+      p2_veg_subplot_table_file
     ) {
       # debug
       # browser()
@@ -251,28 +262,28 @@ fia_tables_process <- function(
       subplot <- fia_subplot_table_process(subplot_table_file, plots, county, year)
 
       # soil
-      soils_lab <- fia_soils_lab_table_process( soils_lab_table_file, plots, county, state, year)
-      soils_loc <- fia_soils_loc_table_process(soils_loc_table_file, veg_subplot_table_file, plots, county, state, year)
+      # soils_lab <- fia_soils_lab_table_process( soils_lab_table_file, plots, county, state, year)
+      # soils_loc <- fia_soils_loc_table_process(soils_loc_table_file, veg_subplot_table_file, plots, county, state, year)
 
       # we group in a data frame soil info
-      soils <- dplyr::tibble(
-        PLOT = plots,
-        COUNTYCD = county,
-        YEAR = year,
-        STATECD =  state,
-        ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
-        soils_lab = list(soils_lab),
-        soils_loc = list(soils_loc)
-      ) |>
-        dplyr::select(
-          ID_UNIQUE_PLOT,
-          PLOT,
-          STATECD,
-          COUNTYCD,
-          YEAR,
-          soils_lab,
-          soils_loc
-        )
+      # soils <- dplyr::tibble(
+      #   PLOT = plots,
+      #   COUNTYCD = county,
+      #   YEAR = year,
+      #   STATECD =  state,
+      #   ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
+      #   soils_lab = list(soils_lab),
+      #   soils_loc = list(soils_loc)
+      # ) |>
+      #   dplyr::select(
+      #     ID_UNIQUE_PLOT,
+      #     PLOT,
+      #     STATECD,
+      #     COUNTYCD,
+      #     YEAR,
+      #     soils_lab,
+      #     soils_loc
+      #   )
 
       #we group in a data frame understory info
       understory <- dplyr::tibble(
@@ -300,8 +311,8 @@ fia_tables_process <- function(
           tree = list(tree),
           understory = list(understory),
           regen = list(regen),
-          subplot = list(subplot),
-          soils = list(soils)
+          subplot = list(subplot)
+          # soils = list(soils)
         )
     }
   ) |>
@@ -1096,15 +1107,17 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
       by = "SPCD"
     ) |>
     dplyr::mutate(
-      SP_NAME = paste(GENUS, SPECIES, sep = " ")
+      SP_NAME = paste(GENUS, SPECIES, sep = " "),
+      #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
+      Height = 15, 
+      #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
+      DBH = 0.5
     ) |>
     # we arrange by species and tpa
     dplyr::arrange(SPCD,TPA_UNADJ) |>
     dplyr::mutate(
       #calculate density represented by tree
       DENSITY = TPA_UNADJ * TREECOUNT_CALC
-      #ADD COLUMN FOR MEAN HEIGHT
-      # HM = NA
     ) |>
     dplyr::arrange(SPCD, SUBP)|>
     #selection of final variables
@@ -1119,8 +1132,9 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
       SP_NAME,
       TREECOUNT_CALC,
       TPA_UNADJ,
-      # HM,
-      DENSITY
+      DENSITY,
+      Height,
+      DBH
     ) |>
     dplyr::rename(
       YEAR = INVYR,
@@ -1220,383 +1234,383 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
   return(subplot)
 }
 
-#' @describeIn tables_processing Process to gather needed data from soils lab table
-fia_soils_lab_table_process <- function(soils_lab, plot, county, state, year) {
-
-  # Assertions  and checks/validations
-  files_validation <- assertthat::validate_that(
-    !any(is.na(c(soils_lab)))
-    # !any(c(soils_lab) == NA_character_)
-  )
-
-  # If any file is missing abort and return an empty tibble??
-  if (is.character(files_validation)) {
-    cli::cli_warn(c(
-      "Some files can't be found",
-      "i" = "Skipping plot info for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
-    ))
-
-    return(dplyr::tibble())
-  }
-
-  #soils lab
-  data_soils_lab <- .read_inventory_data(
-    soils_lab,
-    select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      #SMPLNNBR is equals to subplot number (SUBP)
-      "SMPLNNBR",
-      "LAYER_TYPE",
-      "SAMPLE_DATE",
-      #in percent
-      "FIELD_MOIST_WATER_CONTENT_PCT",
-      "RESIDUAL_WATER_CONTENT_PCT",
-      "TOTAL_WATER_CONTENT_PCT",
-      "BULK_DENSITY",
-      "COARSE_FRACTION_PCT",
-      "C_ORG_PCT"
-    )
-  ) |>
-    data.table::as.data.table()
-
-  #we check if we are getting data (= file is not empty) before continuing
-
-  if (nrow(data_soils_lab) < 1) {
-    # warn the user
-    cli::cli_warn(c(
-      "There is no soil lab data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
-    ))
-    return(dplyr::tibble())
-  }
-
-  #we modify object and add variables
-  soils <- dtplyr::lazy_dt(data_soils_lab, immutable = TRUE) |>
-    # we group by plot, year and layer
-    dplyr::group_by(
-      STATECD, COUNTYCD,
-      PLOT,
-      INVYR,
-      LAYER_TYPE
-    ) |>
-    # We average data by plot (collected at subplot level) and by LAYER
-    dplyr::summarise(
-      ID_UNIQUE_PLOT = unique(paste("US",STATECD,COUNTYCD,PLOT,sep="_")),
-      # #subplot
-      # SUBP = SMPLNNBR,
-      BULK_DENSITY_MEAN = round(mean(BULK_DENSITY, na.rm = TRUE),3),
-      C_ORG_PCT_MEAN = mean(C_ORG_PCT, na.rm = TRUE),
-      COARSE_FRACTION_PCT_MEAN = mean(COARSE_FRACTION_PCT,na.rm = TRUE),
-      FIELD_MOIST_WATER_CONTENT_PCT_MEAN = mean(FIELD_MOIST_WATER_CONTENT_PCT,na.rm = TRUE),
-      RESIDUAL_WATER_CONTENT_PCT_MEAN = mean(RESIDUAL_WATER_CONTENT_PCT, na.rm = TRUE),
-      TOTAL_WATER_CONTENT_PCT_MEAN = mean(TOTAL_WATER_CONTENT_PCT, na.rm = TRUE)
-    ) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      COUNTYCD,
-      STATECD,
-      INVYR,
-      LAYER_TYPE,
-      FIELD_MOIST_WATER_CONTENT_PCT_MEAN,
-      TOTAL_WATER_CONTENT_PCT_MEAN,
-      RESIDUAL_WATER_CONTENT_PCT_MEAN,
-      BULK_DENSITY_MEAN,
-      COARSE_FRACTION_PCT_MEAN,
-      C_ORG_PCT_MEAN
-    ) |>
-    # we arange by year
-    # dplyr::arrange(desc(INVYR)) |>
-    # we oly want one value per plot/ layer
-    dplyr::distinct() |>
-    data.table::as.data.table() |>
-    .extract_fia_metadata(
-      # data_soils_lab,
-      c("LAYER_TYPE",
-        "FIELD_MOIST_WATER_CONTENT_PCT_MEAN",
-        "RESIDUAL_WATER_CONTENT_PCT_MEAN",
-        "TOTAL_WATER_CONTENT_PCT_MEAN",
-        "BULK_DENSITY_MEAN",
-        "COARSE_FRACTION_PCT_MEAN",
-        "C_ORG_PCT_MEAN",
-        "STATECD"
-      ), county, plot, year
-    ) |>
-    #we add variables
-    dplyr::mutate(
-      PLOT = plot,
-      INVYR = year,
-      COUNTYCD = county,
-      # STATECD = state,
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
-    ) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      COUNTYCD,
-      STATECD,
-      INVYR,
-      #SUBP,
-      LAYER_TYPE,
-      FIELD_MOIST_WATER_CONTENT_PCT_MEAN,
-      TOTAL_WATER_CONTENT_PCT_MEAN,
-      RESIDUAL_WATER_CONTENT_PCT_MEAN,
-      BULK_DENSITY_MEAN,
-      COARSE_FRACTION_PCT_MEAN,
-      C_ORG_PCT_MEAN
-    ) |>
-    dplyr::rename(
-      YEAR = INVYR
-    ) |>
-    dplyr::as_tibble()
-
-  #warning
-
-  if (all(is.na(soils[["LAYER_TYPE"]]))) {
-    cli::cli_warn(c(
-      "There is no soil lab data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
-    ))
-
-    soils <- dplyr::tibble()
-  }
-
-  return(soils)
-}
+#' #' @describeIn tables_processing Process to gather needed data from soils lab table
+#' fia_soils_lab_table_process <- function(soils_lab, plot, county, state, year) {
+#' 
+#'   # Assertions  and checks/validations
+#'   files_validation <- assertthat::validate_that(
+#'     !any(is.na(c(soils_lab)))
+#'     # !any(c(soils_lab) == NA_character_)
+#'   )
+#' 
+#'   # If any file is missing abort and return an empty tibble??
+#'   if (is.character(files_validation)) {
+#'     cli::cli_warn(c(
+#'       "Some files can't be found",
+#'       "i" = "Skipping plot info for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
+#'     ))
+#' 
+#'     return(dplyr::tibble())
+#'   }
+#' 
+#'   #soils lab
+#'   data_soils_lab <- .read_inventory_data(
+#'     soils_lab,
+#'     select = c(
+#'       "INVYR",
+#'       "STATECD",
+#'       "COUNTYCD",
+#'       "PLOT",
+#'       #SMPLNNBR is equals to subplot number (SUBP)
+#'       "SMPLNNBR",
+#'       "LAYER_TYPE",
+#'       "SAMPLE_DATE",
+#'       #in percent
+#'       "FIELD_MOIST_WATER_CONTENT_PCT",
+#'       "RESIDUAL_WATER_CONTENT_PCT",
+#'       "TOTAL_WATER_CONTENT_PCT",
+#'       "BULK_DENSITY",
+#'       "COARSE_FRACTION_PCT",
+#'       "C_ORG_PCT"
+#'     )
+#'   ) |>
+#'     data.table::as.data.table()
+#' 
+#'   #we check if we are getting data (= file is not empty) before continuing
+#' 
+#'   if (nrow(data_soils_lab) < 1) {
+#'     # warn the user
+#'     cli::cli_warn(c(
+#'       "There is no soil lab data for that combination of plot, county and year",
+#'       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+#'     ))
+#'     return(dplyr::tibble())
+#'   }
+#' 
+#'   #we modify object and add variables
+#'   soils <- dtplyr::lazy_dt(data_soils_lab, immutable = TRUE) |>
+#'     # we group by plot, year and layer
+#'     dplyr::group_by(
+#'       STATECD, COUNTYCD,
+#'       PLOT,
+#'       INVYR,
+#'       LAYER_TYPE
+#'     ) |>
+#'     # We average data by plot (collected at subplot level) and by LAYER
+#'     dplyr::summarise(
+#'       ID_UNIQUE_PLOT = unique(paste("US",STATECD,COUNTYCD,PLOT,sep="_")),
+#'       # #subplot
+#'       # SUBP = SMPLNNBR,
+#'       BULK_DENSITY_MEAN = round(mean(BULK_DENSITY, na.rm = TRUE),3),
+#'       C_ORG_PCT_MEAN = mean(C_ORG_PCT, na.rm = TRUE),
+#'       COARSE_FRACTION_PCT_MEAN = mean(COARSE_FRACTION_PCT,na.rm = TRUE),
+#'       FIELD_MOIST_WATER_CONTENT_PCT_MEAN = mean(FIELD_MOIST_WATER_CONTENT_PCT,na.rm = TRUE),
+#'       RESIDUAL_WATER_CONTENT_PCT_MEAN = mean(RESIDUAL_WATER_CONTENT_PCT, na.rm = TRUE),
+#'       TOTAL_WATER_CONTENT_PCT_MEAN = mean(TOTAL_WATER_CONTENT_PCT, na.rm = TRUE)
+#'     ) |>
+#'     dplyr::select(
+#'       ID_UNIQUE_PLOT,
+#'       PLOT,
+#'       COUNTYCD,
+#'       STATECD,
+#'       INVYR,
+#'       LAYER_TYPE,
+#'       FIELD_MOIST_WATER_CONTENT_PCT_MEAN,
+#'       TOTAL_WATER_CONTENT_PCT_MEAN,
+#'       RESIDUAL_WATER_CONTENT_PCT_MEAN,
+#'       BULK_DENSITY_MEAN,
+#'       COARSE_FRACTION_PCT_MEAN,
+#'       C_ORG_PCT_MEAN
+#'     ) |>
+#'     # we arange by year
+#'     # dplyr::arrange(desc(INVYR)) |>
+#'     # we oly want one value per plot/ layer
+#'     dplyr::distinct() |>
+#'     data.table::as.data.table() |>
+#'     .extract_fia_metadata(
+#'       # data_soils_lab,
+#'       c("LAYER_TYPE",
+#'         "FIELD_MOIST_WATER_CONTENT_PCT_MEAN",
+#'         "RESIDUAL_WATER_CONTENT_PCT_MEAN",
+#'         "TOTAL_WATER_CONTENT_PCT_MEAN",
+#'         "BULK_DENSITY_MEAN",
+#'         "COARSE_FRACTION_PCT_MEAN",
+#'         "C_ORG_PCT_MEAN",
+#'         "STATECD"
+#'       ), county, plot, year
+#'     ) |>
+#'     #we add variables
+#'     dplyr::mutate(
+#'       PLOT = plot,
+#'       INVYR = year,
+#'       COUNTYCD = county,
+#'       # STATECD = state,
+#'       ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
+#'     ) |>
+#'     dplyr::select(
+#'       ID_UNIQUE_PLOT,
+#'       PLOT,
+#'       COUNTYCD,
+#'       STATECD,
+#'       INVYR,
+#'       #SUBP,
+#'       LAYER_TYPE,
+#'       FIELD_MOIST_WATER_CONTENT_PCT_MEAN,
+#'       TOTAL_WATER_CONTENT_PCT_MEAN,
+#'       RESIDUAL_WATER_CONTENT_PCT_MEAN,
+#'       BULK_DENSITY_MEAN,
+#'       COARSE_FRACTION_PCT_MEAN,
+#'       C_ORG_PCT_MEAN
+#'     ) |>
+#'     dplyr::rename(
+#'       YEAR = INVYR
+#'     ) |>
+#'     dplyr::as_tibble()
+#' 
+#'   #warning
+#' 
+#'   if (all(is.na(soils[["LAYER_TYPE"]]))) {
+#'     cli::cli_warn(c(
+#'       "There is no soil lab data for that combination of plot, county and year",
+#'       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+#'     ))
+#' 
+#'     soils <- dplyr::tibble()
+#'   }
+#' 
+#'   return(soils)
+#' }
 
 #' @describeIn tables_processing Process to gather needed data from soils sample loc table
-fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, state, year) {
-
-  # Assertions  and checks/validations
-  files_validation <- assertthat::validate_that(
-    !any(is.na(c(soils_loc, veg_subplot)))
-    # !any(c(soils_loc, veg_subplot) == NA_character_)
-  )
-
-  # If any file is missing abort and return an empty tibble??
-  if (is.character(files_validation)) {
-    cli::cli_warn(c(
-      "Some files can't be found",
-      "i" = "Skipping plot info for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
-    ))
-
-    return(dplyr::tibble())
-  }
-
-
-  #veg_subplot
-  data_veg_subplot <- .read_inventory_data(
-    veg_subplot,
-    select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      "SUBP",
-      # "VEG_SUBP_STATUS_CD",
-      "ROCK_COVER_PCT"
-    )) |>
-    data.table::as.data.table()
-
-  #we check it contains data
-  if (nrow(data_veg_subplot) < 1) {
-    cli::cli_warn(c(
-      "There is no soil loc data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
-    ))
-    return(dplyr::tibble())
-  }
-
-  data_veg_subplot <- dtplyr::lazy_dt(data_veg_subplot, immutable = TRUE) |>
-    #we group by plot and year to obtain mean for rock cover
-    dplyr::group_by(
-      STATECD, COUNTYCD,
-      PLOT,
-      INVYR
-    ) |>
-    dplyr::summarise(
-      ID_UNIQUE_PLOT = unique(paste("US", STATECD, COUNTYCD, PLOT, sep = "_")),
-      ROCK_COVER_PCT_MEAN = round(mean(ROCK_COVER_PCT, na.rm = TRUE), 3)
-    ) |>
-    dplyr::select(
-      PLOT,
-      COUNTYCD,
-      STATECD,
-      INVYR,
-      # SUBP,
-      # VEG_SUBP_STATUS_CD,
-      ROCK_COVER_PCT_MEAN
-    ) |>
-    dplyr::arrange(desc(INVYR))|>
-    dplyr::distinct() |>
-    data.table::as.data.table() |>
-    .extract_fia_metadata(
-      c(
-        # "VEG_SUBP_STATUS_CD",
-        "ROCK_COVER_PCT_MEAN", "STATECD"
-      ), county, plot, year
-    ) |>
-    dplyr::mutate(
-      PLOT  = plot,
-      INVYR  = year,
-      COUNTYCD = county
-    )
-
-  #soils_loc
-  data_soils_loc <- .read_inventory_data(
-    soils_loc,
-    select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      # "SMPLNNBR",
-      #check if condid is needed
-      "CONDID",
-      "FORFLTHK",
-      "LTRLRTHK",
-      "TXTRLYR1",
-      "TXTRLYR2",
-      #DEPTH TO A RESTRICTIVE LAYER
-      "DPTHSBSL"
-    )) |>
-    data.table::as.data.table()
-
-  if (nrow(data_soils_loc) < 1) {
-    cli::cli_warn(c(
-      "There is no soil loc data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
-    ))
-    return(dplyr::tibble())
-  }
-
-  data_soils_loc <- dtplyr::lazy_dt(data_soils_loc, immutable = TRUE) |>
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US",STATECD,COUNTYCD,PLOT,sep="_"),
-      # SUBP = SMPLNNBR,
-      #inches to cm
-      DPTHSBSL = 2.54*DPTHSBSL,
-      LTRLRTHK = 2.54*LTRLRTHK,
-      FORFLTHK = 2.54*FORFLTHK,
-      # for tidyr::fill to work when all values are NAs
-      TXTRLYR1 = as.numeric(TXTRLYR1),
-      TXTRLYR2 = as.numeric(TXTRLYR2)
-    ) |>
-    dplyr::group_by(
-      PLOT, INVYR
-    ) |>
-    #we fill all data of same plot and year with same value
-    tidyr::fill(TXTRLYR1, TXTRLYR2, .direction = "downup") |>
-    #we generate means
-    dplyr::mutate(
-      text1_temp = dplyr::case_when(
-        TXTRLYR1 == 0 ~ "organic",
-        TXTRLYR1 == 1 ~ "loamy",
-        TXTRLYR1 == 2 ~ "clayey",
-        TXTRLYR1 == 3 ~ "sandy",
-        TXTRLYR1 == 4 ~ "coarse_sand",
-        TXTRLYR1 == 9 ~ "NA"
-      ),
-      text2_temp = dplyr::case_when(
-        TXTRLYR2 == 0 ~ "organic",
-        TXTRLYR2 == 1 ~ "loamy",
-        TXTRLYR2 == 2 ~ "clayey",
-        TXTRLYR2 == 3 ~ "sandy",
-        TXTRLYR2 == 4 ~ "coarse_sand",
-        TXTRLYR1 == 9 ~ "NA"
-      ),
-      DPTHSBSL_MEAN = mean(DPTHSBSL,na.rm = TRUE),
-      LTRLRTHK_MEAN = mean(LTRLRTHK,na.rm = TRUE),
-      FORFLTHK_MEAN = mean(FORFLTHK,na.rm = TRUE)
-    ) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      # SUBP,
-      #check if condid is needed
-      # CONDID,
-      FORFLTHK_MEAN,
-      # FORFLTHK,
-      LTRLRTHK_MEAN,
-      # LTRLRTHK,
-      # TXTRLYR1,
-      # TXTRLYR2,
-      text1_temp,
-      text2_temp,
-      #DEPTH TO A RESTRICTIVE LAYER
-      DPTHSBSL_MEAN,
-      # DPTHSBSL
-    ) |>
-    dplyr::rename(
-      TXTRLYR1 = text1_temp,
-      TXTRLYR2 = text2_temp,
-    ) |>
-    dplyr::arrange(desc(INVYR)
-    ) |>
-    dplyr::distinct() |>
-    data.table::as.data.table() |>
-    .extract_fia_metadata(c(
-      "FORFLTHK_MEAN",
-      "LTRLRTHK_MEAN",
-      "TXTRLYR1",
-      "TXTRLYR2",
-      #DEPTH TO A RESTRICTIVE LAYER
-      "DPTHSBSL_MEAN",
-      "STATECD"
-      ), county, plot, year
-    ) |>
-    dplyr::mutate(
-      PLOT  = plot,
-      INVYR  = year,
-      COUNTYCD = county,
-    )
-
-  # combining data
-  soils_loc_combined <- dplyr::left_join(
-    data_soils_loc, data_veg_subplot, by = c("PLOT", "INVYR", "COUNTYCD", "STATECD")
-  ) |>
-    # we add id cariable
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
-    ) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      YEAR = INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      # SUBP,
-      # SUBP_ORIGINAL,
-      FORFLTHK_MEAN,
-      FORFLTHK_MEAN_ORIGINAL,
-      LTRLRTHK_MEAN,
-      LTRLRTHK_MEAN_ORIGINAL,
-      TXTRLYR1,
-      TXTRLYR1_ORIGINAL,
-      TXTRLYR2,
-      TXTRLYR2_ORIGINAL,
-      DPTHSBSL_MEAN,
-      DPTHSBSL_MEAN_ORIGINAL,
-      ROCK_COVER_PCT_MEAN,
-      ROCK_COVER_PCT_MEAN_ORIGINAL
-    ) |>
-    dplyr::as_tibble()
-
-  #we check that we have data
-
-  if (all(is.na(c(soils_loc_combined[["TXTRLYR1"]], soils_loc_combined[["TXTRLYR2"]], soils_loc_combined[["DPTHSBSL_MEAN"]])))) {
-    cli::cli_warn(c(
-      "There is no soil loc data for that combination of plot, county and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
-    ))
-    soils_loc_combined<-dplyr::tibble()
-  }
-
-  return(soils_loc_combined)
-}
+# fia_soils_loc_table_process <- function(soils_loc, veg_subplot, plot, county, state, year) {
+# 
+#   # Assertions  and checks/validations
+#   files_validation <- assertthat::validate_that(
+#     !any(is.na(c(soils_loc, veg_subplot)))
+#     # !any(c(soils_loc, veg_subplot) == NA_character_)
+#   )
+# 
+#   # If any file is missing abort and return an empty tibble??
+#   if (is.character(files_validation)) {
+#     cli::cli_warn(c(
+#       "Some files can't be found",
+#       "i" = "Skipping plot info for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
+#     ))
+# 
+#     return(dplyr::tibble())
+#   }
+# 
+# 
+#   #veg_subplot
+#   data_veg_subplot <- .read_inventory_data(
+#     veg_subplot,
+#     select = c(
+#       "INVYR",
+#       "STATECD",
+#       "COUNTYCD",
+#       "PLOT",
+#       "SUBP",
+#       # "VEG_SUBP_STATUS_CD",
+#       "ROCK_COVER_PCT"
+#     )) |>
+#     data.table::as.data.table()
+# 
+#   #we check it contains data
+#   if (nrow(data_veg_subplot) < 1) {
+#     cli::cli_warn(c(
+#       "There is no soil loc data for that combination of plot, county and year",
+#       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+#     ))
+#     return(dplyr::tibble())
+#   }
+# 
+#   data_veg_subplot <- dtplyr::lazy_dt(data_veg_subplot, immutable = TRUE) |>
+#     #we group by plot and year to obtain mean for rock cover
+#     dplyr::group_by(
+#       STATECD, COUNTYCD,
+#       PLOT,
+#       INVYR
+#     ) |>
+#     dplyr::summarise(
+#       ID_UNIQUE_PLOT = unique(paste("US", STATECD, COUNTYCD, PLOT, sep = "_")),
+#       ROCK_COVER_PCT_MEAN = round(mean(ROCK_COVER_PCT, na.rm = TRUE), 3)
+#     ) |>
+#     dplyr::select(
+#       PLOT,
+#       COUNTYCD,
+#       STATECD,
+#       INVYR,
+#       # SUBP,
+#       # VEG_SUBP_STATUS_CD,
+#       ROCK_COVER_PCT_MEAN
+#     ) |>
+#     dplyr::arrange(desc(INVYR))|>
+#     dplyr::distinct() |>
+#     data.table::as.data.table() |>
+#     .extract_fia_metadata(
+#       c(
+#         # "VEG_SUBP_STATUS_CD",
+#         "ROCK_COVER_PCT_MEAN", "STATECD"
+#       ), county, plot, year
+#     ) |>
+#     dplyr::mutate(
+#       PLOT  = plot,
+#       INVYR  = year,
+#       COUNTYCD = county
+#     )
+# 
+#   #soils_loc
+#   data_soils_loc <- .read_inventory_data(
+#     soils_loc,
+#     select = c(
+#       "INVYR",
+#       "STATECD",
+#       "COUNTYCD",
+#       "PLOT",
+#       # "SMPLNNBR",
+#       #check if condid is needed
+#       "CONDID",
+#       "FORFLTHK",
+#       "LTRLRTHK",
+#       "TXTRLYR1",
+#       "TXTRLYR2",
+#       #DEPTH TO A RESTRICTIVE LAYER
+#       "DPTHSBSL"
+#     )) |>
+#     data.table::as.data.table()
+# 
+#   if (nrow(data_soils_loc) < 1) {
+#     cli::cli_warn(c(
+#       "There is no soil loc data for that combination of plot, county and year",
+#       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+#     ))
+#     return(dplyr::tibble())
+#   }
+# 
+#   data_soils_loc <- dtplyr::lazy_dt(data_soils_loc, immutable = TRUE) |>
+#     dplyr::mutate(
+#       ID_UNIQUE_PLOT = paste("US",STATECD,COUNTYCD,PLOT,sep="_"),
+#       # SUBP = SMPLNNBR,
+#       #inches to cm
+#       DPTHSBSL = 2.54*DPTHSBSL,
+#       LTRLRTHK = 2.54*LTRLRTHK,
+#       FORFLTHK = 2.54*FORFLTHK,
+#       # for tidyr::fill to work when all values are NAs
+#       TXTRLYR1 = as.numeric(TXTRLYR1),
+#       TXTRLYR2 = as.numeric(TXTRLYR2)
+#     ) |>
+#     dplyr::group_by(
+#       PLOT, INVYR
+#     ) |>
+#     #we fill all data of same plot and year with same value
+#     tidyr::fill(TXTRLYR1, TXTRLYR2, .direction = "downup") |>
+#     #we generate means
+#     dplyr::mutate(
+#       text1_temp = dplyr::case_when(
+#         TXTRLYR1 == 0 ~ "organic",
+#         TXTRLYR1 == 1 ~ "loamy",
+#         TXTRLYR1 == 2 ~ "clayey",
+#         TXTRLYR1 == 3 ~ "sandy",
+#         TXTRLYR1 == 4 ~ "coarse_sand",
+#         TXTRLYR1 == 9 ~ "NA"
+#       ),
+#       text2_temp = dplyr::case_when(
+#         TXTRLYR2 == 0 ~ "organic",
+#         TXTRLYR2 == 1 ~ "loamy",
+#         TXTRLYR2 == 2 ~ "clayey",
+#         TXTRLYR2 == 3 ~ "sandy",
+#         TXTRLYR2 == 4 ~ "coarse_sand",
+#         TXTRLYR1 == 9 ~ "NA"
+#       ),
+#       DPTHSBSL_MEAN = mean(DPTHSBSL,na.rm = TRUE),
+#       LTRLRTHK_MEAN = mean(LTRLRTHK,na.rm = TRUE),
+#       FORFLTHK_MEAN = mean(FORFLTHK,na.rm = TRUE)
+#     ) |>
+#     dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       INVYR,
+#       STATECD,
+#       COUNTYCD,
+#       PLOT,
+#       # SUBP,
+#       #check if condid is needed
+#       # CONDID,
+#       FORFLTHK_MEAN,
+#       # FORFLTHK,
+#       LTRLRTHK_MEAN,
+#       # LTRLRTHK,
+#       # TXTRLYR1,
+#       # TXTRLYR2,
+#       text1_temp,
+#       text2_temp,
+#       #DEPTH TO A RESTRICTIVE LAYER
+#       DPTHSBSL_MEAN,
+#       # DPTHSBSL
+#     ) |>
+#     dplyr::rename(
+#       TXTRLYR1 = text1_temp,
+#       TXTRLYR2 = text2_temp,
+#     ) |>
+#     dplyr::arrange(desc(INVYR)
+#     ) |>
+#     dplyr::distinct() |>
+#     data.table::as.data.table() |>
+#     .extract_fia_metadata(c(
+#       "FORFLTHK_MEAN",
+#       "LTRLRTHK_MEAN",
+#       "TXTRLYR1",
+#       "TXTRLYR2",
+#       #DEPTH TO A RESTRICTIVE LAYER
+#       "DPTHSBSL_MEAN",
+#       "STATECD"
+#       ), county, plot, year
+#     ) |>
+#     dplyr::mutate(
+#       PLOT  = plot,
+#       INVYR  = year,
+#       COUNTYCD = county,
+#     )
+# 
+#   # combining data
+#   soils_loc_combined <- dplyr::left_join(
+#     data_soils_loc, data_veg_subplot, by = c("PLOT", "INVYR", "COUNTYCD", "STATECD")
+#   ) |>
+#     # we add id cariable
+#     dplyr::mutate(
+#       ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep="_")
+#     ) |>
+#     dplyr::select(
+#       ID_UNIQUE_PLOT,
+#       YEAR = INVYR,
+#       STATECD,
+#       COUNTYCD,
+#       PLOT,
+#       # SUBP,
+#       # SUBP_ORIGINAL,
+#       FORFLTHK_MEAN,
+#       FORFLTHK_MEAN_ORIGINAL,
+#       LTRLRTHK_MEAN,
+#       LTRLRTHK_MEAN_ORIGINAL,
+#       TXTRLYR1,
+#       TXTRLYR1_ORIGINAL,
+#       TXTRLYR2,
+#       TXTRLYR2_ORIGINAL,
+#       DPTHSBSL_MEAN,
+#       DPTHSBSL_MEAN_ORIGINAL,
+#       ROCK_COVER_PCT_MEAN,
+#       ROCK_COVER_PCT_MEAN_ORIGINAL
+#     ) |>
+#     dplyr::as_tibble()
+# 
+#   #we check that we have data
+# 
+#   if (all(is.na(c(soils_loc_combined[["TXTRLYR1"]], soils_loc_combined[["TXTRLYR2"]], soils_loc_combined[["DPTHSBSL_MEAN"]])))) {
+#     cli::cli_warn(c(
+#       "There is no soil loc data for that combination of plot, county and year",
+#       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county {.var {county}}"
+#     ))
+#     soils_loc_combined<-dplyr::tibble()
+#   }
+# 
+#   return(soils_loc_combined)
+# }

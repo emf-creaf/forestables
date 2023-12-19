@@ -60,8 +60,8 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
     "subplot_table",
     "p3_understory_table",
     "seedling_table",
-    "soils_loc_table",
-    "soils_lab_table",
+    # "soils_loc_table",
+    # "soils_lab_table",
     "veg_subplot_table",
     "p2_veg_subplot_table"
   )

@@ -637,7 +637,7 @@ test_that("fia_seedling_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "N", "TPA_UNADJ", "DENSITY"
+    "SP_CODE", "SP_NAME", "N", "TPA_UNADJ", "DENSITY", "Height", "DBH"
   )
 
   # object
@@ -750,132 +750,132 @@ test_that("fia_subplot_table_process works as intended", {
   expect_true(nrow(test_no_plot_error) < 1L)
 })
 
-test_that("fia_soils_lab_table_process works as intended", {
-
-  expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "STATECD", "YEAR", "LAYER_TYPE",
-    "FIELD_MOIST_WATER_CONTENT_PCT_MEAN", "TOTAL_WATER_CONTENT_PCT_MEAN",
-    "RESIDUAL_WATER_CONTENT_PCT_MEAN", "BULK_DENSITY_MEAN", "COARSE_FRACTION_PCT_MEAN",
-    "C_ORG_PCT_MEAN"
-  )
-
-  # object
-  expect_s3_class(
-    test_res <- fia_soils_lab_table_process(
-      test_input$soils_lab_table[1],
-      test_input$plots[1],
-      test_input$county[1],
-      test_input$state[1],
-      test_year
-    ),
-    "tbl"
-  )
-
-  # data integrity
-  expect_named(test_res, expected_names, ignore.order = TRUE)
-  expect_true(nrow(test_res) > 0)
-
-  expect_length(unique(test_res$YEAR), 1)
-  expect_length(unique(test_res$PLOT), 1)
-  expect_length(unique(test_res$COUNTYCD), 1)
-
-  expect_identical(unique(test_res$YEAR), test_year)
-  expect_identical(unique(test_res$PLOT), test_input$plots[1])
-  expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
-
-  # errors
-  expect_warning(
-    test_error <- fia_soils_lab_table_process(
-      NA_character_,
-      test_input$plots[1],
-      test_input$county[1],
-      test_input$state[1],
-      test_year
-    ),
-    "Some files"
-  )
-  expect_s3_class(test_error, "tbl")
-  expect_true(nrow(test_error) < 1)
-
-  # No plot
-  expect_warning(
-    test_no_plot_error <- fia_soils_lab_table_process(
-      test_input$soils_lab_table[30],
-      test_input$plots[30],
-      test_input$county[30],
-      test_input$state[30],
-      test_year
-    ),
-    "combination of plot, county and year"
-  )
-  expect_s3_class(test_no_plot_error, "tbl")
-  expect_true(nrow(test_no_plot_error) < 1L)
-})
-
-test_that("fia_soils_loc_table_process works as intended", {
-
-  expected_names <- c(
-    "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "FORFLTHK_MEAN",
-    "FORFLTHK_MEAN_ORIGINAL", "LTRLRTHK_MEAN", "LTRLRTHK_MEAN_ORIGINAL", "TXTRLYR1",
-    "TXTRLYR1_ORIGINAL", "TXTRLYR2", "TXTRLYR2_ORIGINAL", "DPTHSBSL_MEAN",
-    "DPTHSBSL_MEAN_ORIGINAL", "ROCK_COVER_PCT_MEAN", "ROCK_COVER_PCT_MEAN_ORIGINAL"
-  )
-
-  # object
-  expect_s3_class(
-    test_res <- fia_soils_loc_table_process(
-      test_input$soils_loc_table[1],
-      test_input$veg_subplot_table[1],
-      test_input$plots[1],
-      test_input$county[1],
-      test_input$state[1],
-      test_year
-    ),
-    "tbl"
-  )
-
-  # data integrity
-  expect_named(test_res, expected_names, ignore.order = TRUE)
-  expect_true(nrow(test_res) > 0)
-
-  expect_length(unique(test_res$YEAR), 1)
-  expect_length(unique(test_res$PLOT), 1)
-  expect_length(unique(test_res$COUNTYCD), 1)
-
-  expect_identical(unique(test_res$YEAR), test_year)
-  expect_identical(unique(test_res$PLOT), test_input$plots[1])
-  expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
-
-  # errors
-  expect_warning(
-    test_error <- fia_soils_loc_table_process(
-      NA_character_,
-      test_input$veg_subplot_table[1],
-      test_input$plots[1],
-      test_input$county[1],
-      test_input$state[1],
-      test_year
-    ),
-    "Some files"
-  )
-  expect_s3_class(test_error, "tbl")
-  expect_true(nrow(test_error) < 1)
-
-  # No plot
-  expect_warning(
-    test_no_plot_error <- fia_soils_loc_table_process(
-      test_input$soils_loc_table[30],
-      test_input$veg_subplot_table[30],
-      test_input$plots[30],
-      test_input$county[30],
-      test_input$state[30],
-      test_year
-    ),
-    "combination of plot, county and year"
-  )
-  expect_s3_class(test_no_plot_error, "tbl")
-  expect_true(nrow(test_no_plot_error) < 1L)
-})
+# test_that("fia_soils_lab_table_process works as intended", {
+# 
+#   expected_names <- c(
+#     "ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "STATECD", "YEAR", "LAYER_TYPE",
+#     "FIELD_MOIST_WATER_CONTENT_PCT_MEAN", "TOTAL_WATER_CONTENT_PCT_MEAN",
+#     "RESIDUAL_WATER_CONTENT_PCT_MEAN", "BULK_DENSITY_MEAN", "COARSE_FRACTION_PCT_MEAN",
+#     "C_ORG_PCT_MEAN"
+#   )
+# 
+#   # object
+#   expect_s3_class(
+#     test_res <- fia_soils_lab_table_process(
+#       test_input$soils_lab_table[1],
+#       test_input$plots[1],
+#       test_input$county[1],
+#       test_input$state[1],
+#       test_year
+#     ),
+#     "tbl"
+#   )
+# 
+#   # data integrity
+#   expect_named(test_res, expected_names, ignore.order = TRUE)
+#   expect_true(nrow(test_res) > 0)
+# 
+#   expect_length(unique(test_res$YEAR), 1)
+#   expect_length(unique(test_res$PLOT), 1)
+#   expect_length(unique(test_res$COUNTYCD), 1)
+# 
+#   expect_identical(unique(test_res$YEAR), test_year)
+#   expect_identical(unique(test_res$PLOT), test_input$plots[1])
+#   expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
+# 
+#   # errors
+#   expect_warning(
+#     test_error <- fia_soils_lab_table_process(
+#       NA_character_,
+#       test_input$plots[1],
+#       test_input$county[1],
+#       test_input$state[1],
+#       test_year
+#     ),
+#     "Some files"
+#   )
+#   expect_s3_class(test_error, "tbl")
+#   expect_true(nrow(test_error) < 1)
+# 
+#   # No plot
+#   expect_warning(
+#     test_no_plot_error <- fia_soils_lab_table_process(
+#       test_input$soils_lab_table[30],
+#       test_input$plots[30],
+#       test_input$county[30],
+#       test_input$state[30],
+#       test_year
+#     ),
+#     "combination of plot, county and year"
+#   )
+#   expect_s3_class(test_no_plot_error, "tbl")
+#   expect_true(nrow(test_no_plot_error) < 1L)
+# })
+# 
+# test_that("fia_soils_loc_table_process works as intended", {
+# 
+#   expected_names <- c(
+#     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "FORFLTHK_MEAN",
+#     "FORFLTHK_MEAN_ORIGINAL", "LTRLRTHK_MEAN", "LTRLRTHK_MEAN_ORIGINAL", "TXTRLYR1",
+#     "TXTRLYR1_ORIGINAL", "TXTRLYR2", "TXTRLYR2_ORIGINAL", "DPTHSBSL_MEAN",
+#     "DPTHSBSL_MEAN_ORIGINAL", "ROCK_COVER_PCT_MEAN", "ROCK_COVER_PCT_MEAN_ORIGINAL"
+#   )
+# 
+#   # object
+#   expect_s3_class(
+#     test_res <- fia_soils_loc_table_process(
+#       test_input$soils_loc_table[1],
+#       test_input$veg_subplot_table[1],
+#       test_input$plots[1],
+#       test_input$county[1],
+#       test_input$state[1],
+#       test_year
+#     ),
+#     "tbl"
+#   )
+# 
+#   # data integrity
+#   expect_named(test_res, expected_names, ignore.order = TRUE)
+#   expect_true(nrow(test_res) > 0)
+# 
+#   expect_length(unique(test_res$YEAR), 1)
+#   expect_length(unique(test_res$PLOT), 1)
+#   expect_length(unique(test_res$COUNTYCD), 1)
+# 
+#   expect_identical(unique(test_res$YEAR), test_year)
+#   expect_identical(unique(test_res$PLOT), test_input$plots[1])
+#   expect_identical(unique(test_res$COUNTYCD) |> as.character(), test_input$county[1])
+# 
+#   # errors
+#   expect_warning(
+#     test_error <- fia_soils_loc_table_process(
+#       NA_character_,
+#       test_input$veg_subplot_table[1],
+#       test_input$plots[1],
+#       test_input$county[1],
+#       test_input$state[1],
+#       test_year
+#     ),
+#     "Some files"
+#   )
+#   expect_s3_class(test_error, "tbl")
+#   expect_true(nrow(test_error) < 1)
+# 
+#   # No plot
+#   expect_warning(
+#     test_no_plot_error <- fia_soils_loc_table_process(
+#       test_input$soils_loc_table[30],
+#       test_input$veg_subplot_table[30],
+#       test_input$plots[30],
+#       test_input$county[30],
+#       test_input$state[30],
+#       test_year
+#     ),
+#     "combination of plot, county and year"
+#   )
+#   expect_s3_class(test_no_plot_error, "tbl")
+#   expect_true(nrow(test_no_plot_error) < 1L)
+# })
 
 # table process -------------------------------------------------------------------------------
 
@@ -895,7 +895,8 @@ test_that("fia_table_process works as intended", {
     "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
     "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
-    "tree", "understory", "regen", "subplot", "soils"
+    "tree", "understory", "regen", "subplot"
+    # "soils"
   )
 
   # object
@@ -957,25 +958,25 @@ test_that("fia_table_process works as intended", {
        purrr::list_rbind() |>
        nrow()) < 1
   )
-  expect_true(
-    (test_res_missing_files |>
-       dplyr::filter(STATEAB == "AL") |>
-       dplyr::pull(soils) |>
-       purrr::list_rbind() |>
-       dplyr::pull(soils_lab) |>
-       purrr::list_rbind() |>
-       nrow()) < 1
-  )
+  # expect_true(
+  #   (test_res_missing_files |>
+  #      dplyr::filter(STATEAB == "AL") |>
+  #      dplyr::pull(soils) |>
+  #      purrr::list_rbind() |>
+  #      dplyr::pull(soils_lab) |>
+  #      purrr::list_rbind() |>
+  #      nrow()) < 1
+  # )
 
-  expect_true(
-    (test_res_missing_files |>
-       dplyr::filter(STATEAB == "AL") |>
-       dplyr::pull(soils) |>
-       purrr::list_rbind() |>
-       dplyr::pull(soils_loc) |>
-       purrr::list_rbind() |>
-       nrow()) < 1
-  )
+  # expect_true(
+  #   (test_res_missing_files |>
+  #      dplyr::filter(STATEAB == "AL") |>
+  #      dplyr::pull(soils) |>
+  #      purrr::list_rbind() |>
+  #      dplyr::pull(soils_loc) |>
+  #      purrr::list_rbind() |>
+  #      nrow()) < 1
+  # )
   expect_true(
     (test_res_missing_files |>
        dplyr::filter(STATEAB == "MO") |>
@@ -1019,7 +1020,8 @@ test_that("fia_to_tibble works as intended", {
     "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
     "RSCD", "DESIGNCD", "LAT", "LAT_ORIGINAL", "LON", "LON_ORIGINAL", "COORD_SYS",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
-    "tree", "understory", "regen", "subplot", "soils"
+    "tree", "understory", "regen", "subplot"
+    # "soils"
   )
   test_years <- c(2005, 2010)
 

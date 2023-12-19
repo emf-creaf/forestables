@@ -40,7 +40,7 @@ test_that(".read_inventory_data returns lazy_dt for fia", {
   expect_true(nrow(test_res) > 0)
 
   # wrong one
-  test_cmd <- glue::glue("grep -E ',INVYR,|,25,(tururu|tururu.0),' {test_file}")
+  test_cmd <- glue::glue('grep -E ",INVYR,|,25,(tururu|tururu.0)," {test_file}')
   expect_s3_class(test_res <- .read_inventory_data(test_cmd, .ifn = FALSE), "dtplyr_step_first")
   expect_false(nrow(test_res) > 0)
 })
