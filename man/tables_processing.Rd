@@ -5,7 +5,6 @@
 \alias{ffi_plot_table_process}
 \alias{ffi_tree_table_process}
 \alias{ffi_shrub_table_process}
-\alias{ffi_soil_table_process}
 \alias{ffi_regen_table_process}
 \alias{fia_plot_table_process}
 \alias{fia_tree_table_process}
@@ -14,8 +13,6 @@
 \alias{fia_p2_understory_table_process}
 \alias{fia_seedling_table_process}
 \alias{fia_subplot_table_process}
-\alias{fia_soils_lab_table_process}
-\alias{fia_soils_loc_table_process}
 \title{Data tables process}
 \usage{
 ffi_plot_table_process(plot_data, soils_data, plot, year, metadonnees)
@@ -30,8 +27,6 @@ ffi_shrub_table_process(
   growth_form_lignified_france,
   idp_dep_ref
 )
-
-ffi_soil_table_process(soils_data, plot, year, metadonnees, idp_dep_ref)
 
 ffi_regen_table_process(regen_data, plot, year, espar_cdref, idp_dep_ref)
 
@@ -71,10 +66,6 @@ fia_p2_understory_table_process(
 fia_seedling_table_process(seedling_data, plot, county, year, ref_species)
 
 fia_subplot_table_process(subplot_data, plot, county, year)
-
-fia_soils_lab_table_process(soils_lab, plot, county, state, year)
-
-fia_soils_loc_table_process(soils_loc, veg_subplot, plot, county, state, year)
 }
 \arguments{
 \item{plot_data, tree_data, shrub_data, soils_data}{Paths to the files with the corresponding data}
@@ -123,8 +114,6 @@ These functions retrieve the data for a plot in one year.
 
 \item \code{ffi_shrub_table_process()}: Process to gather needed data from shrub table
 
-\item \code{ffi_soil_table_process()}: Process to gather needed data from soil table
-
 \item \code{ffi_regen_table_process()}: Process to gather needed data from soil table
 
 \item \code{fia_plot_table_process()}: Process to gather needed data from plot, survey and cond tables
@@ -141,9 +130,5 @@ corresponding function.
 \item \code{fia_seedling_table_process()}: Process to gather needed data from seedling table
 
 \item \code{fia_subplot_table_process()}: Process to gather needed data from subplot table
-
-\item \code{fia_soils_lab_table_process()}: Process to gather needed data from soils lab table
-
-\item \code{fia_soils_loc_table_process()}: Process to gather needed data from soils sample loc table
 
 }}

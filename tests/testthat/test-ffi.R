@@ -432,7 +432,8 @@ test_that("ffi_regen_table_process works as intended", {
     "YEAR",
     "SP_CODE",
     "SP_NAME",
-    "COVER"
+    "COVER",
+    "DBH"
   )
 
   # object
