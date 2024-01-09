@@ -357,7 +357,11 @@ ffi_tables_process <- function(
           ASPECT = EXPO,
           ASPECT_ORIGINAL = EXPO_ORIGINAL,
           SLOPE = PENT2,
-          SLOPE_ORIGINAL = PENT2_ORIGINAL
+          SLOPE_ORIGINAL = PENT2_ORIGINAL,
+          COORD1 = XL ,
+          COORD1_ORIGINAL = XL_ORIGINAL,
+          COORD2 = YL,
+          COORD2_ORIGINAL = YL_ORIGINAL
           # soils = soil
         )
       return(plot_info)
@@ -373,7 +377,7 @@ ffi_tables_process <- function(
   temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
-    dplyr::filter(!(is.na(YL) & is.na(YL_ORIGINAL) & is.na(XL) & is.na(XL_ORIGINAL)))
+    dplyr::filter(!(is.na(COORD2) & is.na(COORD2_ORIGINAL) & is.na(COORD1) & is.na(COORD1_ORIGINAL)))
 }
 
 

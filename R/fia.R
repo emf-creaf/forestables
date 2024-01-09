@@ -550,7 +550,13 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       SLOPE_ORIGINAL
     ) |>
     dplyr::rename(
-      YEAR = INVYR
+       YEAR = INVYR, 
+      # region_code = COUNTYCD,
+      COORD1 = LON,
+      COORD2 = LAT,
+      COORD1_ORIGINAL = LON_ORIGINAL,
+      COORD2_ORIGINAL = LAT_ORIGINAL,
+      
 
     ) |>
     dplyr::as_tibble()
@@ -634,12 +640,13 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
     ) |>
 
     dplyr::arrange(SP_NAME) |>
+    
 
     dplyr::select(
       ID_UNIQUE_PLOT,
       INVYR,
       STATECD,
-      COUNTYCD,
+     COUNTYCD,
       PLOT,
       TREE,
       STATUSCD,
@@ -654,6 +661,7 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
       YEAR = INVYR,
       STATUS = STATUSCD,
       SP_CODE = SPCD
+      # region_code = COUNTYCD
     ) |>
     dplyr::as_tibble()
 
@@ -859,6 +867,7 @@ fia_p3_understory_table_process <- function(understory_data, plot, county, year,
       YEAR = INVYR,
       SP_CODE = SPECIES_SYMBOL,
       COVER = COVER_PCT
+      # region_code = COUNTYCD
     ) |>
     dplyr::distinct() |>
     dplyr::as_tibble()
@@ -1020,6 +1029,7 @@ fia_p2_understory_table_process <- function(understory_p2, plot, county, year, g
       YEAR=INVYR,
       SP_CODE = SPECIES_SYMBOL,
       COVER = COVER_PCT
+      # region_code = COUNTYCD
     ) |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
@@ -1140,6 +1150,7 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
       YEAR = INVYR,
       SP_CODE = SPCD,
       N = TREECOUNT_CALC
+      # region_code = COUNTYCD
     ) |>
     # # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
@@ -1224,7 +1235,10 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
       SUBPCOND,
       MICRCOND
     ) |>
-    dplyr::rename(YEAR = INVYR) |>
+    dplyr::rename(
+      YEAR = INVYR
+      # region_code = COUNTYCD
+      ) |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
     dplyr::distinct() |>

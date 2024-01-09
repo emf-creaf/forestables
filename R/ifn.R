@@ -226,9 +226,9 @@ ifn_to_tibble <- function(
           "ID_UNIQUE_PLOT",
           "COUNTRY",
           "YEAR",
-          "ca_name_original",
-          "province_name_original",
+          "province_name",
           "province_code",
+          "ca_name_original",
           "PLOT",
           "Clase",
           "Subclase",
@@ -1105,7 +1105,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       y = ifn_provinces_dictionary |>
         dplyr::select(
           province_code = province_code,
-          province_name_original = province_name_original,
+          province_name = province_name_original,
           ca_name_original = ca_name_original
         ),
       by = "province_code")
@@ -1169,7 +1169,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       "ID_UNIQUE_PLOT",
       "COUNTRY",
       "ca_name_original",
-      "province_name_original",
+      "province_name",
       "province_code",
       "PLOT",
       "YEAR",
@@ -1314,8 +1314,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       dplyr::left_join(
         y = ifn_provinces_dictionary |>
           dplyr::select(
-            province_code,
-            province_name_original ,
+            province_code = province_code,
+            province_name = province_name_original ,
             ca_name_original
           ),
         by = "province_code"
@@ -1329,7 +1329,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         COUNTRY,
         ca_name_original,
         province_code,
-        province_name_original ,
+        province_name,
         PLOT,
         Clase,
         Subclase,
@@ -1440,7 +1440,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
          "YEAR",
          "ca_name_original",
          "province_code",
-         "province_name_original",
+         "province_name",
          "PLOT",
          "Clase",
          "Subclase",
