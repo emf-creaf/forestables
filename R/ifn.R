@@ -211,14 +211,14 @@ ifn_to_tibble <- function(
 
 
       plot_info |>
+        dplyr::rename(
+            COORD1 = COORDEX,
+            COORD2 = COORDEY
+        ) |> 
         dplyr::mutate(
-          COORD1 = COORDEX,
-          COORD2 = COORDEY,
           tree = list(tree),
           understory = list(understory),
-          regen = list(regen),
-
-
+          regen = list(regen)
         ) |>
 
         dplyr::select(
@@ -823,16 +823,13 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       Height = dplyr::case_when( Hm > 0 ~ Hm,
                                  #default
                                  Regena > 0 ~ 100 ,
-                                 TRUE ~ NA)
-      
+                                 TRUE ~ NA.
+                                 ),
+      DENSITY = 127.3239546
       # Z50 = NA ,
       # Z95 = NA,
       # OrdenIf2 = NA
       ) |> 
-  
-  
-  
-
     dplyr::select(
       ID_UNIQUE_PLOT,
       province_code,
@@ -847,6 +844,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       DBH,
       Height,
       # OrdenIf2,
+      DENSITY,
       N,
       # Z95,
       # Z50
@@ -926,10 +924,10 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       ),
       
       N = dplyr::case_when(
-        CatDes == 1 ~ 2.5,
-        CatDes == 2 ~ 10,
-        CatDes == 3 ~ 20,
-        CatDes == 4 ~ NumPies,
+        CatDes == 1 ~ 2.5*127.3239546,
+        CatDes == 2 ~ 10*127.3239546,
+        CatDes == 3 ~ 20*127.3239546,
+        CatDes == 4 ~ NumPies*127.3239546,
         TRUE ~ NA),
       
       Height = dplyr::case_when(
@@ -938,11 +936,11 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
         CatDes == 3 ~ 100,
         CatDes == 4 ~ Hm ,
         TRUE ~ NA),
+      DENSITY = 127.3239546
       # nArbol = NA,
       # OrdenIf2 = NA,
       # OrdenIf3 = NA,
       # OrdenIf4 = NA,
-      N = 127.3239546
       # Z50 = NA ,
       # Z95 = NA
       
@@ -962,7 +960,8 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       # OrdenIf2,
       # OrdenIf3,
       # OrdenIf4,
-      N
+      N,
+      DENSITY
       # Z95,
       # Z50
       )

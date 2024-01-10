@@ -818,8 +818,8 @@ ffi_shrub_table_process <- function(
     #   by = "CD_REF"
     # ) |>
     dplyr::mutate(
-      ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_"))
-      # Hm = NA
+      ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_")),
+       HT = NA
     ) |>
     dplyr::rename(
       PLOT = IDP,
@@ -836,8 +836,8 @@ ffi_shrub_table_process <- function(
       SP_CODE,
       # ESPAR,
       SP_NAME,
-      COVER
-      #Hm
+      COVER,
+      HT
     ) |>
     dplyr::as_tibble()
   
@@ -872,6 +872,7 @@ ffi_shrub_table_process <- function(
           # ESPAR,
           SP_NAME,
           COVER,
+          
           GrowthForm
         ) |>
     dplyr::as_tibble()

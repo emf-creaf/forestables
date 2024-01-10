@@ -705,7 +705,8 @@ test_that("ifn_regen_table_process for ifn2 works as intended", {
     "SP_NAME",
     "DBH",
     "Height",
-    "N"
+    "N",
+    "DENSITY"
   )
 
   # object
@@ -798,7 +799,8 @@ test_that("ifn_regen_table_process for ifn3 works as intended", {
     "SP_NAME",
     "DBH",
     "Height",
-    "N"
+    "N",
+    "DENSITY"
   )
 
   # object
@@ -908,7 +910,8 @@ test_that("ifn_regen_table_process for ifn4 works as intended", {
       "SP_NAME",
       "DBH",
       "Height",
-      "N"
+      "N",
+      "DENSITY"
   )
 
   # object

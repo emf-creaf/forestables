@@ -327,7 +327,7 @@ fia_tables_process <- function(
   temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
-    dplyr::filter(!(is.na(LAT) & is.na(LAT_ORIGINAL) & is.na(LON) & is.na(LON_ORIGINAL)))
+    dplyr::filter(!(is.na(COORD1) & is.na(COORD2_ORIGINAL) & is.na(COORD1) & is.na(COORD1_ORIGINAL)))
 }
 
 #' Data tables process
@@ -389,7 +389,7 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
     dplyr::mutate(
       PLOT  = plot,
       INVYR  = year,
-      COUNTYCD   = county,
+      COUNTYCD = county,
     )
 
   # plot table
@@ -537,10 +537,10 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       P2VEG_SAMPLING_LEVEL_DETAIL_CD,
       RSCD,
       DESIGNCD,
-      LAT,
-      LAT_ORIGINAL,
       LON,
       LON_ORIGINAL,
+      LAT,
+      LAT_ORIGINAL,
       COORD_SYS,
       ELEV,
       ELEV_ORIGINAL,
@@ -1119,15 +1119,15 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
     dplyr::mutate(
       SP_NAME = paste(GENUS, SPECIES, sep = " "),
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
-      Height = 15, 
+      Height = 15.24, 
       #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
-      DBH = 0.5
+      DBH = 2.54
     ) |>
     # we arrange by species and tpa
     dplyr::arrange(SPCD,TPA_UNADJ) |>
     dplyr::mutate(
       #calculate density represented by tree
-      DENSITY = TPA_UNADJ * TREECOUNT_CALC
+      N = TPA_UNADJ * TREECOUNT_CALC
     ) |>
     dplyr::arrange(SPCD, SUBP)|>
     #selection of final variables
@@ -1142,14 +1142,14 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
       SP_NAME,
       TREECOUNT_CALC,
       TPA_UNADJ,
-      DENSITY,
+      N,
       Height,
       DBH
     ) |>
     dplyr::rename(
       YEAR = INVYR,
       SP_CODE = SPCD,
-      N = TREECOUNT_CALC
+      DENSITY = TREECOUNT_CALC
       # region_code = COUNTYCD
     ) |>
     # # We have repeated rows after the selection because we summarised shrubs species. We remove with

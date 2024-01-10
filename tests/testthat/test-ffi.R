@@ -272,7 +272,7 @@ test_that("ffi_shrub_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE",
-    "SP_NAME", "COVER", "GrowthForm"
+    "SP_NAME", "COVER", "HT" ,"GrowthForm"
   )
 
   # object
@@ -519,7 +519,7 @@ test_that("ffi_tables_process works as intended", {
   # tests data
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
-    "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
+    "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
     "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen" 
     # "soils"
   )
@@ -642,7 +642,7 @@ test_that("ffi_to_tibble works as intended", {
   # tests data
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
-    "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
+    "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
     "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
