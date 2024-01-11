@@ -872,7 +872,7 @@ ffi_shrub_table_process <- function(
           # ESPAR,
           SP_NAME,
           COVER,
-          
+          HT,
           GrowthForm
         ) |>
     dplyr::as_tibble()
