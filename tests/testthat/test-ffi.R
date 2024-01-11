@@ -646,7 +646,7 @@ test_that("ffi_to_tibble works as intended", {
     "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
-  test_years <- c(2005, 2010)
+  test_years <- c(2015, 2019)
 
   # object
   expect_s3_class(

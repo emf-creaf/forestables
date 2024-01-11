@@ -722,7 +722,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 
 
 ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIES) {
-
+# browser()
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -848,7 +848,10 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       N,
       # Z95,
       # Z50
+    ) |> 
+    dplyr::filter(complete.cases(DBH, Height, N)
     )
+    
 
   # Return regen
   return(regeneration)

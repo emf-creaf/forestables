@@ -1234,6 +1234,8 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref,idp_dep_
       
       dplyr::mutate(
         ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_")), 
+        
+        # in cm
         DBH =  7.5
       ) |>
       dplyr::rename(
