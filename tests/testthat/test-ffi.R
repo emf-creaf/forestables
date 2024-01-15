@@ -44,12 +44,12 @@ test_metadonnees <- suppressWarnings(
   #old file 2021
  #readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
     # at new file (2022)
-  #comprobar archivos y la linea donde empiezan -mismo  inicio? 
-  #fread: 
-  #// Définition des modalités pour chaque unité : 			
+  #comprobar archivos y la linea donde empiezan -mismo  inicio?
+  #fread:
+  #// Définition des modalités pour chaque unité :
   #// Unité	Code	Libellé	Définition
-  
-    readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
+
+    readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 )
@@ -343,11 +343,11 @@ test_that("ffi_shrub_table_process works as intended", {
 })
 
 # test_that("ffi_soil_table_process works as intended", {
-# 
+#
 #   expected_names <- c(
 #     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "DATEECO", "soil_field"
 #   )
-# 
+#
 #   # object
 #   expect_s3_class(
 #     test_res <- ffi_soil_table_process(
@@ -359,19 +359,19 @@ test_that("ffi_shrub_table_process works as intended", {
 #     ),
 #     "tbl"
 #   )
-# 
+#
 #   # data integrity
 #   expect_named(test_res, expected_names, ignore.order = TRUE)
 #   expect_true(nrow(test_res) > 0)
-# 
+#
 #   expect_length(unique(test_res$YEAR), 1)
 #   expect_length(unique(test_res$PLOT), 1)
 #   expect_length(unique(test_res$DEP), 1)
-# 
+#
 #   expect_identical(unique(test_res$YEAR), test_year |> as.integer())
 #   expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.character())
 #   expect_identical(unique(test_res$DEP) |> as.character(), test_input$department[1])
-# 
+#
 #   # errors
 #   expect_warning(
 #     test_error <- ffi_soil_table_process(
@@ -520,7 +520,7 @@ test_that("ffi_tables_process works as intended", {
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
     "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
-    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen" 
+    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
 
