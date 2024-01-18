@@ -915,7 +915,7 @@ ffi_shrub_table_process <- function(
 }
 
 
-#' @describeIn tables_processing Process to gather needed data from soil table
+# #' @describeIn tables_processing Process to gather needed data from soil table
 
 # ffi_soil_table_process <- function(soils_data, plot, year, metadonnees,idp_dep_ref){
 #
@@ -1074,10 +1074,10 @@ ffi_shrub_table_process <- function(
 
 
 #' @describeIn tables_processing Process to gather needed data from soil table
+ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref,idp_dep_ref){
 
 
 # TABLE FOR REGEN DEPEND ON YEAR , BEFORE 2015 COUVERT SHOULD BE USED, AFTER 2015 FLORE SHOULD (SAME AS SHRUB PROCESS) SHALL WE INTEGRATE PART OF THIS PROCESS IN SHRUB PROCESS O "REPET" READING OF TABLE IN REGEN ?
-ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref,idp_dep_ref){
   # Debug
     # browser()
 
