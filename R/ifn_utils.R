@@ -5,20 +5,48 @@
     # browser()
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
-    filter_list <- list("24" = c(6))
+    # filter_list <- list("24" = c(6))
     ## TODO
+    # create safe versions of .get_plots_from_state and .transform_plot_summary
+    get_plots_safe <- purrr::safely(
+      .get_plots_from_province,
+      otherwise = tibble::tibble(
+        "version" = vector(),
+        "province_name_original" = vector(),
+        "ID_UNIQUE_PLOT" = vector(),
+        "crs" = vector(),
+        "COORDEX" = vector(),
+        "COORDEY" = vector(),
+        "geometry" = vector()
+      )
+    )
+    transform_safe <- purrr::safely(
+      .transform_plot_summary_ifn,
+      otherwise = list()
+    )
+
+    filter_list <- purrr::map(
+      provinces,
+      .f = \(province) {
+
+        res <- get_plots_safe(province, folder, version, .call = .call)[["result"]] |>
+          transform_safe(version, province)
+        res[["result"]]
+      }
+    ) |>
+      purrr::flatten()
   }
 
   # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {version}}"
+      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> as.character() |> length()}} plots for {.val {version}}"
     )), .verbose
   )
 
 
 
-    filter_list <- filter_list |>
+    input_df <- filter_list |>
     tibble::enframe() |>
     tidyr::unnest(cols = value) |>
     purrr::set_names(c("province", "plots")) |>
@@ -68,13 +96,87 @@
         no = NA_character_
       )
   )
-  
 
-  
+  return(input_df)
+}
+
+.get_plots_from_province <- function(province, folder, version, .call = rlang::caller_env()) {
+
+  ## DEBUG
+  # browser()
+
+  ## TODO Assertion to ensure province files exists, because .build_ifn_file_path is fail
+  ## resistant, returning always a result (NA_character) to allow its use in loops.
+  ## .get_plots_from_province is only called from .build_ifn_input_with or show_plots_from_ifn,
+  ## that can not check for file existence (this is done in the individual plot functions)
+
+  plot_path <- .build_ifn_file_path(province, "plot", version, folder, .call = .call)
+
+  coord_path <- ifelse(
+    test = version %in% c("ifn3", "ifn4"),
+    yes = .build_ifn_file_path(province, type = "coord", version, folder, .call = .call),
+    no = NA_character_
+  )
+
+  if (is.na(plot_path)) {
+    cli::cli_abort(c(
+      "{.path {folder}} folder doesn't contain the file corresponding to {.val {version}} version, aborting."
+    ), call = .call)
+  }
+
+  # If file exists, business as usual. We use the general function (ifn_plot_table_process), because
+  # it takes care of the version logic for us, DRY!!!
+  # The only thing we need to take care of is the dancing coord ref systems. But for that is the crs
+  # variable, so we group and transform to common crs
+  res <- ifn_plot_table_process(
+    plot_path, coord_path, version, rlang::quo(.data$ESTADILLO), province, ifn_provinces_dictionary
+  ) |>
+    dplyr::select(
+      "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
+    ) |>
+    dplyr::group_by(crs) |>
+    dplyr::group_modify(
+      .f = \(crs_group, crs_code) {
+        crs_group |>
+          sf::st_as_sf(
+            coords = c("COORDEX", "COORDEY"),
+            crs = sf::st_crs(unique(crs_code[["crs"]]))
+          ) |>
+          sf::st_transform(crs = 4326)
+      }
+    ) |>
+    sf::st_as_sf()
+
+  return(res)
+}
+
+#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_province}} in a
+#' filter_list object
+#' @noRd
+.transform_plot_summary_ifn <- function(plot_summary, versions, provinces) {
+
+  ## Debug
+  # browser()
+
+  filter_list <- plot_summary |>
+    dplyr::as_tibble() |>
+    dplyr::filter(
+      version %in% versions,
+      province_code %in% provinces
+    ) |>
+    dplyr::select(province_code, PLOT) |>
+    dplyr::distinct() |>
+    dplyr::group_by(province_code) |>
+    dplyr::summarise(plots = list(PLOT), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
 
   return(filter_list)
 }
-
 
 #' Read IFN data
 #'
@@ -108,7 +210,7 @@
 
   res <- switch(
     file_ext,
-    "DBF" = foreign::read.dbf(input, as.is = FALSE) |>
+    "DBF" = foreign::read.dbf(input, as.is = TRUE) |>
       dplyr::select(dplyr::any_of(colnames)) |>
       dplyr::mutate(
         PROVINCIA = as.character(PROVINCIA),
