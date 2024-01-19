@@ -1254,7 +1254,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == plot
+        Estadillo == !!plot
       ) |>
       tibble::as_tibble()
 
@@ -1402,7 +1402,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
   .ifn = TRUE
    ) |>
      dplyr::filter(
-       Estadillo == plot
+       Estadillo == !!plot
      ) |>
      tibble::as_tibble()
 
@@ -1459,6 +1459,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
          dplyr::mutate(
 
        crs = dplyr::case_when(
+         is.na(Huso) & COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
          Huso == 30 & COORD_SYS == "ED50" ~ 23030,
          Huso == 31 & COORD_SYS == "ED50" ~ 4326,
          Huso == 29 & COORD_SYS == "ED50" ~ 23029,
