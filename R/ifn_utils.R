@@ -28,7 +28,6 @@
     filter_list <- purrr::map(
       provinces,
       .f = \(province) {
-
         res <- get_plots_safe(province, folder, version, .call = .call)[["result"]] |>
           transform_safe(version, province)
         res[["result"]]
@@ -124,12 +123,17 @@
     ), call = .call)
   }
 
+  plots_arg_value <- rlang::quo(.data$ESTADILLO)
+  if (version %in% c("ifn3", "ifn4")) {
+    plots_arg_value <- rlang::quo(.data$Estadillo)
+  }
+
   # If file exists, business as usual. We use the general function (ifn_plot_table_process), because
   # it takes care of the version logic for us, DRY!!!
   # The only thing we need to take care of is the dancing coord ref systems. But for that is the crs
   # variable, so we group and transform to common crs
   res <- ifn_plot_table_process(
-    plot_path, coord_path, version, rlang::quo(.data$ESTADILLO), province, ifn_provinces_dictionary
+    plot_path, coord_path, version, plots_arg_value, province, ifn_provinces_dictionary
   ) |>
     dplyr::select(
       "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
