@@ -320,3 +320,154 @@ expect_message(
   # expect_true(all((test_res_filter_list$province |> unique()) %in% test_provinces))
   # expect_length(test_res_filter_list$province |> unique(), length(test_provinces) - 1)
 })
+
+# get plots and transform summary -------------------------------------------------------------
+
+test_that(".get_plots_from_province works as intended for ifn2", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn2"
+  test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[1], ".", test_version)),
+    "folder doesn't contain"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    test_res_ok <- .get_plots_from_province(test_provinces[1], test_folder, test_version),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c(
+      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+    ),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(nrow(test_res_ok) > 0)
+  # expect values
+  expect_identical(unique(test_res_ok$province_code), "06")
+  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+  )
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+  )
+
+  ## wrong state
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
+    "aborting"
+  )
+})
+
+test_that(".transform_plot_summary_ifn works as intended for ifn2", {
+  ttest_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn2"
+  test_folder <- Sys.getenv("ifn_path")
+  # test_summary <- show_plots_from_ifn(test_folder, test_provinces)
+
+  # # One state, one year
+  # # correct object
+  # expect_type(
+  #   test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
+  #   "list"
+  # )
+  # # correct names
+  # expect_named(test_res_2005_OR, "OR")
+  # # expect results
+  # expect_length(test_res_2005_OR, 1)
+  # expect_true(length(test_res_2005_OR[[1]]) > 1)
+  # # correct counties
+  # expect_named(
+  #   test_res_2005_OR[["OR"]],
+  #   test_summary |>
+  #     dplyr::filter(STATEAB == "OR", INVYR == test_years[1]) |>
+  #     dplyr::pull(COUNTYCD) |>
+  #     unique() |>
+  #     as.character(),
+  #   ignore.order = TRUE
+  # )
+  #
+  # ## all states all years
+  # expect_type(
+  #   test_res <- .transform_plot_summary(test_summary, test_years, test_states),
+  #   "list"
+  # )
+  # # correct names
+  # expect_named(test_res, c("OR", "WA", "CA"), ignore.order = TRUE)
+  # # expect results
+  # expect_length(test_res, 3)
+  # expect_true(length(test_res[[1]]) > 1)
+  # expect_true(length(test_res[[2]]) > 1)
+  # expect_true(length(test_res[[3]]) > 1)
+  # # correct counties
+  # expect_named(
+  #   test_res[["OR"]],
+  #   test_summary |>
+  #     dplyr::filter(STATEAB %in% "OR", INVYR %in% test_years) |>
+  #     dplyr::pull(COUNTYCD) |>
+  #     unique() |>
+  #     as.character(),
+  #   ignore.order = TRUE
+  # )
+  #
+  # expect_named(
+  #   test_res[["CA"]],
+  #   test_summary |>
+  #     dplyr::filter(STATEAB %in% "CA", INVYR %in% test_years) |>
+  #     dplyr::pull(COUNTYCD) |>
+  #     unique() |>
+  #     as.character(),
+  #   ignore.order = TRUE
+  # )
+  #
+  # ## error
+  # expect_error(
+  #   .transform_plot_summary(
+  #     tibble::tibble(
+  #       "INVYR" = vector(),
+  #       "STATECD" = vector(),
+  #       "COUNTYCD" = vector(),
+  #       "PLOT" = vector(),
+  #       "STATEAB" = vector(),
+  #       "geometry" = vector()
+  #     ),
+  #     test_years[1], test_states[1]
+  #   )
+  # )
+})
