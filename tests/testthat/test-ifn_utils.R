@@ -425,85 +425,56 @@ test_that("show_plots_from_ifn works as intended for ifn2", {
   )
   # we must have 3 states
   expect_identical(
-    test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces)-1)]
+    test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces) - 1)]
   )
 })
 
 test_that(".transform_plot_summary_ifn works as intended for ifn2", {
-  # test_plots <- list(
-  #   "06" = c(2064,1138,325),
-  #   "07" = c(679,114,499),
-  #   "10" = c(3374,261),
-  #   # "26" = c(960,495,172),
-  #   "30" = c(78, 1223),
-  #   "31" = c(135,761,1518),
-  #   "33" = c(283),
-  #   "40" = c(412,1216,1728),
-  #   "49" = c(105,99,532),
-  #   "tururu" = c(5)
-  # )
-  #
-  # test_provinces <- names(test_plots)
-  # test_version <- "ifn2"
-  # test_folder <- Sys.getenv("ifn_path")
-  # test_summary <- show_plots_from_ifn(test_folder, test_provinces)
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
 
-  # # One state, one year
-  # # correct object
-  # expect_type(
-  #   test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_provinces[1]),
-  #   "list"
-  # )
-  # # correct names
-  # expect_named(test_res_2005_OR, "OR")
-  # # expect results
-  # expect_length(test_res_2005_OR, 1)
-  # expect_true(length(test_res_2005_OR[[1]]) > 1)
-  # # correct counties
-  # expect_named(
-  #   test_res_2005_OR[["OR"]],
-  #   test_summary |>
-  #     dplyr::filter(STATEAB == "OR", INVYR == test_years[1]) |>
-  #     dplyr::pull(COUNTYCD) |>
-  #     unique() |>
-  #     as.character(),
-  #   ignore.order = TRUE
-  # )
-  #
-  # ## all states all years
-  # expect_type(
-  #   test_res <- .transform_plot_summary(test_summary, test_years, test_provinces),
-  #   "list"
-  # )
-  # # correct names
-  # expect_named(test_res, c("OR", "WA", "CA"), ignore.order = TRUE)
-  # # expect results
-  # expect_length(test_res, 3)
-  # expect_true(length(test_res[[1]]) > 1)
-  # expect_true(length(test_res[[2]]) > 1)
-  # expect_true(length(test_res[[3]]) > 1)
-  # # correct counties
-  # expect_named(
-  #   test_res[["OR"]],
-  #   test_summary |>
-  #     dplyr::filter(STATEAB %in% "OR", INVYR %in% test_years) |>
-  #     dplyr::pull(COUNTYCD) |>
-  #     unique() |>
-  #     as.character(),
-  #   ignore.order = TRUE
-  # )
-  #
-  # expect_named(
-  #   test_res[["CA"]],
-  #   test_summary |>
-  #     dplyr::filter(STATEAB %in% "CA", INVYR %in% test_years) |>
-  #     dplyr::pull(COUNTYCD) |>
-  #     unique() |>
-  #     as.character(),
-  #   ignore.order = TRUE
-  # )
-  #
-  # ## error
+  test_provinces <- names(test_plots)
+  test_version <- "ifn2"
+  test_folder <- Sys.getenv("ifn_path")
+  test_summary <- suppressWarnings(show_plots_from_ifn(test_folder, test_provinces, test_version))
+
+  # One state, one year
+  # correct object
+  expect_type(
+    test_res_06 <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces[1]),
+    "list"
+  )
+  # correct names
+  expect_named(test_res_06, "06")
+  # expect results
+  expect_length(test_res_06, 1)
+  expect_true(length(test_res_06[[1]]) > 1)
+
+
+  ## all states all years
+  expect_type(
+    test_res <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
+  # expect results
+  expect_length(test_res, 8)
+  for (prov in 1:length(test_res)) {
+    expect_true(length(test_res[[prov]]) > 1)
+  }
+
+  ## error TODO: how to test errors
   # expect_error(
   #   .transform_plot_summary(
   #     tibble::tibble(
