@@ -1052,22 +1052,27 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     return(dplyr::tibble())
   }
 
+  # check for bad formatted or missing coords to inform the user
+  if (any(
+    is.na(plot_filtered_data$COORDEX), is.na(plot_filtered_data$COORDEY),
+    grepl("[A-Za-z]", plot_filtered_data$COORDEX), grepl("[A-Za-z]", plot_filtered_data$COORDEY)
+  )) {
+    cli::cli_warn(c(
+      "File {.file {plot_data}} has some errors in the coordinates (missing coordinates, bad format...).",
+      "i" = "These records will be removed from the results"
+    ))
+  }
 
-  plot_filtered_data <- plot_filtered_data |>
-    dplyr:::mutate(COORDEX = ifelse(grepl("[A-Za-z]", COORDEX), NA, COORDEX),
-                   COORDEY = ifelse(grepl("[A-Za-z]", COORDEY), NA, COORDEY))
-    {
-      if (any(is.na(plot_filtered_data$COORDEY) | is.na(plot_filtered_data$COORDEY))) {
-        cli::cli_warn(" File {.file {plot_data}} has   some errors in the coordinates (leters).These records had been substituted by NA")
-      }
-
-
-    }
-
-
+  # remove bad formatted or missing coordinates
+  plot_coord_fixed_data <- plot_filtered_data |>
+    dplyr:::mutate(
+      COORDEX = ifelse(grepl("[A-Za-z]", COORDEX), NA, COORDEX),
+      COORDEY = ifelse(grepl("[A-Za-z]", COORDEY), NA, COORDEY)
+    ) |>
+    dplyr::filter(!is.na(COORDEX), !is.na(COORDEY))
 
   #we add the id code
-  info_plot <- plot_filtered_data |>
+  info_plot <- plot_coord_fixed_data |>
 
     dplyr::rename(
       PLOT = ESTADILLO,

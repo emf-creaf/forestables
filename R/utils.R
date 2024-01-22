@@ -78,7 +78,7 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
     inventory,
     "FIA" = show_plots_from_fia,
     "FFI" = show_plots_from_ffi,
-    "IFN" = NULL
+    "IFN" = show_plots_from_ifn
   )
 
   show_plots_function(folder, ...)

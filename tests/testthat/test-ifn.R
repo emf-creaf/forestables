@@ -1245,8 +1245,8 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
   expect_true(nrow(test_error) < 1)
 })
 
-# 
-# 
+#
+#
  test_that("ifn_plot_table_process for ifn4  works as intended", {
 
 
@@ -1445,7 +1445,7 @@ test_that("ifn_tables_process ifn2 works as intended", {
   # # inexistent plots (91-0) shouldn't
   # # be present, so 12 of 14 elements in filter list
   expect_false("tururu" %in% unique(test_res$province_code))
-  expect_identical(nrow(test_res), 59L)
+  expect_identical(nrow(test_res), 58L)
 
   # ### missing random files
   # # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)

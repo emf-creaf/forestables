@@ -7,7 +7,7 @@
   if (is.null(filter_list)) {
     # filter_list <- list("24" = c(6))
     ## TODO
-    # create safe versions of .get_plots_from_state and .transform_plot_summary
+    # create safe versions of .get_plots_from_province and .transform_plot_summary
     get_plots_safe <- purrr::safely(
       .get_plots_from_province,
       otherwise = tibble::tibble(
@@ -180,6 +180,44 @@
     purrr::flatten()
 
   return(filter_list)
+}
+
+#' show plots from ifn helper
+#'
+#' Iterate for states and retrieve all the plots
+#'
+#' @param folder Character, path to folder containing IFN csv files
+#' @param provinces Character vector with two-number code for provinces
+#' @noRd
+show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::caller_env()) {
+  withCallingHandlers(
+    {
+      # safe version
+      get_plots_safe <- purrr::safely(
+        .get_plots_from_province,
+        otherwise = NULL
+      )
+
+      res <- purrr::map(
+        provinces,
+        .f = \(prov) { get_plots_safe(prov, folder, version, .call = .call)$result }
+      ) |>
+        purrr::list_rbind()
+
+      if (nrow(res) < 1) {
+        cli::cli_abort(
+          c("No data found at {.folder {folder}} for {.values {provinces}} province codes",
+            "i" = "Please check if {.folder {folder}} is the correct folder for IFN data")
+        )
+      }
+
+      res |>
+        sf::st_as_sf()
+    },
+    purrr_error_indexed = function(err) {
+      rlang::cnd_signal(err$parent)
+    }
+  )
 }
 
 #' Read IFN data

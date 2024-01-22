@@ -382,8 +382,8 @@ test_that(".get_plots_from_province works as intended for ifn2", {
   )
 })
 
-test_that(".transform_plot_summary_ifn works as intended for ifn2", {
-  ttest_plots <- list(
+test_that("show_plots_from_ifn works as intended for ifn2", {
+  test_plots <- list(
     "06" = c(2064,1138,325),
     "07" = c(679,114,499),
     "10" = c(3374,261),
@@ -395,16 +395,63 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
     "49" = c(105,99,532),
     "tururu" = c(5)
   )
-
   test_provinces <- names(test_plots)
   test_version <- "ifn2"
   test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    "No data found at"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    suppressWarnings(test_res_ok <- show_plots_from_ifn(test_folder, test_provinces, test_version)),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(
+    nrow(test_res_ok) > 0
+  )
+  # we must have 3 states
+  expect_identical(
+    test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces)-1)]
+  )
+})
+
+test_that(".transform_plot_summary_ifn works as intended for ifn2", {
+  # test_plots <- list(
+  #   "06" = c(2064,1138,325),
+  #   "07" = c(679,114,499),
+  #   "10" = c(3374,261),
+  #   # "26" = c(960,495,172),
+  #   "30" = c(78, 1223),
+  #   "31" = c(135,761,1518),
+  #   "33" = c(283),
+  #   "40" = c(412,1216,1728),
+  #   "49" = c(105,99,532),
+  #   "tururu" = c(5)
+  # )
+  #
+  # test_provinces <- names(test_plots)
+  # test_version <- "ifn2"
+  # test_folder <- Sys.getenv("ifn_path")
   # test_summary <- show_plots_from_ifn(test_folder, test_provinces)
 
   # # One state, one year
   # # correct object
   # expect_type(
-  #   test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
+  #   test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_provinces[1]),
   #   "list"
   # )
   # # correct names
@@ -425,7 +472,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
   #
   # ## all states all years
   # expect_type(
-  #   test_res <- .transform_plot_summary(test_summary, test_years, test_states),
+  #   test_res <- .transform_plot_summary(test_summary, test_years, test_provinces),
   #   "list"
   # )
   # # correct names
@@ -467,7 +514,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
   #       "STATEAB" = vector(),
   #       "geometry" = vector()
   #     ),
-  #     test_years[1], test_states[1]
+  #     test_years[1], test_provinces[1]
   #   )
   # )
 })
