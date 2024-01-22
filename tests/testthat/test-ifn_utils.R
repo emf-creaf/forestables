@@ -489,3 +489,337 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
   #   )
   # )
 })
+
+test_that(".get_plots_from_province works as intended for ifn3", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn3"
+  test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[1], ".", test_version)),
+    "folder doesn't contain"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    test_res_ok <- .get_plots_from_province(test_provinces[1], test_folder, test_version),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c(
+      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+    ),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(nrow(test_res_ok) > 0)
+  # expect values
+  expect_identical(unique(test_res_ok$province_code), "06")
+  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+  )
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+  )
+
+  ## wrong state
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
+    "aborting"
+  )
+})
+
+test_that("show_plots_from_ifn works as intended for ifn3", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+  test_provinces <- names(test_plots)
+  test_version <- "ifn3"
+  test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    "No data found at"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    suppressWarnings(test_res_ok <- show_plots_from_ifn(test_folder, test_provinces, test_version)),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(
+    nrow(test_res_ok) > 0
+  )
+  # we must have 3 states
+  expect_identical(
+    test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces) - 1)]
+  )
+})
+
+test_that(".transform_plot_summary_ifn works as intended for ifn3", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn3"
+  test_folder <- Sys.getenv("ifn_path")
+  test_summary <- suppressWarnings(show_plots_from_ifn(test_folder, test_provinces, test_version))
+
+  # One state, one year
+  # correct object
+  expect_type(
+    test_res_06 <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces[1]),
+    "list"
+  )
+  # correct names
+  expect_named(test_res_06, "06")
+  # expect results
+  expect_length(test_res_06, 1)
+  expect_true(length(test_res_06[[1]]) > 1)
+
+
+  ## all states all years
+  expect_type(
+    test_res <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, c("06", "07", "30"), ignore.order = TRUE)
+  # expect results
+  expect_length(test_res, 3)
+  for (prov in 1:length(test_res)) {
+    expect_true(length(test_res[[prov]]) > 1)
+  }
+
+  ## error TODO: how to test errors
+  # expect_error(
+  #   .transform_plot_summary(
+  #     tibble::tibble(
+  #       "INVYR" = vector(),
+  #       "STATECD" = vector(),
+  #       "COUNTYCD" = vector(),
+  #       "PLOT" = vector(),
+  #       "STATEAB" = vector(),
+  #       "geometry" = vector()
+  #     ),
+  #     test_years[1], test_provinces[1]
+  #   )
+  # )
+})
+
+test_that(".get_plots_from_province works as intended for ifn4", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn4"
+  test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[1], ".", test_version)),
+    "folder doesn't contain"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    test_res_ok <- .get_plots_from_province(test_provinces[1], test_folder, test_version),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c(
+      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+    ),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(nrow(test_res_ok) > 0)
+  # expect values
+  expect_identical(unique(test_res_ok$province_code), "06")
+  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+  )
+  expect_identical(
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+  )
+
+  ## wrong state
+  expect_error(
+    suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
+    "aborting"
+  )
+})
+
+test_that("show_plots_from_ifn works as intended for ifn4", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+  test_provinces <- names(test_plots)
+  test_version <- "ifn4"
+  test_folder <- Sys.getenv("ifn_path")
+
+  # error
+  expect_error(
+    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    "No data found at"
+  )
+
+  ## results are ok
+  # class
+  expect_s3_class(
+    suppressWarnings(test_res_ok <- show_plots_from_ifn(test_folder, test_provinces, test_version)),
+    "sf"
+  )
+  # crs
+  expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
+  # names
+  expect_named(
+    test_res_ok,
+    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    ignore.order = TRUE
+  )
+  # expect rows
+  expect_true(
+    nrow(test_res_ok) > 0
+  )
+  # we must have 3 states
+  expect_identical(
+    test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces) - 1)]
+  )
+})
+
+test_that(".transform_plot_summary_ifn works as intended for ifn4", {
+  test_plots <- list(
+    "06" = c(2064,1138,325),
+    "07" = c(679,114,499),
+    "10" = c(3374,261),
+    # "26" = c(960,495,172),
+    "30" = c(78, 1223),
+    "31" = c(135,761,1518),
+    "33" = c(283),
+    "40" = c(412,1216,1728),
+    "49" = c(105,99,532),
+    "tururu" = c(5)
+  )
+
+  test_provinces <- names(test_plots)
+  test_version <- "ifn4"
+  test_folder <- Sys.getenv("ifn_path")
+  test_summary <- suppressWarnings(show_plots_from_ifn(test_folder, test_provinces, test_version))
+
+  # One state, one year
+  # correct object
+  expect_type(
+    test_res_06 <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces[1]),
+    "list"
+  )
+  # correct names
+  expect_named(test_res_06, "06")
+  # expect results
+  expect_length(test_res_06, 1)
+  expect_true(length(test_res_06[[1]]) > 1)
+
+
+  ## all states all years
+  expect_type(
+    test_res <- .transform_plot_summary_ifn(test_summary, test_version, test_provinces),
+    "list"
+  )
+  # correct names
+  expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
+  # expect results
+  expect_length(test_res, 8)
+  for (prov in 1:length(test_res)) {
+    expect_true(length(test_res[[prov]]) > 1)
+  }
+
+  ## error TODO: how to test errors
+  # expect_error(
+  #   .transform_plot_summary(
+  #     tibble::tibble(
+  #       "INVYR" = vector(),
+  #       "STATECD" = vector(),
+  #       "COUNTYCD" = vector(),
+  #       "PLOT" = vector(),
+  #       "STATEAB" = vector(),
+  #       "geometry" = vector()
+  #     ),
+  #     test_years[1], test_provinces[1]
+  #   )
+  # )
+})
