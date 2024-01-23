@@ -287,6 +287,12 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
       cli::cli_abort("Aborting")
     }
 
+    # in linux, space characters must be escaped
+    if (stringr::str_detect(input, "(Ifn4_.* .*\\.accdb)$")) {
+      input <- stringr::str_replace(input, "(Ifn4_.* .*\\.accdb)$", "'\\1'")
+    }
+
+    # read the table
     res <- Hmisc::mdb.get(input, tables = table_name)
   } else {
     res <- RODBC::odbcConnectAccess2007(input) |>
