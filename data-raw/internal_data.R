@@ -34,7 +34,13 @@ ifn_provinces_dictionary <- readxl::read_xls(
       ca_name_original == "Pais Vasco" ~ "País Vasco",
       ca_name_original == "La Rioja" ~ "`La Rioja`",
       .default = province_name_original
-    )# TODO, convert to NA_chr the missing provinces in the IFN4
+    ),
+    # converting special characters
+    ifn4_files_labels = stringr::str_replace(ifn4_files_labels, "ñ", "д"),
+    ifn4_files_labels = stringr::str_replace(ifn4_files_labels, "í", "б"),
+    ifn4_files_labels = stringr::str_replace(ifn4_files_labels, "ó", "в"),
+    ifn4_files_labels = stringr::str_replace(ifn4_files_labels, "Á", "╡")
+    # TODO, convert to NA_chr the missing provinces in the IFN4
     # ifn4_files_labels = dplyr::if_else(
     #   ifn4_files_labels %in% c()
     # )
