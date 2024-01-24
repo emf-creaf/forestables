@@ -389,6 +389,20 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   )
 }
 
+.ifn_subclass_fixer <- function(subclasses) {
+  # This helper fix errors with subclasses format
+  subclasses |>
+    # remove any ocurring extra whitespaces
+    stringr::str_trim("both") |>
+    # in IFN3, replace wrong 2C and 2E plots with 3C and 3E
+    stringr::str_replace("^2C$", "3C") |>
+    stringr::str_replace("^2E$", "3E") |>
+    # in IFN3, replace wrong 5 subclass with 4
+    stringr::str_replace("^5$", "4")
+}
+
+
+
 #' obtaining crs for different coordinate systems IFN
 #'
 #' This function  get_crs reads var huso and coordinate system of plot table process the tree table for one plot and one IFN

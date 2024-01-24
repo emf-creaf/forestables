@@ -222,7 +222,7 @@ ifn_to_tibble <- function(
         ) |>
 
         dplyr::select(
-          any_of(c(
+          dplyr::any_of(c(
           "ID_UNIQUE_PLOT",
           "COUNTRY",
           "YEAR",
@@ -416,19 +416,20 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
     tree_filtered_data <-  .read_inventory_data(
       tree_data,
       colnames = c(
-          "Estadillo",
-          "Cla",
-          "Subclase",
-          "Especie",
-          "nArbol",
-          "OrdenIf3",
-          "OrdenIf2",
-          "OrdenIf4",
-          "Dn1",
-          "Dn2",
-          "Ht",
-          "Calidad",
-          "Forma"
+        "Provincia",
+        "Estadillo",
+        "Cla",
+        "Subclase",
+        "Especie",
+        "nArbol",
+        "OrdenIf3",
+        "OrdenIf2",
+        "OrdenIf4",
+        "Dn1",
+        "Dn2",
+        "Ht",
+        "Calidad",
+        "Forma"
       ),
       .ifn = TRUE
     ) |>
@@ -437,7 +438,11 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
       ) |>
       tibble::as_tibble()
 
-
+    # IFN3 doesn't have Provincia, so we check
+    if ("Provincia" %in% names(tree_filtered_data)) {
+      tree_filtered_data <- tree_filtered_data |>
+        dplyr::filter(Provincia == as.integer(province))
+    }
 
     # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(tree_filtered_data) < 1) {
@@ -462,6 +467,10 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
       # units transformations
       dplyr::mutate(
         province_code =  province,
+
+        # Subclass fixes
+        Subclase = .ifn_subclass_fixer(Subclase),
+
         # unique inner code
         ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"),
         DIA = (Dn1 + Dn2)/2,
@@ -495,7 +504,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
       dplyr::arrange(SP_CODE) |>
 
       dplyr::select(
-        any_of(c(
+        dplyr::any_of(c(
           "ID_UNIQUE_PLOT",
           "province_code",
           "Clase",
@@ -648,6 +657,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
     shrub_filtered_data <- .read_inventory_data(
       shrub_data,
       colnames =c(
+        "Provincia",
         "Estadillo",
         "Cla",
         "Subclase",
@@ -661,6 +671,12 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
         Estadillo == plot
       ) |>
       tibble::as_tibble()
+
+    # IFN3 doesn't have Provincia, so we check
+    if ("Provincia" %in% names(shrub_filtered_data)) {
+      shrub_filtered_data <- shrub_filtered_data |>
+        dplyr::filter(Provincia == as.integer(province))
+    }
 
     # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(shrub_filtered_data) < 1) {
@@ -681,6 +697,10 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
       ) |>
       dplyr::mutate(
         province_code = province,
+
+        # Subclass fixes
+        Subclase = .ifn_subclass_fixer(Subclase),
+
         COVER = Fcc,
         #DM TO CM
         HT = HT * 10 ,
@@ -864,7 +884,8 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
   regen_filtered_data <- .read_inventory_data(
   regen_data,
-  colnames =c(
+  colnames = c(
+    "Provincia",
     "Estadillo",
     "Cla",
     "Subclase",
@@ -881,6 +902,12 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       Estadillo == plot
     ) |>
     tibble::as_tibble()
+
+  # IFN3 doesn't have Provincia, so we check
+  if ("Provincia" %in% names(regen_filtered_data)) {
+    regen_filtered_data <- regen_filtered_data |>
+      dplyr::filter(Provincia == as.integer(province))
+  }
 
 
   # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -904,6 +931,10 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
     dplyr::mutate(
       province_code = province,
+
+      # Subclass fixes
+      Subclase = .ifn_subclass_fixer(Subclase),
+
       #DM TO CM
       Hm = Hm * 10,
       SP_CODE = as.numeric(Especie),
@@ -1239,7 +1270,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     plot_filtered_data <- .read_inventory_data(
       plot_data,
       colnames = c(
-
+        "Provincia",
         "Estadillo",
         "Cla",
         "Subclase",
@@ -1259,7 +1290,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == !!plot
+        Estadillo == !!plot,
+        Provincia == as.integer(province)
       ) |>
       tibble::as_tibble()
 
@@ -1283,6 +1315,11 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       ) |>
       dplyr::mutate(
         YEAR = as.character(YEAR),
+
+        # Subclass fixes
+        Subclase = .ifn_subclass_fixer(Subclase),
+
+
         version = version,
         province_code = province,
         province_code = as.character(province_code),
@@ -1396,18 +1433,20 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
    coords_filtered_data <- .read_inventory_data(
     coord_data,
     colnames = c(
-          "Estadillo",
-          "Clase",
-          "Subclase",
-          "Hoja50",
-          "CoorX",
-          "CoorY",
-          "Huso"
+      "Provincia",
+      "Estadillo",
+      "Clase",
+      "Subclase",
+      "Hoja50",
+      "CoorX",
+      "CoorY",
+      "Huso"
     ),
   .ifn = TRUE
    ) |>
      dplyr::filter(
-       Estadillo == !!plot
+       Estadillo == !!plot,
+       Provincia == as.integer(province)
      ) |>
      tibble::as_tibble()
 
@@ -1424,38 +1463,49 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
      return(dplyr::tibble())
    }
 
+   # check for bad formatted or missing coords to inform the user
+   if (any(is.na(coords_filtered_data$CoorX), is.na(coords_filtered_data$CoorY))) {
+     cli::cli_warn(c(
+       "File {.file {plot_data}} has some errors in the coordinates (missing coordinates, bad format...).",
+       "i" = "These records will be removed from the results"
+     ))
+   }
 
+   # remove bad formatted or missing coordinates
+   coords_fixed_data <- coords_filtered_data |>
+     dplyr::filter(!is.na(CoorX), !is.na(CoorY))
 
-   coords_data <- coords_filtered_data |>
-
-
+   coords_data <- coords_fixed_data |>
       dplyr::rename(
         PLOT = Estadillo,
         COORDEX = CoorX,
         COORDEY = CoorY,
         HOJA = Hoja50
         ) |>
-
       dplyr::mutate(
         HOJA = as.character(HOJA),
+
+        # Subclass fixes
+        Subclase = .ifn_subclass_fixer(Subclase),
+
+
+
         province_code = province,
         province_code = as.character(province_code),
         version = version,
         ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
-        Huso = ifelse("Huso" %in% names(coords_filtered_data), coords_filtered_data$Huso, NA)
+        Huso = ifelse("Huso" %in% names(coords_fixed_data), coords_fixed_data$Huso, NA)
       )
 
-
-       info_plot <- info_plot|>
-
+   info_plot <- info_plot |>
      dplyr::left_join(
-           y = coords_data|>
-             dplyr::select(any_of(c(
+           y = coords_data |>
+             dplyr::select(dplyr::any_of(c(
                "ID_UNIQUE_PLOT" ,
                "Clase",
-               "COORDEX"  ,
-               "COORDEY" ,
-               "HOJA" ,
+               "COORDEX",
+               "COORDEY",
+               "HOJA",
                "Huso"
              ))
              ),
@@ -1477,7 +1527,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
          ) |>
 
      dplyr::select(
-       any_of(c(
+       dplyr::any_of(c(
          "ID_UNIQUE_PLOT",
          "COUNTRY",
          "YEAR",

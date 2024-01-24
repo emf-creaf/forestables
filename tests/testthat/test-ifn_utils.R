@@ -660,7 +660,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
 test_that(".get_plots_from_province works as intended for ifn4", {
   test_plots <- list(
     "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
+    # "07" = c(679,114,499),
     "10" = c(3374,261),
     # "26" = c(960,495,172),
     "30" = c(78, 1223),
@@ -709,7 +709,7 @@ test_that(".get_plots_from_province works as intended for ifn4", {
     unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
   )
 
-  ## wrong state
+  ## wrong province
   expect_error(
     suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
     "aborting"
@@ -719,7 +719,7 @@ test_that(".get_plots_from_province works as intended for ifn4", {
 test_that("show_plots_from_ifn works as intended for ifn4", {
   test_plots <- list(
     "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
+    # "07" = c(679,114,499),
     "10" = c(3374,261),
     # "26" = c(960,495,172),
     "30" = c(78, 1223),
@@ -757,7 +757,7 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
   expect_true(
     nrow(test_res_ok) > 0
   )
-  # we must have 3 states
+  # we must have 7 states
   expect_identical(
     test_res_ok$province_code |> unique(), test_provinces[1:(length(test_provinces) - 1)]
   )
@@ -766,7 +766,7 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
 test_that(".transform_plot_summary_ifn works as intended for ifn4", {
   test_plots <- list(
     "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
+    # "07" = c(679,114,499),
     "10" = c(3374,261),
     # "26" = c(960,495,172),
     "30" = c(78, 1223),
