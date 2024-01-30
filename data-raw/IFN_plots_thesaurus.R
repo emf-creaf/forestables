@@ -101,7 +101,8 @@ plots_ifn4 <- plot_paths_ifn4 |>
         dplyr::filter(Provincia == as.integer(province)) |>
         dplyr::mutate(
           PROVINCIA = province,
-          ESTADILLO = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0")
+          ESTADILLO = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
+          Subclase = esus:::.ifn_subclass_fixer(Subclase)
         ) |>
         dplyr::select(PROVINCIA, ESTADILLO, Cla, Subclase)
     }
@@ -143,16 +144,16 @@ plots_ifn4 <- plot_paths_ifn4 |>
 #
 # Unique ID
 #
-# Unique id is created by concatenation of province code (with two numbers, so leading 0 for the
-# first nine), estadillo (plot) number, ifn versions, i.e.:
+# Unique ids are created by concatenation of province code (2 char), estadillo code (4 char),
+# class and subclass ifn2, class and subclass ifn3 and class and subclass ifn4. Missing ifn
+# classes and subclasses are filled with xx. All parts are separated from each other with
+# underscores. This results in these examples:
 #
-# "080001_234"
-# "080002_2"
-#
-# # same base code, but different versions, indicating that is not the same plot in ifn2 than in 3
-# # and 4:
-# "080003_2"
-# "080003_34"
+# "08_0001_NN_A1_A1"
+# "08_0001_NN_A1_xx"
+# "08_0001_xx_NN_A1"
+# "08_0001_xx_R1_11"
+# ...
 #
 # Dictionary creation:
 #
@@ -164,7 +165,7 @@ plots_ifn4 <- plot_paths_ifn4 |>
 
 
 
-## IFN3 in both
+## IFN3 in both, IFN2 and 3
 ifn3_both <- plots_ifn3 |>
   dplyr::filter(Cla == "A", Subclase %in% c("1", "3C")) |>
   dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_23"))
@@ -213,3 +214,62 @@ ifn2_only <- ifn2_codes_temp |>
   dplyr::filter(stringr::str_detect(id_code, "_2$"))
 ifn2_with_others_temp <- ifn2_codes_temp |>
   dplyr::filter(stringr::str_detect(id_code, "_23$"))
+
+# testing
+# nrow(ifn2_only)+nrow(ifn2_with_others_temp)==nrow(ifn2_codes_temp)
+
+
+## IFN4, both 3 and 4
+ifn4_both <- plots_ifn4 |>
+  dplyr::filter(Cla == "A", Subclase %in% c("1")) |>
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_34"))
+
+ifn2_with_3_with_4 <- ifn4_both |>
+  dplyr::select(-Cla, -Subclase) |>
+  dplyr::inner_join(ifn2_with_others_temp, by = c("PROVINCIA", "ESTADILLO")) |>
+  dplyr::mutate(id_code = glue::glue("{id_code.y}4")) |>
+  dplyr::select(-id_code.x, -id_code.y)
+ifn4_with_3_with_2 <- ifn4_both |>
+  dplyr::inner_join(ifn2_with_others_temp, by = c("PROVINCIA", "ESTADILLO")) |>
+  dplyr::mutate(id_code = glue::glue("{id_code.y}4")) |>
+  dplyr::select(-id_code.x, -id_code.y)
+ifn4_with_3 <- ifn4_both |>
+  dplyr::anti_join(ifn4_with_3_with_2, by = c("PROVINCIA", "ESTADILLO"))
+
+
+ifn4_sat_rev <- plots_ifn4 |>
+  dplyr::filter(Cla %in% c("1", "2", "3", "4")) |>
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_34"))
+
+ifn3_satellites |>
+  dplyr::select(-Cla) |>
+  dplyr::left_join(
+    ifn4_sat_rev |> dplyr::select(-Subclase),
+    by = c("PROVINCIA", "ESTADILLO", "Subclase" = "Cla")
+  )
+
+
+## Only in IFN4 but estadillo number in IFN2 also
+ifn4_only_conflict <- plots_ifn4 |>
+  dplyr::filter(Cla == "A", Subclase %in% c("4", "4C", "6C")) |>
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_4"))
+
+## Only in IFN4 no estadillo number in IFN2
+ifn4_only_no_conflict <- plots_ifn4 |>
+  dplyr::filter(Cla == "N") |>
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_4"))
+
+## Satellites
+ifn4_satellites <- plots_ifn4 |>
+  dplyr::filter(Cla == "R") |>
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_4_R"))
+
+ifn4_only <- list(ifn4_only_conflict, ifn4_only_no_conflict, ifn4_satellites) |>
+  purrr::list_rbind()
+# ## Testing time!!
+# # Rows sum must be equal
+# sum(nrow(ifn4_both), nrow(ifn4_only_conflict), nrow(ifn4_only_no_conflict), nrow(ifn4_satellites)) ==
+#   nrow(plots_ifn4)
+#
+# # Bad formatted subclasses in IFN4
+# plots_ifn4$Subclase |> unique()
