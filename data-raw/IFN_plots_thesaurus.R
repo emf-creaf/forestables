@@ -168,22 +168,22 @@ plots_ifn4 <- plot_paths_ifn4 |>
 ## IFN3 in both, IFN2 and 3
 ifn3_both <- plots_ifn3 |>
   dplyr::filter(Cla == "A", Subclase %in% c("1", "3C")) |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_23"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_NN_{Cla}{Subclase}_"))
 
 ## Only in IFN3 but estadillo number in IFN2 also
 ifn3_only_conflict <- plots_ifn3 |>
   dplyr::filter(Cla == "A", Subclase %in% c("3E", "4", "4C", "6C")) |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_3"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_xx_{Cla}{Subclase}_"))
 
 ## Only in IFN3 no estadillo number in IFN2
 ifn3_only_no_conflict <- plots_ifn3 |>
   dplyr::filter(Cla == "N") |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_3"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_xx_{Cla}{Subclase}_"))
 
 ## Satellites
 ifn3_satellites <- plots_ifn3 |>
   dplyr::filter(Cla == "R") |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_3_R"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_xx_{Cla}{Subclase}_"))
 
 # ## Testing time!!
 # # Rows sum must be equal
@@ -208,38 +208,73 @@ ifn2_codes_temp <- ifn3_both |>
   # IFN3)
   dplyr::right_join(plots_ifn2) |>
   # if id_code is NA, then they are only present in 2
-  dplyr::mutate(id_code = dplyr::if_else(is.na(id_code), glue::glue("{PROVINCIA}{ESTADILLO}_2"), id_code))
+  dplyr::mutate(id_code = dplyr::if_else(is.na(id_code), glue::glue("{PROVINCIA}_{ESTADILLO}_NN_xx_xx"), id_code))
 
 ifn2_only <- ifn2_codes_temp |>
-  dplyr::filter(stringr::str_detect(id_code, "_2$"))
-ifn2_with_others_temp <- ifn2_codes_temp |>
-  dplyr::filter(stringr::str_detect(id_code, "_23$"))
+  dplyr::filter(stringr::str_detect(id_code, "_xx_xx$"))
+ifn2_with_3 <- ifn2_codes_temp |>
+  dplyr::filter(stringr::str_detect(id_code, "_$"))
 
 # testing
-# nrow(ifn2_only)+nrow(ifn2_with_others_temp)==nrow(ifn2_codes_temp)
+# nrow(ifn2_only)+nrow(ifn2_with_3)==nrow(ifn2_codes_temp)
+# plot 25_1955 esta en ifn3 como A1 pero no aparece en ifn2??? otras como esta???
+# nrow(ifn2_with_3)==nrow(ifn3_both)
+# anti_join(ifn3_both, ifn2_with_3, by = c("PROVINCIA", "ESTADILLO"))
 
+## There are 2001 plots in IFN3 that says (A1, A3C) that exists in IFN2, but they
+## don't exists in IFN2, we need to separate them, and recode them
+ifn3_only_missing_ifn2 <- anti_join(
+  ifn3_both, ifn2_with_3, by = c("PROVINCIA", "ESTADILLO")
+) |>
+  dplyr::mutate(
+    id_code = stringr::str_replace(id_code, "_NN_", "_xx_")
+  )
+
+ifn3_with_2 <- anti_join(
+  ifn3_both, ifn3_only_missing_ifn2, by = c("PROVINCIA", "ESTADILLO")
+)
 
 ## IFN4, both 3 and 4
 ifn4_both <- plots_ifn4 |>
   dplyr::filter(Cla == "A", Subclase %in% c("1")) |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_34"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_??_??_{Cla}{Subclase}"))
 
-ifn2_with_3_with_4 <- ifn4_both |>
-  dplyr::select(-Cla, -Subclase) |>
-  dplyr::inner_join(ifn2_with_others_temp, by = c("PROVINCIA", "ESTADILLO")) |>
-  dplyr::mutate(id_code = glue::glue("{id_code.y}4")) |>
-  dplyr::select(-id_code.x, -id_code.y)
 ifn4_with_3_with_2 <- ifn4_both |>
-  dplyr::inner_join(ifn2_with_others_temp, by = c("PROVINCIA", "ESTADILLO")) |>
-  dplyr::mutate(id_code = glue::glue("{id_code.y}4")) |>
+  dplyr::inner_join(
+    ifn3_with_2 |>
+      dplyr::filter(Subclase != "3C"),
+    by = c("PROVINCIA", "ESTADILLO")
+  ) |>
+  dplyr::mutate(id_code = glue::glue("{id_code.y}A1")) |>
   dplyr::select(-id_code.x, -id_code.y)
+
+ifn2_with_3_with_4 <- ifn4_with_3_with_2 |>
+  dplyr::select(-dplyr::ends_with(".x"), -dplyr::ends_with(".y"))
+
+
 ifn4_with_3 <- ifn4_both |>
-  dplyr::anti_join(ifn4_with_3_with_2, by = c("PROVINCIA", "ESTADILLO"))
+  # remove the ones in the three inventories
+  dplyr::anti_join(ifn4_with_3_with_2, by = c("PROVINCIA", "ESTADILLO")) |>
+  # add the ifn3
+  # here we have to add the ifn3 A3E, but not the ifn3 A3C
+  dplyr::left_join(
+    purrr::list_rbind(
+      list(
+        ifn3_only_conflict,
+        ifn3_only_no_conflict,
+        ifn3_only_missing_ifn2 |> dplyr::filter(Subclase != "3C")
+      )
+    ),
+    by = c("PROVINCIA", "ESTADILLO")
+  )
+
+# testing
+# nrow(ifn4_with_3_with_2)+nrow(ifn4_with_3)==nrow(ifn4_both)
 
 
 ifn4_sat_rev <- plots_ifn4 |>
   dplyr::filter(Cla %in% c("1", "2", "3", "4")) |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}{ESTADILLO}_34"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_??_??_{Cla}{Subclase}"))
 
 ifn3_satellites |>
   dplyr::select(-Cla) |>
