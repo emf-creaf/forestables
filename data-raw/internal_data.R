@@ -225,6 +225,12 @@ ESPECIES<- shrub_codes_ifn4 |>
     SP_CODE = as.numeric(SP_CODE)
   ) |>
   unique()
+
+
+# ifn_plots_thesaurus -------------------------------------------------------------------------
+
+source("data-raw/IFN_plots_thesaurus.R") # this creates ifn_plots_thesaurus object
+
 # use internal data ---------------------------------------------------------------------------
 
 usethis::use_data(
@@ -232,5 +238,6 @@ usethis::use_data(
   growth_form_lignified_france,
   ifn_provinces_dictionary,
   ESPECIES,
+  ifn_plots_thesaurus,
   overwrite = TRUE, internal = TRUE
 )
