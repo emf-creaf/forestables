@@ -81,7 +81,14 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "DIAMETRO2",
     "ALTURA"
     )
-  expect_s3_class(test_res_ifn2 <- .read_inventory_data(test_file_ifn2, test_colnames_ifn2, .ifn = TRUE), "dtplyr_step_first")
+  expect_s3_class(
+    test_res_ifn2 <- .read_inventory_data(
+      test_file_ifn2, test_colnames_ifn2,
+      version = "ifn2", province = "24",
+      .ifn = TRUE
+    ),
+    "dtplyr_step_first"
+  )
   expect_true(nrow(test_res_ifn2) > 0)
 
   # IFN3
@@ -102,7 +109,11 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "Forma"
   )
   expect_s3_class(
-    test_res_ifn3 <- .read_inventory_data(test_input_ifn3, test_colnames_ifn3, .ifn = TRUE),
+    test_res_ifn3 <- .read_inventory_data(
+      test_input_ifn3, test_colnames_ifn3,
+      version = "ifn3", province = "24",
+      .ifn = TRUE
+    ),
     "dtplyr_step_first"
   )
   expect_true(nrow(test_res_ifn3) > 0)
@@ -111,6 +122,7 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
   test_file_ifn4 <- fs::path(Sys.getenv("ifn_path"), "Ifn4_Lugo.accdb")
   test_input_ifn4 <- glue::glue("{test_file_ifn4}|PCMayores")
   test_colnames_ifn4 = c(
+    "Provincia",
     "Estadillo",
     "Cla",
     "Subclase",
@@ -124,9 +136,13 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "Calidad",
     "Forma"
   )
-  
+
   expect_s3_class(
-    test_res_ifn4 <- .read_inventory_data(test_input_ifn4, test_colnames_ifn4, .ifn = TRUE),
+    test_res_ifn4 <- .read_inventory_data(
+      test_input_ifn4, test_colnames_ifn4,
+      version = "ifn4", province = "27",
+      .ifn = TRUE
+    ),
     "dtplyr_step_first"
   )
   expect_true(nrow(test_res_ifn4) > 0)

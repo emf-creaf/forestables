@@ -158,12 +158,10 @@ ifn_to_tibble <- function(
 #'
 #' @describeIn ifn_to_tibble
 #'
-
-
-  ifn_tables_process <- function(
-    provinces, version, filter_list, folder,
-    .parallel_options, .verbose, ...
-  ) {
+ifn_tables_process <- function(
+  provinces, version, filter_list, folder,
+  .parallel_options, .verbose, ...
+) {
 
     # debug
        # browser()
@@ -230,7 +228,7 @@ ifn_to_tibble <- function(
           "province_name_original",
           "province_code",
           "PLOT",
-          "Clase",
+          "Cla",
           "Subclase",
           "version",
           "Tipo",
@@ -288,12 +286,7 @@ ifn_to_tibble <- function(
 ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES) {
 
   # browser()
-
-  # Assertions (things we need) and checks/validations
-  #
-  # 1. file
-
-
+  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -329,6 +322,8 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
       "DIAMETRO2",
       "ALTURA"
     ),
+    version = version,
+    province = province,
     .ifn = TRUE
   ) |>
     dplyr::filter(
@@ -366,7 +361,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
       Dn2 = as.numeric(Dn2),
       HT = as.numeric(stringr::str_replace(HT, ",", ".")),
       SP_CODE = as.numeric(SP_CODE),
-      ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep="_"),
+      # ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep="_"),
       # From mm to cm
       DIA = ((Dn1 + Dn2)/2)*0.1,
       # in meters
@@ -431,7 +426,9 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
         "Calidad",
         "Forma"
       ),
-      .ifn = TRUE
+      version = version,
+      province = province,
+    .ifn = TRUE
     ) |>
       dplyr::filter(
         Estadillo == plot
@@ -472,7 +469,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
         Subclase = .ifn_subclass_fixer(Subclase),
 
         # unique inner code
-        ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"),
+        # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"),
         DIA = (Dn1 + Dn2)/2,
 
         # MM TO CM
@@ -542,6 +539,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 
 
   # browser()
+  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
 
   # Assertions (things we need) and checks/validations
   #
@@ -581,7 +579,9 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
         "FRACCAB",
         "ALTUMED"
       ),
-      .ifn = TRUE
+      version = version,
+      province = province,
+    .ifn = TRUE
     ) |>
     dplyr::filter(
       ESTADILLO == plot
@@ -616,7 +616,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
       #DM TO cm
       HT = HT * 10 ,
       SP_CODE = as.numeric(ESPECIE),
-      ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep = "_")
+      # ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep = "_")
 
     ) |>
 
@@ -665,7 +665,9 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
         "Fcc",
         "Hm"
       ),
-      .ifn = TRUE
+      version = version,
+      province = province,
+    .ifn = TRUE
     ) |>
       dplyr::filter(
         Estadillo == plot
@@ -705,8 +707,8 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
         #DM TO CM
         HT = HT * 10 ,
         COVER = as.numeric(COVER),
-        SP_CODE = as.numeric(Especie),
-        ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_")
+        # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep="_"),
+        SP_CODE = as.numeric(Especie)
 
       ) |>
 
@@ -744,6 +746,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIES) {
 # browser()
 
+  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
     !any(is.na(c(regen_data)))
@@ -772,6 +775,8 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
       "ALTUMED",
       "REGENA"
     ),
+    version = version,
+    province = province,
     .ifn = TRUE
   ) |>
     dplyr::filter(
@@ -802,8 +807,9 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
       #DM TO CM
       Hm = as.numeric(ALTUMED) * 10,
-      SP_CODE = as.numeric(ESPECIE),
-      ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep = "_")) |>
+      # ID_UNIQUE_PLOT = paste("ES",province_code,PLOT,sep = "_"),
+      SP_CODE = as.numeric(ESPECIE)
+      ) |>
 
     # add species info ---> WHAT REFERENCE SHOULD I USEE???
     dplyr::left_join(
@@ -896,7 +902,9 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
     "NumPies",
     "Hm"
   ),
-  .ifn = TRUE
+  version = version,
+  province = province,
+    .ifn = TRUE
   ) |>
     dplyr::filter(
       Estadillo == plot
@@ -937,8 +945,9 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
       #DM TO CM
       Hm = Hm * 10,
-      SP_CODE = as.numeric(Especie),
-      ID_UNIQUE_PLOT = paste("ES",province, PLOT, sep = "_")) |>
+      # ID_UNIQUE_PLOT = paste("ES",province, PLOT, sep = "_"),
+      SP_CODE = as.numeric(Especie)
+      ) |>
 
     dplyr::left_join(
       y =  ESPECIES |>
@@ -1016,6 +1025,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 ifn_plot_table_process <- function(plot_data, coord_data, version, plot, province, ifn_provinces_dictionary){
 
         # browser()
+  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
 
 
   # Assertions  and checks/validations
@@ -1063,7 +1073,9 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         "MAXPEND1",
         "MAXPEND2"
       ),
-      .ifn = TRUE
+      version = version,
+      province = province,
+    .ifn = TRUE
     ) |>
     dplyr::filter(
       ESTADILLO == !!plot,
@@ -1117,7 +1129,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       # HOJA = as.character(HOJA),
       COUNTRY = "ES",
       province_code = PROVINCIA,
-      ID_UNIQUE_PLOT = paste("ES", province_code,PLOT,sep = "_"),
+      # ID_UNIQUE_PLOT = paste("ES", province_code,PLOT,sep = "_"),
       # ALTITUD1 = as.numeric(ALTITUD1),
       ELEV = as.numeric(ELEV)*100,
       SLOPE = as.numeric(stringr::str_replace(SLOPE, ",", ".")),
@@ -1287,7 +1299,9 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         "MaxPend2"
 
       ),
-      .ifn = TRUE
+      version = version,
+      province = province,
+    .ifn = TRUE
     ) |>
       dplyr::filter(
         Estadillo == !!plot,
@@ -1310,8 +1324,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     plot_filtered_data <- plot_filtered_data |>
       dplyr::rename(
         YEAR = Ano,
-        PLOT = Estadillo,
-        Clase = Cla
+        PLOT = Estadillo
       ) |>
       dplyr::mutate(
         YEAR = as.character(YEAR),
@@ -1322,8 +1335,9 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
 
         version = version,
         province_code = province,
-        province_code = as.character(province_code),
-        ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"))
+        # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
+        province_code = as.character(province_code)
+        )
 
     # soil <- plot_filtered_data |>
     #
@@ -1410,7 +1424,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         province_code,
         province_name_original,
         PLOT,
-        Clase,
+        Cla,
         Subclase,
         COORD_SYS,
         YEAR,
@@ -1430,7 +1444,9 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     # !any(c(coord_data) == NA_character_)
     )
 
-   coords_filtered_data <- .read_inventory_data(
+  # browser()
+
+  coords_filtered_data <- .read_inventory_data(
     coord_data,
     colnames = c(
       "Provincia",
@@ -1442,7 +1458,10 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       "CoorY",
       "Huso"
     ),
-  .ifn = TRUE
+    version = version,
+    province = province,
+    .dry = TRUE,
+    .ifn = TRUE
    ) |>
      dplyr::filter(
        Estadillo == !!plot,
@@ -1480,7 +1499,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         PLOT = Estadillo,
         COORDEX = CoorX,
         COORDEY = CoorY,
-        HOJA = Hoja50
+        HOJA = Hoja50,
+        Cla = Clase
         ) |>
       dplyr::mutate(
         HOJA = as.character(HOJA),
@@ -1493,23 +1513,26 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         province_code = province,
         province_code = as.character(province_code),
         version = version,
-        ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
+        # ID_UNIQUE_PLOT = paste("ES",province_code, PLOT, sep = "_"),
         Huso = ifelse("Huso" %in% names(coords_fixed_data), coords_fixed_data$Huso, NA)
       )
+
+   ## BUG_: coord data now doesn't have unique id, as it has no subclass in table. We need to
+   ## join these two tables, how??
+   # browser()
 
    info_plot <- info_plot |>
      dplyr::left_join(
            y = coords_data |>
              dplyr::select(dplyr::any_of(c(
-               "ID_UNIQUE_PLOT" ,
-               "Clase",
+               # "ID_UNIQUE_PLOT" ,
+               "Cla",
                "COORDEX",
                "COORDEY",
                "HOJA",
                "Huso"
              ))
-             ),
-           by = c("ID_UNIQUE_PLOT", "Clase")
+             )
          ) |>
          dplyr::mutate(
 
@@ -1535,7 +1558,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
          "province_code",
          "province_name_original",
          "PLOT",
-         "Clase",
+         "Cla",
          "Subclase",
          "version",
          "Tipo",

@@ -17,7 +17,13 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "Forma"
   )
   expect_s3_class(
-    test_res_ifn3 <- .read_inventory_data(test_input_ifn3, test_colnames_ifn3,.ifn = TRUE),
+    test_res_ifn3 <- .read_inventory_data(
+      test_input_ifn3,
+      test_colnames_ifn3,
+      version = "ifn3",
+      province = "35",
+      .ifn = TRUE
+    ),
     "dtplyr_step_first"
   )
   expect_true(nrow(test_res_ifn3) > 0)

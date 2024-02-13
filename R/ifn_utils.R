@@ -236,6 +236,7 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 #' @noRd
 .read_ifn_data <- function(input, colnames, ...) {
 
+  # browser()
 
   # first, if ifn3 or ifn4 we have file name and table name in a character separated by "|" but if
   # we have ifn2 we have the name of the corresponding file.
@@ -250,6 +251,8 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   # simply read and return, the main function .read_inventory_data will take care of the rest
   file_ext <- fs::path_ext(input)
 
+  # extra_args <- rlang::list2(...)
+
   res <- switch(
     file_ext,
     "DBF" = foreign::read.dbf(input, as.is = TRUE) |>
@@ -258,12 +261,15 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
         PROVINCIA = as.character(PROVINCIA),
         PROVINCIA = stringr::str_pad(PROVINCIA, width = 2, side = "left", pad = "0"),
         ESTADILLO = as.character(ESTADILLO)
-    ),
+      ) |>
+      .ifn_unique_id_creator(...),
     "accdb" = .read_accdb_data(input, table_name) |>
       dplyr::select(dplyr::any_of(colnames)) |>
       dplyr::mutate(
-      Estadillo = as.character(Estadillo)
-      )
+      Estadillo = as.character(Estadillo),
+      Subclase = .ifn_subclass_fixer(Subclase)
+      ) |>
+      .ifn_unique_id_creator(...)
   )
 
   return(res)
@@ -399,6 +405,60 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
     stringr::str_replace("^2E$", "3E") |>
     # in IFN3, replace wrong 5 subclass with 4
     stringr::str_replace("^5$", "4")
+}
+
+.ifn_unique_id_creator <- function(data, version, province, .dry = FALSE) {
+
+  # browser()
+
+  if (isTRUE(.dry)) {
+    # here to solve the estadillo padding. As dry only occurs in ifn3 and ifn4 coords tables,
+    # due to the lack of Subclase in those, we can safely assume the var is called Estadillo
+    res <- data |>
+      dplyr::mutate(
+        Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0")
+      )
+
+    return(res)
+  }
+
+  if (version == "ifn2") {
+    res <- ifn_plots_thesaurus |>
+      dplyr::filter(class_ifn2 == "NN") |>
+      dplyr::select(id_code, PROVINCIA, ESTADILLO) |>
+      dplyr::right_join(
+        data |> dplyr::mutate(ESTADILLO = stringr::str_pad(ESTADILLO, width = 4, side = "left", pad = "0"))
+      ) |>
+      dplyr::rename(ID_UNIQUE_PLOT = id_code)
+  } else {
+
+    data_temp <- data |>
+      dplyr::mutate(
+        Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
+        class = paste0(Cla, Subclase)
+      )
+
+    if (version == "ifn4") {
+      data_temp <- data |>
+        dplyr::filter(province == stringr::str_pad(Provincia, width = 2, side = "left", pad = "0")) |>
+        dplyr::mutate(
+          Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
+          class = paste0(Cla, Subclase)
+        )
+    }
+
+    res <- ifn_plots_thesaurus |>
+      dplyr::filter(PROVINCIA == province) |>
+      dplyr::select(id_code, Estadillo = ESTADILLO, class = paste0("class_", version)) |>
+      dplyr::filter(!is.na(class), class != "xx") |>
+      dplyr::right_join(
+        data_temp,
+        by = c("Estadillo", "class")
+      ) |>
+      dplyr::rename(ID_UNIQUE_PLOT = id_code)
+  }
+
+  return(res)
 }
 
 
