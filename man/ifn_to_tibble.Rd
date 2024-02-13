@@ -7,7 +7,7 @@
 \usage{
 ifn_to_tibble(
   provinces,
-  version,
+  versions,
   filter_list,
   folder,
   ...,
@@ -28,7 +28,7 @@ ifn_tables_process(
 \arguments{
 \item{provinces}{A character vector with the code for the departments.}
 
-\item{version}{A character vector with the ifn version.}
+\item{versions}{A character vector with the ifn versions.}
 
 \item{filter_list}{A list of provinces and plots to extract the data from.}
 
@@ -67,7 +67,7 @@ year. This is implemented with furrr to allow parallelization of the plots data 
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{ifn_to_tibble} will attempt to process all
-plots for the provinces and ifn version provided. This will result in sometimes hundred of thousands
+plots for the provinces and ifn versions provided. This will result in sometimes hundred of thousands
 plots to be extracted, processed and returned, will in turn will cause a big use of memory and
 long times of calculation (specially when parallelising). Is better to provide a list of departments
 with the counties and plots to look after to narrow the process. This \code{filter_list} should

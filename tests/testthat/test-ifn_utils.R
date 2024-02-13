@@ -7,19 +7,25 @@ skip_if(
 
 test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for ifn2 ", {
 
-   test_plots <- list(
-
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn2 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn2"
@@ -40,11 +46,11 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   # warnings and messages
   expect_warning(
     .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
-    "file doesn't exist"
+    "Files for provinces"
   )
   expect_warning(
     .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
-    "file doesn't exist"
+    "Files for provinces"
   )
   expect_message(
     suppressWarnings(
@@ -93,7 +99,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
-    test_res[["plot_table"]][21],
+    test_res[["plot_table"]][length(test_res[["plot_table"]])],
     NA_character_
   )
 
@@ -109,21 +115,28 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   # expect_true(all((test_res_filter_list$province_name |> unique()) %in% test_provinces))
   #   expect_length(test_res_filter_list$province |> unique(), length(test_provinces) - 1)
 })
+
 test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for ifn3 ", {
 
-  test_plots <- list(
-
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn3 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn3"
@@ -144,11 +157,11 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   # warnings and messages
   expect_warning(
     .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
-    "file doesn't exist"
+    "Files for provinces"
   )
   expect_warning(
     .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
-    "file doesn't exist"
+    "Files for provinces"
   )
   expect_message(
     suppressWarnings(
@@ -198,7 +211,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
-    test_res[["plot_table"]][21],
+    test_res[["plot_table"]][length(test_res[["plot_table"]])],
     NA_character_
   )
   # expect_identical(
@@ -220,19 +233,25 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
 test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for ifn4 ", {
 
-  test_plots <- list(
-
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532)
-     # "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn4 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn4"
@@ -253,7 +272,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 # warnings and messages
 expect_warning(
   .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
-  "file doesn't exist"
+  "Files for provinces"
 )
 expect_message(
   .build_ifn_input_with( test_version, test_provinces[-9], test_plots[-9], test_folder, .verbose = TRUE),
@@ -301,7 +320,7 @@ expect_message(
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
-    test_res[["plot_table"]][21],
+    test_res[["plot_table"]][length(test_res[["plot_table"]])],
     NA_character_
   )
   # expect_identical(
@@ -324,18 +343,25 @@ expect_message(
 # get plots and transform summary -------------------------------------------------------------
 
 test_that(".get_plots_from_province works as intended for ifn2", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn2 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn2"
@@ -359,7 +385,7 @@ test_that(".get_plots_from_province works as intended for ifn2", {
   expect_named(
     test_res_ok,
     c(
-      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -383,18 +409,25 @@ test_that(".get_plots_from_province works as intended for ifn2", {
 })
 
 test_that("show_plots_from_ifn works as intended for ifn2", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn2 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
   test_provinces <- names(test_plots)
   test_version <- "ifn2"
   test_folder <- Sys.getenv("ifn_path")
@@ -416,7 +449,7 @@ test_that("show_plots_from_ifn works as intended for ifn2", {
   # names
   expect_named(
     test_res_ok,
-    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
     ignore.order = TRUE
   )
   # expect rows
@@ -430,18 +463,25 @@ test_that("show_plots_from_ifn works as intended for ifn2", {
 })
 
 test_that(".transform_plot_summary_ifn works as intended for ifn2", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn2 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn2"
@@ -491,18 +531,25 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
 })
 
 test_that(".get_plots_from_province works as intended for ifn3", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn3 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn3"
@@ -526,7 +573,7 @@ test_that(".get_plots_from_province works as intended for ifn3", {
   expect_named(
     test_res_ok,
     c(
-      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -550,18 +597,25 @@ test_that(".get_plots_from_province works as intended for ifn3", {
 })
 
 test_that("show_plots_from_ifn works as intended for ifn3", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn3 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
   test_provinces <- names(test_plots)
   test_version <- "ifn3"
   test_folder <- Sys.getenv("ifn_path")
@@ -583,7 +637,7 @@ test_that("show_plots_from_ifn works as intended for ifn3", {
   # names
   expect_named(
     test_res_ok,
-    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
     ignore.order = TRUE
   )
   # expect rows
@@ -597,18 +651,25 @@ test_that("show_plots_from_ifn works as intended for ifn3", {
 })
 
 test_that(".transform_plot_summary_ifn works as intended for ifn3", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn3 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn3"
@@ -658,18 +719,25 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
 })
 
 test_that(".get_plots_from_province works as intended for ifn4", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    # "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn4 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn4"
@@ -693,7 +761,7 @@ test_that(".get_plots_from_province works as intended for ifn4", {
   expect_named(
     test_res_ok,
     c(
-      "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -717,18 +785,25 @@ test_that(".get_plots_from_province works as intended for ifn4", {
 })
 
 test_that("show_plots_from_ifn works as intended for ifn4", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    # "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn4 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
   test_provinces <- names(test_plots)
   test_version <- "ifn4"
   test_folder <- Sys.getenv("ifn_path")
@@ -750,7 +825,7 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
   # names
   expect_named(
     test_res_ok,
-    c("version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
     ignore.order = TRUE
   )
   # expect rows
@@ -764,18 +839,25 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
 })
 
 test_that(".transform_plot_summary_ifn works as intended for ifn4", {
-  test_plots <- list(
-    "06" = c(2064,1138,325),
-    # "07" = c(679,114,499),
-    "10" = c(3374,261),
-    # "26" = c(960,495,172),
-    "30" = c(78, 1223),
-    "31" = c(135,761,1518),
-    "33" = c(283),
-    "40" = c(412,1216,1728),
-    "49" = c(105,99,532),
-    "tururu" = c(5)
-  )
+  test_plots <- ifn_plots_thesaurus |>
+    dplyr::filter(
+      PROVINCIA %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+      ESTADILLO %in% c(
+        "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+        "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+      ),
+      class_ifn4 != "xx"
+    ) |>
+    dplyr::select(id_code, PROVINCIA) |>
+    dplyr::group_by(PROVINCIA) |>
+    dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+    dplyr::group_map(.f = \(province_plots, province_code) {
+      tibble::deframe(province_plots) |>
+        # list() |>
+        purrr::set_names(province_code[[1]])
+    }) |>
+    purrr::flatten()
+  test_plots$tururu <- c("tururu_0005_NN_A1_A1")
 
   test_provinces <- names(test_plots)
   test_version <- "ifn4"

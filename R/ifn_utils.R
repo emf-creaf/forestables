@@ -6,6 +6,7 @@
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
     # filter_list <- list("24" = c(6))
+    # browser()
     ## TODO
     # create safe versions of .get_plots_from_province and .transform_plot_summary
     get_plots_safe <- purrr::safely(
@@ -43,9 +44,7 @@
     )), .verbose
   )
 
-
-
-    input_df <- filter_list |>
+  input_df <- filter_list |>
     tibble::enframe() |>
     tidyr::unnest(cols = value) |>
     purrr::set_names(c("province", "plots")) |>
@@ -136,7 +135,7 @@
     plot_path, coord_path, version, plots_arg_value, province, ifn_provinces_dictionary
   ) |>
     dplyr::select(
-      "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
+      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
     ) |>
     dplyr::group_by(crs) |>
     dplyr::group_modify(
@@ -168,10 +167,10 @@
       version %in% versions,
       province_code %in% provinces
     ) |>
-    dplyr::select(province_code, PLOT) |>
+    dplyr::select(province_code, ID_UNIQUE_PLOT) |>
     dplyr::distinct() |>
     dplyr::group_by(province_code) |>
-    dplyr::summarise(plots = list(PLOT), .groups = "keep") |>
+    dplyr::summarise(plots = list(ID_UNIQUE_PLOT), .groups = "keep") |>
     dplyr::group_map(.f = \(province_plots, province_code) {
       tibble::deframe(province_plots) |>
         # list() |>
@@ -325,14 +324,15 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
 .build_ifn_file_path <- function(province, type, version, folder = ".", .call = rlang::caller_env()) {
 
-   # browser()
+  # browser()
   #
   # Ok, so here we need to do some things. Depending on .version (the IFN version) we need to
   # provide different things.
-  purrr::pmap_chr(
+  res <- purrr::pmap_chr(
     .l = list(province, type, version),
     .f = \(province, type, version) {
 
+      # browser()
       if (version == "ifn2") {
         file_name <- switch(
           type,
@@ -383,16 +383,20 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
       # check file exists
       if (!fs::file_exists(file_name)) {
-        cli::cli_warn(c(
-          "{.path {file_name}} file doesn't exists",
-          "!" = "Please check if {.path {folder}} is the correct path",
-          "i" = "Skipping {.path {file_name}}"
-        ), call = .call)
         return(NA_character_)
       }
       return(table_path)
     }
   )
+
+  if (sum(is.na(res)) > 0) {
+    cli::cli_warn(c(
+      "Files for provinces {.values {province[which(is.na(res))] |> unique()}} not found.",
+      "Skipping plots {type} data from those provinces"
+    ))
+  }
+
+  return(res)
 }
 
 .ifn_subclass_fixer <- function(subclasses) {

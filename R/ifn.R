@@ -7,7 +7,7 @@
 #' \code{folder} argument.
 #'
 #' @param provinces A character vector with the code for the departments.
-#' @param version A character vector with the ifn version.
+#' @param versions A character vector with the ifn versions.
 #' @param filter_list A list of provinces and plots to extract the data from.
 #' @param folder The path to the folder containing the IFN csv files, as character.
 #' @param ... Not used at the moment
@@ -17,7 +17,7 @@
 #'
 #' @section Filter list:
 #'   If no \code{filter_list} argument is provided, \code{ifn_to_tibble} will attempt to process all
-#'   plots for the provinces and ifn version provided. This will result in sometimes hundred of thousands
+#'   plots for the provinces and ifn versions provided. This will result in sometimes hundred of thousands
 #'   plots to be extracted, processed and returned, will in turn will cause a big use of memory and
 #'   long times of calculation (specially when parallelising). Is better to provide a list of departments
 #'   with the counties and plots to look after to narrow the process. This \code{filter_list} should
@@ -53,7 +53,7 @@
 #' @export
 ifn_to_tibble <- function(
     provinces,
-    version,
+    versions,
     filter_list,
     folder,
     ...,
@@ -78,10 +78,10 @@ ifn_to_tibble <- function(
 
 
 
-  # version
+  # versions
   assertthat::assert_that(
-    is.character(version), length(version) > 0,
-    msg = cli::cli_abort("version must be a character vector with at least one")
+    is.character(versions), length(versions) > 0,
+    msg = cli::cli_abort("versions must be a character vector with at least one")
   )
 
   # folder
@@ -131,14 +131,14 @@ ifn_to_tibble <- function(
   ## inform the user
   verbose_msg(
     cli::cli_inform(
-      c("Start", "i" = "Processing {length(version)} cicle{?s}")
+      c("Start", "i" = "Processing {length(versions)} cicle{?s}")
     ),
     .verbose
   )
 
-  ## send the version in loop to process table function
+  ## send the versions in loop to process table function
   purrr::map(
-    version,
+    versions,
     .f = \(version) {
       ifn_tables_process(
         provinces, version, filter_list, folder, .parallel_options, .verbose, ...)
@@ -286,7 +286,7 @@ ifn_tables_process <- function(
 ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES) {
 
   # browser()
-  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
+  plot <- stringr::str_split_i(plot, "_", 2)
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -337,7 +337,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
   if (nrow(tree_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "Data missing for that plot",
+      "Tree data missing for plot {.var {plot}}",
       "i" = "Returning empty tibble for plot {.var {plot}} "
     ))
     return(dplyr::tibble())
@@ -445,7 +445,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
     if (nrow(tree_filtered_data) < 1) {
       # warn the user
       cli::cli_warn(c(
-        "Data missing for that plot",
+        "Tree data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}} "
       ))
       return(dplyr::tibble())
@@ -539,7 +539,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 
 
   # browser()
-  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
+  plot <- stringr::str_split_i(plot, "_", 2)
 
   # Assertions (things we need) and checks/validations
   #
@@ -592,7 +592,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
   if (nrow(shrub_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "Data missing for that plot",
+      "Shrub data missing for plot {.var {plot}}",
       "i" = "Returning empty tibble for plot {.var {plot}}  "
     ))
     return(dplyr::tibble())
@@ -684,7 +684,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
     if (nrow(shrub_filtered_data) < 1) {
       # warn the user
       cli::cli_warn(c(
-        "Data missing for that plot",
+        "Shrub data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
       ))
       return(dplyr::tibble())
@@ -746,7 +746,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIES) {
 # browser()
 
-  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
+  plot <- stringr::str_split_i(plot, "_", 2)
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
     !any(is.na(c(regen_data)))
@@ -789,7 +789,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
   if (nrow(regen_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "Data missing for that plot",
+      "Regeneration data missing for plot {.var {plot}}",
       "i" = "Returning empty tibble for plot {.var {plot}}  "
     ))
     return(dplyr::tibble())
@@ -922,7 +922,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
   if (nrow(regen_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "Data missing for that plot",
+      "Regeneration data missing for plot {.var {plot}}",
       "i" = "Returning empty tibble for plot {.var {plot}}  "
     ))
     return(dplyr::tibble())
@@ -1024,9 +1024,12 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
 ifn_plot_table_process <- function(plot_data, coord_data, version, plot, province, ifn_provinces_dictionary){
 
-        # browser()
-  plot <- stringr::str_pad(plot, width = 4, side = "left", pad = "0")
-
+  # browser()
+  # in some cases (get plots from provinces) we pass a quosure to the plot argument.
+  # If not, get the estadillo padded.
+  if (!rlang::is_quosure(plot)) {
+    plot <- stringr::str_split_i(plot, "_", 2)
+  }
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
@@ -1089,7 +1092,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
   if (nrow(plot_filtered_data) < 1) {
     # warn the user
     cli::cli_warn(c(
-      "Data missing for that plot",
+      "Plot data missing for plot {.var {plot}}",
       "i" = "Returning empty tibble for plot {.var {plot}}  "
     ))
     return(dplyr::tibble())
@@ -1315,7 +1318,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     if (nrow(plot_filtered_data) < 1) {
       # warn the user
       cli::cli_warn(c(
-        "Data missing for that plot",
+        "Plot data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
       ))
       return(dplyr::tibble())
@@ -1476,7 +1479,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
    if (nrow(coords_filtered_data) < 1) {
      # warn the user
      cli::cli_warn(c(
-       "Data missing for that plot",
+       "Coordinates data missing for plot {.var {plot}}",
        "i" = "Returning empty tibble for plot {.var {plot}}  "
      ))
      return(dplyr::tibble())
