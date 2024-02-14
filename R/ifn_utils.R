@@ -134,6 +134,7 @@
   res <- ifn_plot_table_process(
     plot_path, coord_path, version, plots_arg_value, province, ifn_provinces_dictionary
   ) |>
+    dplyr::filter(!is.na(ID_UNIQUE_PLOT)) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
     ) |>
@@ -411,19 +412,22 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
     stringr::str_replace("^5$", "4")
 }
 
-.ifn_unique_id_creator <- function(data, version, province, .dry = FALSE) {
+.ifn_unique_id_creator <- function(data, version, province, .dry = FALSE, .padding = TRUE) {
 
   # browser()
 
   if (isTRUE(.dry)) {
-    # here to solve the estadillo padding. As dry only occurs in ifn3 and ifn4 coords tables,
-    # due to the lack of Subclase in those, we can safely assume the var is called Estadillo
-    res <- data |>
-      dplyr::mutate(
-        Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0")
-      )
+    if (isTRUE(.padding)) {
+      # here to solve the estadillo padding. As dry only occurs in ifn3 and ifn4 coords tables,
+      # due to the lack of Subclase in those, we can safely assume the var is called Estadillo
+      data <- data |>
+        dplyr::mutate(
+          Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0")
+        )
+    }
 
-    return(res)
+
+    return(data)
   }
 
   if (version == "ifn2") {
@@ -431,7 +435,11 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
       dplyr::filter(class_ifn2 == "NN") |>
       dplyr::select(id_code, PROVINCIA, ESTADILLO) |>
       dplyr::right_join(
-        data |> dplyr::mutate(ESTADILLO = stringr::str_pad(ESTADILLO, width = 4, side = "left", pad = "0"))
+        data |>
+          dplyr::mutate(
+            ESTADILLO = stringr::str_pad(ESTADILLO, width = 4, side = "left", pad = "0")
+          ),
+        by = c("PROVINCIA", "ESTADILLO")
       ) |>
       dplyr::rename(ID_UNIQUE_PLOT = id_code)
   } else {

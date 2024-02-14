@@ -285,9 +285,6 @@ ifn_tables_process <- function(
 
 ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES) {
 
-  # browser()
-  plot <- stringr::str_split_i(plot, "_", 2)
-
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
     !any(is.na(c(tree_data)))
@@ -308,7 +305,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
 
    # browser()
 
-  if (version == "ifn2"){
+  if (version == "ifn2") {
 
   tree_filtered_data <-  .read_inventory_data(
     tree_data,
@@ -327,7 +324,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
     .ifn = TRUE
   ) |>
     dplyr::filter(
-      ESTADILLO == plot
+      ID_UNIQUE_PLOT == plot
     ) |>
     tibble::as_tibble()
 
@@ -397,16 +394,11 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
 
     )
 
-
-
-
   # Return tree
   return(tree)
   }
 
-  if (version %in% c("ifn3", "ifn4")){
-
-    # browser()
+  if (version %in% c("ifn3", "ifn4")) {
 
     tree_filtered_data <-  .read_inventory_data(
       tree_data,
@@ -431,7 +423,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
     .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == plot
+        ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
@@ -537,15 +529,6 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, ESPECIES)
 
 ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIES) {
 
-
-  # browser()
-  plot <- stringr::str_split_i(plot, "_", 2)
-
-  # Assertions (things we need) and checks/validations
-  #
-  # 1. file
-
-
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
     !any(is.na(c(shrub_data)))
@@ -584,7 +567,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
     .ifn = TRUE
     ) |>
     dplyr::filter(
-      ESTADILLO == plot
+      ID_UNIQUE_PLOT == plot
     ) |>
     tibble::as_tibble()
 
@@ -670,7 +653,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
     .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == plot
+        ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
@@ -744,9 +727,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, ESPECIE
 
 
 ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIES) {
-# browser()
 
-  plot <- stringr::str_split_i(plot, "_", 2)
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(
     !any(is.na(c(regen_data)))
@@ -780,7 +761,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
     .ifn = TRUE
   ) |>
     dplyr::filter(
-      ESTADILLO == plot
+      ID_UNIQUE_PLOT == plot
     ) |>
     tibble::as_tibble()
 
@@ -907,7 +888,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
     .ifn = TRUE
   ) |>
     dplyr::filter(
-      Estadillo == plot
+      ID_UNIQUE_PLOT == plot
     ) |>
     tibble::as_tibble()
 
@@ -1521,24 +1502,31 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
       )
 
    ## BUG_: coord data now doesn't have unique id, as it has no subclass in table. We need to
-   ## join these two tables, how??
+   ## join these two tables and we use plot and province code. There is only one
+   ## set of coordinates by PLOT (estadillo), so any plots with the same PLOT but
+   ## different classes have the same coordinates.
    # browser()
 
    info_plot <- info_plot |>
      dplyr::left_join(
            y = coords_data |>
-             dplyr::select(dplyr::any_of(c(
-               # "ID_UNIQUE_PLOT" ,
-               "Cla",
-               "COORDEX",
-               "COORDEY",
-               "HOJA",
-               "Huso"
-             ))
-             )
+             dplyr::select(
+               dplyr::any_of(c(
+                 # "ID_UNIQUE_PLOT" ,
+                 "PLOT",
+                 "province_code",
+                 "COORDEX",
+                 "COORDEY",
+                 "HOJA",
+                 "Huso"
+               ))
+             ),
+           by = c("province_code", "PLOT")
          ) |>
-         dplyr::mutate(
-
+     # sometimes, plots present in data are not present in coords, so we
+     # remove them
+     dplyr::filter(!is.na(COORDEX)) |>
+     dplyr::mutate(
        crs = dplyr::case_when(
          is.na(Huso) & COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
          Huso == 30 & COORD_SYS == "ED50" ~ 23030,

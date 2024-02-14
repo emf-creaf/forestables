@@ -54,6 +54,7 @@ plots_ifn2 <- plot_paths_ifn2 |>
       esus:::.read_inventory_data(
         path,
         colnames = c("PROVINCIA", "ESTADILLO"),
+        .dry = TRUE, .padding = FALSE,
         .ifn = TRUE
       ) |>
         tibble::as_tibble() |>
@@ -73,6 +74,7 @@ plots_ifn3 <- plot_paths_ifn3 |>
       esus:::.read_inventory_data(
         path,
         colnames = c("Estadillo", "Cla", "Subclase"),
+        .dry = TRUE, .padding = FALSE,
         .ifn = TRUE
       ) |>
         tibble::as_tibble() |>
@@ -95,6 +97,7 @@ plots_ifn4 <- plot_paths_ifn4 |>
       esus:::.read_inventory_data(
         path,
         colnames = c("Provincia", "Estadillo", "Cla", "Subclase"),
+        .dry = TRUE, .padding = FALSE,
         .ifn = TRUE
       ) |>
         tibble::as_tibble() |>
@@ -466,7 +469,16 @@ ifn_plots_thesaurus <- ifn2_plots_processed |>
     class_ifn2 = stringr::str_split_i(id_code, "_", 3),
     class_ifn3 = stringr::str_split_i(id_code, "_", 4),
     class_ifn4 = stringr::str_split_i(id_code, "_", 5)
+  ) |>
+  ### CLEANING
+  # Asturias 9999 plot
+  dplyr::filter(ESTADILLO != "9999") |>
+  # Due to the process some plots has "xxxx" in class_ifn4, substitute with xx
+  dplyr::mutate(
+    id_code = stringr::str_replace(id_code, "xxxx", "xx"),
+    class_ifn4 = stringr::str_replace(class_ifn4, "xxxx", "xx")
   )
+
 
 rm(list = c(
   "ifn_path", "ifn2_codes_temp", "ifn2_only", "ifn2_plots_processed", "ifn2_with_3",

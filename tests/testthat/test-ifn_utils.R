@@ -695,9 +695,9 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
     "list"
   )
   # correct names
-  expect_named(test_res, c("06", "07", "30"), ignore.order = TRUE)
+  expect_named(test_res, test_provinces[-length(test_provinces)], ignore.order = TRUE)
   # expect results
-  expect_length(test_res, 3)
+  expect_length(test_res, length(test_provinces[-length(test_provinces)]))
   for (prov in 1:length(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
