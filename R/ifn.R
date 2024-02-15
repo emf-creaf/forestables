@@ -1003,7 +1003,10 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, ESPECIE
 
 
 
-ifn_plot_table_process <- function(plot_data, coord_data, version, plot, province, ifn_provinces_dictionary){
+ifn_plot_table_process <- function(
+  plot_data, coord_data, version,
+  plot, province, ifn_provinces_dictionary
+){
 
   # browser()
   # in some cases (get plots from provinces) we pass a quosure to the plot argument.
@@ -1083,10 +1086,9 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     return(dplyr::tibble())
   }
 
-  # check for bad formatted or missing coords to inform the user
   if (any(
-    is.na(plot_filtered_data$COORDEX), is.na(plot_filtered_data$COORDEY),
-    grepl("[A-Za-z]", plot_filtered_data$COORDEX), grepl("[A-Za-z]", plot_filtered_data$COORDEY)
+    is.na(plot_filtered_data$COORDEX), is.na(plot_filtered_data$COORDEY)
+    # grepl("[A-Za-z]", plot_filtered_data$COORDEX), grepl("[A-Za-z]", plot_filtered_data$COORDEY)
   )) {
     cli::cli_warn(c(
       "File {.file {plot_data}} has some errors in the coordinates (missing coordinates, bad format...).",
@@ -1094,13 +1096,33 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     ))
   }
 
-  # remove bad formatted or missing coordinates
+  # fix bad formatted coords and filter missing coordinates
+  # Ok, here is a little weird, but is what it is. Some IFN2 provinces have letters in the
+  # coordinates, which mess with the process. The thing is that due to some
+  # exporting/formatting/blackbox process numbers were converted to letters. B is 2, C is 3...
+  # So we try to fix this
   plot_coord_fixed_data <- plot_filtered_data |>
+    dplyr::filter(!is.na(COORDEX), !is.na(COORDEY)) |>
     dplyr:::mutate(
-      COORDEX = ifelse(grepl("[A-Za-z]", COORDEX), NA, COORDEX),
-      COORDEY = ifelse(grepl("[A-Za-z]", COORDEY), NA, COORDEY)
-    ) |>
-    dplyr::filter(!is.na(COORDEX), !is.na(COORDEY))
+      COORDEX = stringr::str_replace_all(COORDEX, "A", "1"),
+      COORDEX = stringr::str_replace_all(COORDEX, "B", "2"),
+      COORDEX = stringr::str_replace_all(COORDEX, "C", "3"),
+      COORDEX = stringr::str_replace_all(COORDEX, "D", "4"),
+      COORDEX = stringr::str_replace_all(COORDEX, "E", "5"),
+      COORDEX = stringr::str_replace_all(COORDEX, "F", "6"),
+      COORDEX = stringr::str_replace_all(COORDEX, "G", "7"),
+      COORDEX = stringr::str_replace_all(COORDEX, "H", "8"),
+      COORDEX = stringr::str_replace_all(COORDEX, "I", "9"),
+      COORDEY = stringr::str_replace_all(COORDEY, "A", "1"),
+      COORDEY = stringr::str_replace_all(COORDEY, "B", "2"),
+      COORDEY = stringr::str_replace_all(COORDEY, "C", "3"),
+      COORDEY = stringr::str_replace_all(COORDEY, "D", "4"),
+      COORDEY = stringr::str_replace_all(COORDEY, "E", "5"),
+      COORDEY = stringr::str_replace_all(COORDEY, "F", "6"),
+      COORDEY = stringr::str_replace_all(COORDEY, "G", "7"),
+      COORDEY = stringr::str_replace_all(COORDEY, "H", "8"),
+      COORDEY = stringr::str_replace_all(COORDEY, "I", "9")
+    )
 
   #we add the id code
   info_plot <- plot_coord_fixed_data |>
@@ -1507,8 +1529,6 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
    ## join these two tables and we use plot and province code. There is only one
    ## set of coordinates by PLOT (estadillo), so any plots with the same PLOT but
    ## different classes have the same coordinates.
-   # browser()
-
    info_plot <- info_plot |>
      dplyr::left_join(
            y = coords_data |>
@@ -1522,7 +1542,8 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
                  "HOJA",
                  "Huso"
                ))
-             ),
+             ) |>
+             dplyr::distinct(),
            by = c("province_code", "PLOT")
          ) |>
      # sometimes, plots present in data are not present in coords, so we

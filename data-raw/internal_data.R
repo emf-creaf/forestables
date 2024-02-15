@@ -224,7 +224,9 @@ ESPECIES<- shrub_codes_ifn4 |>
   dplyr::mutate(
     SP_CODE = as.numeric(SP_CODE)
   ) |>
-  unique()
+  dplyr::distinct() |>
+  dplyr::group_by(SP_CODE) |>
+  dplyr::summarise(SP_NAME = dplyr::first(SP_NAME))
 
 
 # ifn_plots_thesaurus -------------------------------------------------------------------------

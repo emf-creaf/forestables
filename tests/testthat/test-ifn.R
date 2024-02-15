@@ -1209,7 +1209,7 @@ test_that("ifn_tables_process ifn2 works as intended", {
   # tururu and "91" province shouldn't appear
   # inexistent plots shouldn't also appear
   expect_false("tururu" %in% unique(test_ifn2_res$province_code))
-  expect_identical(nrow(test_ifn2_res), ((test_ifn2_plots |> purrr::flatten() |> length()) - 6) |> as.integer())
+  expect_identical(nrow(test_ifn2_res), ((test_ifn2_plots |> purrr::flatten() |> length()) - 3) |> as.integer())
 
   ### missing random files
   # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)
@@ -1285,7 +1285,7 @@ test_that("ifn_tables_process ifn3 works as intended", {
   # # be present, so 12 of 14 elements in filter list
   expect_false("tururu" %in% unique(test_ifn3_res$province_code))
   expect_identical(
-    nrow(test_ifn3_res), as.integer((test_ifn3_plots |> purrr::flatten() |> length()) - 13)
+    nrow(test_ifn3_res), as.integer((test_ifn3_plots |> purrr::flatten() |> length()) - 3)
   )
 
   # ### missing random files
@@ -1360,7 +1360,7 @@ test_that("ifn_tables_process ifn4 works as intended", {
   # tururu state shouldn't appear, inexistent plots (91-0) shouldn't be present,
   # Also, "06" = c(2064,325), "07" = c(499) and "10" = c(3374) don't exist in IFN4
   expect_false("tururu" %in% unique(test_ifn4_res$province_code))
-  expect_identical(nrow(test_ifn4_res), ((test_ifn4_plots |> purrr::flatten() |> length()) - 3))
+  expect_identical(nrow(test_ifn4_res), ((test_ifn4_plots |> purrr::flatten() |> length()) - 3) |> as.integer())
 
   # ### missing random files
   # # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)
