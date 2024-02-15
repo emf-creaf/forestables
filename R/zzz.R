@@ -16,5 +16,9 @@
     )
   }
 
+  ## memoise the read functions
+  .read_ifn_data <<- memoise::memoise(.read_ifn_data)
+
+  ## return invisible
   invisible()
 }

@@ -1007,9 +1007,14 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
 
   # browser()
   # in some cases (get plots from provinces) we pass a quosure to the plot argument.
-  # If not, get the estadillo padded.
+  # If not, get the estadillo padded. This is for the coord tables in ifn3 and ifn4
   if (!rlang::is_quosure(plot)) {
-    plot <- stringr::str_split_i(plot, "_", 2)
+    plot_estadillo <- stringr::str_split_i(plot, "_", 2)
+  } else {
+    plot_estadillo <- rlang::quo(.data$Estadillo)
+    if (version == "ifn2") {
+      plot_estadillo <- rlang::quo(.data$ESTADILLO)
+    }
   }
 
   # Assertions  and checks/validations
@@ -1030,8 +1035,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
 
   # 2. col names
   # browser()
-  if (version == "ifn2"){
-
+  if (version == "ifn2") {
 
   plot_filtered_data <- .read_inventory_data(
       plot_data,
@@ -1062,7 +1066,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     .ifn = TRUE
     ) |>
     dplyr::filter(
-      ESTADILLO == !!plot,
+      ID_UNIQUE_PLOT == !!plot,
       PROVINCIA == !!province
     ) |>
     tibble::as_tibble()
@@ -1260,9 +1264,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
   return(info_plot)
   }
 
-  if (version %in% c("ifn3", "ifn4")){
-
-
+  if (version %in% c("ifn3", "ifn4")) {
     plot_filtered_data <- .read_inventory_data(
       plot_data,
       colnames = c(
@@ -1288,7 +1290,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == !!plot,
+        ID_UNIQUE_PLOT == !!plot,
         Provincia == as.integer(province)
       ) |>
       tibble::as_tibble()
@@ -1435,7 +1437,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     colnames = c(
       "Provincia",
       "Estadillo",
-      "Clase",
+      "Clase", "Cla",
       "Subclase",
       "Hoja50",
       "CoorX",
@@ -1448,7 +1450,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
     .ifn = TRUE
    ) |>
      dplyr::filter(
-       Estadillo == !!plot,
+       Estadillo == !!plot_estadillo,
        Provincia == as.integer(province)
      ) |>
      tibble::as_tibble()
@@ -1484,7 +1486,7 @@ ifn_plot_table_process <- function(plot_data, coord_data, version, plot, provinc
         COORDEX = CoorX,
         COORDEY = CoorY,
         HOJA = Hoja50,
-        Cla = Clase
+        Cla = dplyr::any_of(c("Clase", "Cla"))
         ) |>
       dplyr::mutate(
         HOJA = as.character(HOJA),

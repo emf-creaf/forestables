@@ -26,7 +26,8 @@ Imports:
     sf,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    memoise
 Depends: 
     data.table,
     dtplyr,

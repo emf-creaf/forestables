@@ -122,10 +122,10 @@
     ), call = .call)
   }
 
-  plots_arg_value <- rlang::quo(.data$ESTADILLO)
-  if (version %in% c("ifn3", "ifn4")) {
-    plots_arg_value <- rlang::quo(.data$Estadillo)
-  }
+  plots_arg_value <- rlang::quo(.data$ID_UNIQUE_PLOT)
+  # if (version %in% c("ifn3", "ifn4")) {
+  #   plots_arg_value <- rlang::quo(.data$Estadillo)
+  # }
 
   # If file exists, business as usual. We use the general function (ifn_plot_table_process), because
   # it takes care of the version logic for us, DRY!!!
