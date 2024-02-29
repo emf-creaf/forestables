@@ -1,14 +1,9 @@
 .build_ifn_input_with <- function(
-    version, provinces, filter_list, folder, .verbose, .call = rlang::caller_env()
+  version, provinces, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
 
-    # browser()
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
-    # filter_list <- list("24" = c(6))
-    # browser()
-    ## TODO
-    # create safe versions of .get_plots_from_province and .transform_plot_summary
     get_plots_safe <- purrr::safely(
       .get_plots_from_province,
       otherwise = tibble::tibble(
@@ -40,7 +35,9 @@
   # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> as.character() |> length()}} plots for {.val {version}}"
+      "Getting ready to retrieve
+      {.strong {filter_list |> purrr::flatten() |> as.character() |> length()}}
+      plots for {.val {version}}"
     )), .verbose
   )
 
@@ -93,15 +90,12 @@
         ),
         no = NA_character_
       )
-  )
+    )
 
   return(input_df)
 }
 
 .get_plots_from_province <- function(province, folder, version, .call = rlang::caller_env()) {
-
-  ## DEBUG
-  # browser()
 
   ## TODO Assertion to ensure province files exists, because .build_ifn_file_path is fail
   ## resistant, returning always a result (NA_character) to allow its use in loops.
@@ -118,15 +112,12 @@
 
   if (is.na(plot_path)) {
     cli::cli_abort(c(
-      "{.path {folder}} folder doesn't contain the file corresponding to {.val {version}} version, aborting."
+      "{.path {folder}} folder doesn't contain the file corresponding to {.val {version}} version,
+      aborting."
     ), call = .call)
   }
 
   plots_arg_value <- rlang::quo(.data$ID_UNIQUE_PLOT)
-  # if (version %in% c("ifn3", "ifn4")) {
-  #   plots_arg_value <- rlang::quo(.data$Estadillo)
-  # }
-
   # If file exists, business as usual. We use the general function (ifn_plot_table_process), because
   # it takes care of the version logic for us, DRY!!!
   # The only thing we need to take care of is the dancing coord ref systems. But for that is the crs
@@ -136,7 +127,8 @@
   ) |>
     dplyr::filter(!is.na(ID_UNIQUE_PLOT)) |>
     dplyr::select(
-      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
     ) |>
     dplyr::group_by(crs) |>
     dplyr::group_modify(
@@ -158,9 +150,6 @@
 #' filter_list object
 #' @noRd
 .transform_plot_summary_ifn <- function(plot_summary, versions, provinces) {
-
-  ## Debug
-  # browser()
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
@@ -200,7 +189,9 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
       res <- purrr::map(
         provinces,
-        .f = \(prov) { get_plots_safe(prov, folder, version, .call = .call)$result }
+        .f = \(prov) {
+          get_plots_safe(prov, folder, version, .call = .call)$result
+        }
       ) |>
         purrr::list_rbind()
 
@@ -236,8 +227,6 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 #' @noRd
 .read_ifn_data <- function(input, colnames, ...) {
 
-  # browser()
-
   # first, if ifn3 or ifn4 we have file name and table name in a character separated by "|" but if
   # we have ifn2 we have the name of the corresponding file.
   table_name <- NULL
@@ -250,8 +239,6 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   # we need to check if dbf or accdb, and use the correct function to
   # simply read and return, the main function .read_inventory_data will take care of the rest
   file_ext <- fs::path_ext(input)
-
-  # extra_args <- rlang::list2(...)
 
   res <- switch(
     file_ext,
@@ -266,8 +253,8 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
     "accdb" = .read_accdb_data(input, table_name) |>
       dplyr::select(dplyr::any_of(colnames)) |>
       dplyr::mutate(
-      Estadillo = as.character(Estadillo),
-      Subclase = .ifn_subclass_fixer(Subclase)
+        Estadillo = as.character(Estadillo),
+        Subclase = .ifn_subclass_fixer(Subclase)
       ) |>
       .ifn_unique_id_creator(...)
   )
@@ -323,17 +310,16 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   return(res)
 }
 
-.build_ifn_file_path <- function(province, type, version, folder = ".", .call = rlang::caller_env()) {
+.build_ifn_file_path <- function(
+  province, type, version, folder = ".", .call = rlang::caller_env()
+) {
 
-  # browser()
-  #
   # Ok, so here we need to do some things. Depending on .version (the IFN version) we need to
   # provide different things.
   res <- purrr::pmap_chr(
     .l = list(province, type, version),
     .f = \(province, type, version) {
 
-      # browser()
       if (version == "ifn2") {
         file_name <- switch(
           type,
@@ -356,8 +342,6 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
           "regen" = "PCRegenera",
           "plot" = "PCParcelas",
           "coord" = "PCDatosMap"
-          # "coord" = "Listado definitivo"
-          # others needed
         )
 
         table_path <- glue::glue("{file_name}|{table_name}")
@@ -414,8 +398,6 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
 .ifn_unique_id_creator <- function(data, version, province, .dry = FALSE, .padding = TRUE) {
 
-  # browser()
-
   if (isTRUE(.dry)) {
     if (isTRUE(.padding)) {
       # here to solve the estadillo padding. As dry only occurs in ifn3 and ifn4 coords tables,
@@ -452,7 +434,9 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
     if (version == "ifn4") {
       data_temp <- data |>
-        dplyr::filter(province == stringr::str_pad(Provincia, width = 2, side = "left", pad = "0")) |>
+        dplyr::filter(
+          province == stringr::str_pad(Provincia, width = 2, side = "left", pad = "0")
+        ) |>
         dplyr::mutate(
           Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
           class = paste0(Cla, Subclase)
@@ -477,7 +461,8 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
 #' obtaining crs for different coordinate systems IFN
 #'
-#' This function  get_crs reads var huso and coordinate system of plot table process the tree table for one plot and one IFN
+#' This function  get_crs reads var huso and coordinate system of plot table process the tree table
+#' for one plot and one IFN
 #'
 #' @param tree_data file that contains the tree table for that plot
 #' @param plot plot_id code

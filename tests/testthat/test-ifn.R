@@ -38,9 +38,9 @@ test_ifn2_plots$tururu <- c("tururu_0355_NN_A1_A1")
 test_ifn2_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 test_ifn2_provinces <- names(test_ifn2_plots)
 test_ifn2_folder <- Sys.getenv("ifn_path")
-test_ifn2_especies <- ESPECIES
+test_ifn2_especies <- species_ifn_internal
 test_ifn2_provinces_dictionary <- ifn_provinces_dictionary
-test_ifn2_version = "ifn2"
+test_ifn2_version <- "ifn2"
 test_ifn2_input <- suppressWarnings(
   .build_ifn_input_with(
     test_ifn2_version,
@@ -68,9 +68,9 @@ test_ifn3_plots$tururu <- c("tururu_0355_NN_A1_A1")
 test_ifn3_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 test_ifn3_provinces <- names(test_ifn3_plots)
 test_ifn3_folder <- Sys.getenv("ifn_path")
-test_ifn3_especies <- ESPECIES
+test_ifn3_especies <- species_ifn_internal
 test_ifn3_provinces_dictionary <- ifn_provinces_dictionary
-test_ifn3_version = "ifn3"
+test_ifn3_version <- "ifn3"
 test_ifn3_input <- suppressWarnings(
   .build_ifn_input_with(
     test_ifn3_version,
@@ -98,9 +98,9 @@ test_ifn4_plots$tururu <- c("tururu_0355_NN_A1_A1")
 test_ifn4_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 test_ifn4_provinces <- names(test_ifn4_plots)
 test_ifn4_folder <- Sys.getenv("ifn_path")
-test_ifn4_especies <- ESPECIES
+test_ifn4_especies <- species_ifn_internal
 test_ifn4_provinces_dictionary <- ifn_provinces_dictionary
-test_ifn4_version = "ifn4"
+test_ifn4_version <- "ifn4"
 test_ifn4_input <- suppressWarnings(
   .build_ifn_input_with(
     test_ifn4_version,
@@ -146,9 +146,15 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
   expect_length(unique(test_ifn2_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn2_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn2_input$plots[3] |> as.character())
+  expect_identical(
+    unique(test_ifn2_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn2_input$plots[3] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn2_res$province_code) |> as.numeric(), test_ifn2_input$province[3]|> as.numeric())
+  expect_identical(
+    unique(test_ifn2_res$province_code) |> as.numeric(),
+    test_ifn2_input$province[3] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -164,30 +170,30 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
   expect_s3_class(test_ifn2_error, "tbl")
   expect_true(nrow(test_ifn2_error) < 1)
 
-   # error in department name, gives an empty tibble
-   expect_s3_class(
-     test_ifn2_error <- suppressWarnings(ifn_tree_table_process(
-       test_ifn2_input$tree_table[nrow(test_ifn2_input)-2],
-       test_ifn2_version,
-       test_ifn2_input$plots[nrow(test_ifn2_input)-2],
-       test_ifn2_input$province[nrow(test_ifn2_input)-2],
-       test_ifn2_especies
-     )),
-     "tbl"
-   )
-   expect_true(nrow(test_ifn2_error) < 1)
-   # error in plot name, should return an empty tibble
-   expect_s3_class(
-     test_ifn2_error <- suppressWarnings(ifn_tree_table_process(
-       test_ifn2_input$tree_table[nrow(test_ifn2_input)],
-       test_ifn2_version,
-       test_ifn2_input$plots[nrow(test_ifn2_input)],
-       test_ifn2_input$province[nrow(test_ifn2_input)],
-       test_ifn2_especies
-     )),
-     "tbl"
-   )
-   expect_true(nrow(test_ifn2_error) < 1)
+  # error in department name, gives an empty tibble
+  expect_s3_class(
+    test_ifn2_error <- suppressWarnings(ifn_tree_table_process(
+      test_ifn2_input$tree_table[nrow(test_ifn2_input) - 2],
+      test_ifn2_version,
+      test_ifn2_input$plots[nrow(test_ifn2_input) - 2],
+      test_ifn2_input$province[nrow(test_ifn2_input) - 2],
+      test_ifn2_especies
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_ifn2_error) < 1)
+  # error in plot name, should return an empty tibble
+  expect_s3_class(
+    test_ifn2_error <- suppressWarnings(ifn_tree_table_process(
+      test_ifn2_input$tree_table[nrow(test_ifn2_input)],
+      test_ifn2_version,
+      test_ifn2_input$plots[nrow(test_ifn2_input)],
+      test_ifn2_input$province[nrow(test_ifn2_input)],
+      test_ifn2_especies
+    )),
+    "tbl"
+  )
+  expect_true(nrow(test_ifn2_error) < 1)
 })
 
 
@@ -202,7 +208,7 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     "SP_CODE",
     "SP_NAME",
     #tree number id in ifn4
-     "nArbol",
+    "nArbol",
     #CUALIDAD 6 = dead but providing functions
     "Calidad",
     "Forma",
@@ -214,7 +220,6 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     #height in m
     "HT",
     "DENSITY"
-
   )
 
 
@@ -239,9 +244,15 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
   expect_length(unique(test_ifn3_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn3_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn3_input$plots[3] |> as.character())
+  expect_identical(
+    unique(test_ifn3_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn3_input$plots[3] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn3_res$province_code) |> as.numeric(), test_ifn3_input$province[3]|> as.numeric())
+  expect_identical(
+    unique(test_ifn3_res$province_code) |> as.numeric(),
+    test_ifn3_input$province[3] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -260,10 +271,10 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
   # error in province name, gives an empty tibble
   expect_s3_class(
     test_ifn3_error <- suppressWarnings(ifn_tree_table_process(
-      test_ifn3_input$tree_table[nrow(test_ifn3_input)-2],
+      test_ifn3_input$tree_table[nrow(test_ifn3_input) - 2],
       test_ifn3_version,
-      test_ifn3_input$plots[nrow(test_ifn3_input)-2],
-      test_ifn3_input$province[nrow(test_ifn3_input)-2],
+      test_ifn3_input$plots[nrow(test_ifn3_input) - 2],
+      test_ifn3_input$province[nrow(test_ifn3_input) - 2],
       test_ifn3_especies
     )),
     "tbl"
@@ -296,7 +307,7 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
     "SP_CODE",
     "SP_NAME",
     # #tree number id in ifn4
-     "nArbol",
+    "nArbol",
     #CUALIDAD 6 = dead but providing functions
     "Calidad",
     "Forma",
@@ -332,9 +343,15 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
   expect_length(unique(test_ifn4_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn4_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn4_input$plots[1] |> as.character())
+  expect_identical(
+    unique(test_ifn4_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn4_input$plots[1] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn4_res$province_code) |> as.numeric(), test_ifn4_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn4_res$province_code) |> as.numeric(),
+    test_ifn4_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -353,10 +370,10 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn4_error <- suppressWarnings(ifn_tree_table_process(
-      test_ifn4_input$tree_table[nrow(test_ifn4_input)-2],
+      test_ifn4_input$tree_table[nrow(test_ifn4_input) - 2],
       test_ifn4_version,
-      test_ifn4_input$plots[nrow(test_ifn4_input)-2],
-      test_ifn4_input$province[nrow(test_ifn4_input)-2],
+      test_ifn4_input$plots[nrow(test_ifn4_input) - 2],
+      test_ifn4_input$province[nrow(test_ifn4_input) - 2],
       test_ifn4_especies
     )),
     "tbl"
@@ -416,7 +433,10 @@ test_that("ifn_shrub_table_process for ifn2 works as intended", {
     test_ifn2_input$plots[1]
   )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn2_res$province_code) |> as.numeric(), test_ifn2_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn2_res$province_code) |> as.numeric(),
+    test_ifn2_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -435,10 +455,10 @@ test_that("ifn_shrub_table_process for ifn2 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn2_error <- suppressWarnings(ifn_shrub_table_process(
-      test_ifn2_input$shrub_table[nrow(test_ifn2_input)-2],
+      test_ifn2_input$shrub_table[nrow(test_ifn2_input) - 2],
       test_ifn2_version,
-      test_ifn2_input$plots[nrow(test_ifn2_input)-2],
-      test_ifn2_input$province[nrow(test_ifn2_input)-2],
+      test_ifn2_input$plots[nrow(test_ifn2_input) - 2],
+      test_ifn2_input$province[nrow(test_ifn2_input) - 2],
       test_ifn2_especies
     )),
     "tbl"
@@ -493,11 +513,14 @@ test_that("ifn_shrub_table_process for ifn3 works as intended", {
 
 
   expect_identical(
-    unique(test_ifn3_res$ID_UNIQUE_PLOT)|> as.character(),
+    unique(test_ifn3_res$ID_UNIQUE_PLOT) |> as.character(),
     test_ifn3_input$plots[1]
   )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn3_res$province_code) |> as.numeric(), test_ifn3_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn3_res$province_code) |> as.numeric(),
+    test_ifn3_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -516,10 +539,10 @@ test_that("ifn_shrub_table_process for ifn3 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn3_error <- suppressWarnings(ifn_shrub_table_process(
-      test_ifn3_input$shrub_table[nrow(test_ifn3_input)-2],
+      test_ifn3_input$shrub_table[nrow(test_ifn3_input) - 2],
       test_ifn3_version,
-      test_ifn3_input$plots[nrow(test_ifn3_input)-2],
-      test_ifn3_input$province[nrow(test_ifn3_input)-2],
+      test_ifn3_input$plots[nrow(test_ifn3_input) - 2],
+      test_ifn3_input$province[nrow(test_ifn3_input) - 2],
       test_ifn3_especies
     )),
     "tbl"
@@ -573,9 +596,15 @@ test_that("ifn_shrub_table_process for ifn4 works as intended", {
   expect_length(unique(test_ifn4_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn4_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn4_input$plots[1] |> as.character())
+  expect_identical(
+    unique(test_ifn4_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn4_input$plots[1] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn4_res$province_code) |> as.numeric(), test_ifn4_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn4_res$province_code) |> as.numeric(),
+    test_ifn4_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -594,10 +623,10 @@ test_that("ifn_shrub_table_process for ifn4 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn4_error <- suppressWarnings(ifn_shrub_table_process(
-      test_ifn4_input$shrub_table[nrow(test_ifn4_input)-2],
+      test_ifn4_input$shrub_table[nrow(test_ifn4_input) - 2],
       test_ifn4_version,
-      test_ifn4_input$plots[nrow(test_ifn4_input)-2],
-      test_ifn4_input$province[nrow(test_ifn4_input)-2],
+      test_ifn4_input$plots[nrow(test_ifn4_input) - 2],
+      test_ifn4_input$province[nrow(test_ifn4_input) - 2],
       test_ifn4_especies
     )),
     "tbl"
@@ -654,9 +683,15 @@ test_that("ifn_regen_table_process for ifn2 works as intended", {
   expect_length(unique(test_ifn2_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn2_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn2_input$plots[3] |> as.character())
+  expect_identical(
+    unique(test_ifn2_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn2_input$plots[3] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn2_res$province_code) |> as.numeric(), test_ifn2_input$province[3]|> as.numeric())
+  expect_identical(
+    unique(test_ifn2_res$province_code) |> as.numeric(),
+    test_ifn2_input$province[3] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -675,10 +710,10 @@ test_that("ifn_regen_table_process for ifn2 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn2_error <- suppressWarnings(ifn_regen_table_process(
-      test_ifn2_input$regen_table[nrow(test_ifn2_input)-2],
+      test_ifn2_input$regen_table[nrow(test_ifn2_input) - 2],
       test_ifn2_version,
-      test_ifn2_input$plots[nrow(test_ifn2_input)-2],
-      test_ifn2_input$province[nrow(test_ifn2_input)-2],
+      test_ifn2_input$plots[nrow(test_ifn2_input) - 2],
+      test_ifn2_input$province[nrow(test_ifn2_input) - 2],
       test_ifn2_especies
     )),
     "tbl"
@@ -688,12 +723,13 @@ test_that("ifn_regen_table_process for ifn2 works as intended", {
   expect_s3_class(
     test_ifn2_error <- suppressWarnings(
       ifn_regen_table_process(
-      test_ifn2_input$regen_table[nrow(test_ifn2_input)],
-      test_ifn2_version,
-      test_ifn2_input$plots[nrow(test_ifn2_input)],
-      test_ifn2_input$province[nrow(test_ifn2_input)],
-      test_ifn2_especies
-    )),
+        test_ifn2_input$regen_table[nrow(test_ifn2_input)],
+        test_ifn2_version,
+        test_ifn2_input$plots[nrow(test_ifn2_input)],
+        test_ifn2_input$province[nrow(test_ifn2_input)],
+        test_ifn2_especies
+      )
+    ),
     "tbl"
   )
   expect_true(nrow(test_ifn2_error) < 1)
@@ -735,9 +771,15 @@ test_that("ifn_regen_table_process for ifn3 works as intended", {
   expect_length(unique(test_ifn3_res$province_code), 1)
 
 
-  expect_identical(unique(test_ifn3_res$ID_UNIQUE_PLOT)|> as.character(), test_ifn3_input$plots[1] |> as.character())
+  expect_identical(
+    unique(test_ifn3_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn3_input$plots[1] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn3_res$province_code) |> as.numeric(), test_ifn3_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn3_res$province_code) |> as.numeric(),
+    test_ifn3_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -756,10 +798,10 @@ test_that("ifn_regen_table_process for ifn3 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn3_error <- suppressWarnings(ifn_regen_table_process(
-      test_ifn3_input$regen_table[nrow(test_ifn3_input)-2],
+      test_ifn3_input$regen_table[nrow(test_ifn3_input) - 2],
       test_ifn3_version,
-      test_ifn3_input$plots[nrow(test_ifn3_input)-2],
-      test_ifn3_input$province[nrow(test_ifn3_input)-2],
+      test_ifn3_input$plots[nrow(test_ifn3_input) - 2],
+      test_ifn3_input$province[nrow(test_ifn3_input) - 2],
       test_ifn3_especies
     )),
     "tbl"
@@ -781,17 +823,17 @@ test_that("ifn_regen_table_process for ifn3 works as intended", {
 test_that("ifn_regen_table_process for ifn4 works as intended", {
 
   expected_names <- c(
-      "ID_UNIQUE_PLOT",
-      "province_code",
-      "PLOT",
-      "Clase",
-      "Subclase",
-      "SP_CODE",
-      "SP_NAME",
-      "DBH",
-      "Height",
-      "N",
-      "DENSITY"
+    "ID_UNIQUE_PLOT",
+    "province_code",
+    "PLOT",
+    "Clase",
+    "Subclase",
+    "SP_CODE",
+    "SP_NAME",
+    "DBH",
+    "Height",
+    "N",
+    "DENSITY"
   )
 
   # object
@@ -820,7 +862,10 @@ test_that("ifn_regen_table_process for ifn4 works as intended", {
     test_ifn4_input$plots[3]
   )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn4_res$province_code) |> as.numeric(), test_ifn4_input$province[3] |> as.numeric())
+  expect_identical(
+    unique(test_ifn4_res$province_code) |> as.numeric(),
+    test_ifn4_input$province[3] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -839,10 +884,10 @@ test_that("ifn_regen_table_process for ifn4 works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn4_error <- suppressWarnings(ifn_regen_table_process(
-      test_ifn4_input$regen_table[nrow(test_ifn4_input)-2],
+      test_ifn4_input$regen_table[nrow(test_ifn4_input) - 2],
       test_ifn4_version,
-      test_ifn4_input$plots[nrow(test_ifn4_input)-2],
-      test_ifn4_input$province[nrow(test_ifn4_input)-2],
+      test_ifn4_input$plots[nrow(test_ifn4_input) - 2],
+      test_ifn4_input$province[nrow(test_ifn4_input) - 2],
       test_ifn4_especies
     )),
     "tbl"
@@ -907,9 +952,15 @@ test_that("ifn_plot_table_process for ifn2  works as intended", {
   expect_length(unique(test_ifn2_res$PLOT), 1)
   expect_length(unique(test_ifn2_res$province_code), 1)
 
-  expect_identical(unique(test_ifn2_res$ID_UNIQUE_PLOT) |> as.character(), test_ifn2_input$plots[3] |> as.character())
+  expect_identical(
+    unique(test_ifn2_res$ID_UNIQUE_PLOT) |> as.character(),
+    test_ifn2_input$plots[3] |> as.character()
+  )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn2_res$province_code) |> as.numeric(), test_ifn2_input$province[3]|> as.numeric())
+  expect_identical(
+    unique(test_ifn2_res$province_code) |> as.numeric(),
+    test_ifn2_input$province[3] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -929,11 +980,11 @@ test_that("ifn_plot_table_process for ifn2  works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn2_error <- suppressWarnings(ifn_plot_table_process(
-      test_ifn2_input$plot_table[nrow(test_ifn2_input)-2],
-      test_ifn2_input$coord_table[nrow(test_ifn2_input)-2],
+      test_ifn2_input$plot_table[nrow(test_ifn2_input) - 2],
+      test_ifn2_input$coord_table[nrow(test_ifn2_input) - 2],
       test_ifn2_version,
-      test_ifn2_input$plots[nrow(test_ifn2_input)-2],
-      test_ifn2_input$province[nrow(test_ifn2_input)-2],
+      test_ifn2_input$plots[nrow(test_ifn2_input) - 2],
+      test_ifn2_input$province[nrow(test_ifn2_input) - 2],
       test_ifn2_provinces_dictionary
     )),
     "tbl"
@@ -1004,7 +1055,10 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
     test_ifn3_input$plots[6]
   )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn3_res$province_code) |> as.numeric(), test_ifn3_input$province[6]|> as.numeric())
+  expect_identical(
+    unique(test_ifn3_res$province_code) |> as.numeric(),
+    test_ifn3_input$province[6] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -1024,11 +1078,11 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn3_error <- suppressWarnings(ifn_plot_table_process(
-      test_ifn3_input$plot_table[nrow(test_ifn3_input)-2],
-      test_ifn3_input$coord_table[nrow(test_ifn3_input)-2],
+      test_ifn3_input$plot_table[nrow(test_ifn3_input) - 2],
+      test_ifn3_input$coord_table[nrow(test_ifn3_input) - 2],
       test_ifn3_version,
-      test_ifn3_input$plots[nrow(test_ifn3_input)-2],
-      test_ifn3_input$province[nrow(test_ifn3_input)-2],
+      test_ifn3_input$plots[nrow(test_ifn3_input) - 2],
+      test_ifn3_input$province[nrow(test_ifn3_input) - 2],
       test_ifn3_provinces_dictionary
     )),
     "tbl"
@@ -1049,8 +1103,7 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
   expect_true(nrow(test_ifn3_error) < 1)
 })
 
- test_that("ifn_plot_table_process for ifn4  works as intended", {
-
+test_that("ifn_plot_table_process for ifn4  works as intended", {
   expected_names <- c(
     "ID_UNIQUE_PLOT",
     "COUNTRY",
@@ -1099,7 +1152,10 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
     test_ifn4_input$plots[3]
   )
   #CHECK THIS AGAIN, BOTH SHOULD BE CHARACTER
-  expect_identical(unique(test_ifn4_res$province_code) |> as.numeric(), test_ifn4_input$province[1]|> as.numeric())
+  expect_identical(
+    unique(test_ifn4_res$province_code) |> as.numeric(),
+    test_ifn4_input$province[1] |> as.numeric()
+  )
 
   # errors
   expect_warning(
@@ -1119,11 +1175,11 @@ test_that("ifn_plot_table_process for ifn3  works as intended", {
   # error in department name, gives an empty tibble
   expect_s3_class(
     test_ifn4_error <- suppressWarnings(ifn_plot_table_process(
-      test_ifn4_input$plot_table[nrow(test_ifn4_input)-2],
-      test_ifn4_input$coord_table[nrow(test_ifn4_input)-2],
+      test_ifn4_input$plot_table[nrow(test_ifn4_input) - 2],
+      test_ifn4_input$coord_table[nrow(test_ifn4_input) - 2],
       test_ifn4_version,
-      test_ifn4_input$plots[nrow(test_ifn4_input)-2],
-      test_ifn4_input$province[nrow(test_ifn4_input)-2],
+      test_ifn4_input$plots[nrow(test_ifn4_input) - 2],
+      test_ifn4_input$province[nrow(test_ifn4_input) - 2],
       test_ifn4_provinces_dictionary
     )),
     "tbl"
@@ -1161,7 +1217,7 @@ test_that("ifn_tables_process ifn2 works as intended", {
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
   test_ifn2_plots <- test_ifn2_plots |>
-    purrr::map(\(x){
+    purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
 
@@ -1209,7 +1265,10 @@ test_that("ifn_tables_process ifn2 works as intended", {
   # tururu and "91" province shouldn't appear
   # inexistent plots shouldn't also appear
   expect_false("tururu" %in% unique(test_ifn2_res$province_code))
-  expect_identical(nrow(test_ifn2_res), ((test_ifn2_plots |> purrr::flatten() |> length()) - 3) |> as.integer())
+  expect_identical(
+    nrow(test_ifn2_res),
+    ((test_ifn2_plots |> purrr::flatten() |> length()) - 3) |> as.integer()
+  )
 
   ### missing random files
   # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)
@@ -1234,7 +1293,7 @@ test_that("ifn_tables_process ifn3 works as intended", {
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
   test_ifn3_plots <- test_ifn3_plots |>
-    purrr::map(\(x){
+    purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
 
@@ -1311,7 +1370,7 @@ test_that("ifn_tables_process ifn4 works as intended", {
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
   test_ifn4_plots <- test_ifn4_plots |>
-    purrr::map(\(x){
+    purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
 
@@ -1360,7 +1419,10 @@ test_that("ifn_tables_process ifn4 works as intended", {
   # tururu state shouldn't appear, inexistent plots (91-0) shouldn't be present,
   # Also, "06" = c(2064,325), "07" = c(499) and "10" = c(3374) don't exist in IFN4
   expect_false("tururu" %in% unique(test_ifn4_res$province_code))
-  expect_identical(nrow(test_ifn4_res), ((test_ifn4_plots |> purrr::flatten() |> length()) - 3) |> as.integer())
+  expect_identical(
+    nrow(test_ifn4_res),
+    ((test_ifn4_plots |> purrr::flatten() |> length()) - 3) |> as.integer()
+  )
 
   # ### missing random files
   # # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)

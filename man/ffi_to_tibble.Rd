@@ -31,8 +31,8 @@ ffi_tables_process(
 \item{years}{A numeric vector with the years to extract de data from.}
 
 \item{filter_list}{A list of counties and plots to extract the data from. If \code{NULL} all
-plots for the department for all years will be extracted, which can use a big amount of memory. See
-details.}
+plots for the department for all years will be extracted, which can use a big amount of memory.
+See details.}
 
 \item{folder}{The path to the folder containing the FFI csv files, as character.}
 
@@ -54,9 +54,9 @@ Transform raw FFI plot data into tidy data for use in models
 Processing all tables for one year
 }
 \details{
-This function will take every year indicated and retrieve and transform the plot data for the departments and
-plots provided. For that, csv files from FFI must reside in the folder indicated in the
-\code{folder} argument.
+This function will take every year indicated and retrieve and transform the plot data for the
+departments and plots provided. For that, csv files from FFI must reside in the folder indicated
+in the \code{folder} argument.
 
 This function is intended to be called internally by \code{\link{ffi_to_tibble}} for each
 year. This is implemented with furrr to allow parallelization of the plots data retrieval.
@@ -69,11 +69,11 @@ year. This is implemented with furrr to allow parallelization of the plots data 
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{ffi_to_tibble} will attempt to process all
-plots for the departments and years provided. This will result in sometimes hundred of thousands
-plots to be extracted, processed and returned, will in turn will cause a big use of memory and
-long times of calculation (specially when parallelising). Is better to provide a list of departments
-with the counties and plots to look after to narrow the process. This \code{filter_list} should
-have the following structure:
+plots for the departments and years provided. This will result in sometimes hundred of
+thousands plots to be extracted, processed and returned, will in turn will cause a big use of
+memory and long times of calculation (specially when parallelising). Is better to provide a
+list of departments with the counties and plots to look after to narrow the process. This
+\code{filter_list} should have the following structure:
 \preformatted{
    list(
    "01" = 1404119,
@@ -88,10 +88,10 @@ have the following structure:
 
 \section{Parallel}{
 
-Processing the plots from within a year can be done in parallel (\code{esus} uses internally the
-\code{\link[furrr]{furrr}} package for this). This means that, if parallelization is active,
-several processes are launched to retrieve the plots data for that year. This is repeated for
-all years provided.
+Processing the plots from within a year can be done in parallel (\code{esus} uses internally
+the \code{\link[furrr]{furrr}} package for this). This means that, if parallelization is
+active, several processes are launched to retrieve the plots data for that year. This is
+repeated for all years provided.
 
 \code{.parallel_options} controls the finer details of how parallelization is performed (see
 \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first

@@ -23,10 +23,10 @@ test_plots <- list(
   "59" = 960829,
   "64" = 912307,
   "76" = 951430,
-  "80" = c(1417044,1452529),
+  "80" = c(1417044, 1452529),
   "81" = c(1428398, 973950),
-  "86" = c(957495,921133),
-  "87" = c(975666,979897),
+  "86" = c(957495, 921133),
+  "87" = c(975666, 979897),
   "89" = 1433956,
   "91" = c(1406115, 0),
   "tururu" = 3555
@@ -41,22 +41,14 @@ test_input <- .build_ffi_input_with(
 )
 
 test_metadonnees <- suppressWarnings(
-  #old file 2021
- #readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 412) |>
-    # at new file (2022)
-  #comprobar archivos y la linea donde empiezan -mismo  inicio?
-  #fread:
-  #// Définition des modalités pour chaque unité :
-  #// Unité	Code	Libellé	Définition
-
-    readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
+  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 )
 
 test_espar_cdref <- .read_inventory_data(
   fs::path(test_folder, "espar-cdref13.csv"),
-  colClasses = list(character = c( "// espar")),
+  colClasses = list(character = c("// espar")),
   header = TRUE
 ) |>
   dplyr::as_tibble() |>
@@ -66,13 +58,13 @@ test_espar_cdref <- .read_inventory_data(
   ) |>
   #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
   dplyr::mutate(ESPAR = dplyr::case_when(
-    ESPAR == "2" ~"02",
-    ESPAR == "3" ~"03",
-    ESPAR == "4" ~"04",
-    ESPAR == "5" ~"05",
-    ESPAR == "6" ~"06",
-    ESPAR == "7" ~"07",
-    ESPAR == "9" ~"09",
+    ESPAR == "2" ~ "02",
+    ESPAR == "3" ~ "03",
+    ESPAR == "4" ~ "04",
+    ESPAR == "5" ~ "05",
+    ESPAR == "6" ~ "06",
+    ESPAR == "7" ~ "07",
+    ESPAR == "9" ~ "09",
     TRUE ~ ESPAR
   )) |>
   dplyr::arrange(ESPAR)
@@ -83,7 +75,7 @@ test_idp_def_ref <- .read_inventory_data(
     "IDP",
     "DEP"
   ),
-  colClasses = list(character = c( "IDP","DEP"))
+  colClasses = list(character = c("IDP", "DEP"))
 ) |>
   tibble::as_tibble() |>
   unique()
@@ -93,11 +85,9 @@ test_cdref <- test_metadonnees |>
     UNITE == "CDREF13"
   ) |>
   dplyr::mutate(
-    lib_cdref =  stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
+    lib_cdref = stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
   ) |>
-  dplyr::rename(
-    CD_REF = Code
-  )
+  dplyr::rename(CD_REF = Code)
 
 # growth_form_lignified_france comes from internal data
 test_growth_form_lignified_france <- growth_form_lignified_france
@@ -272,7 +262,7 @@ test_that("ffi_shrub_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE",
-    "SP_NAME", "COVER", "HT" ,"GrowthForm"
+    "SP_NAME", "COVER", "HT", "GrowthForm"
   )
 
   # object
@@ -342,86 +332,16 @@ test_that("ffi_shrub_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 })
 
-# test_that("ffi_soil_table_process works as intended", {
-#
-#   expected_names <- c(
-#     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "DATEECO", "soil_field"
-#   )
-#
-#   # object
-#   expect_s3_class(
-#     test_res <- ffi_soil_table_process(
-#       test_input$soils_table[1],
-#       test_input$plots[1],
-#       test_year,
-#       test_metadonnees,
-#       test_idp_def_ref
-#     ),
-#     "tbl"
-#   )
-#
-#   # data integrity
-#   expect_named(test_res, expected_names, ignore.order = TRUE)
-#   expect_true(nrow(test_res) > 0)
-#
-#   expect_length(unique(test_res$YEAR), 1)
-#   expect_length(unique(test_res$PLOT), 1)
-#   expect_length(unique(test_res$DEP), 1)
-#
-#   expect_identical(unique(test_res$YEAR), test_year |> as.integer())
-#   expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.character())
-#   expect_identical(unique(test_res$DEP) |> as.character(), test_input$department[1])
-#
-#   # errors
-#   expect_warning(
-#     test_error <- ffi_soil_table_process(
-#       NA_character_,
-#       test_input$plots[1],
-#       test_year,
-#       test_metadonnees,
-#       test_idp_def_ref
-#     ),
-#     "Some files"
-#   )
-#   expect_s3_class(test_error, "tbl")
-#   expect_true(nrow(test_error) < 1)
-#   # error in department name, gives an empty tibble
-#   expect_s3_class(
-#     test_error <- suppressWarnings(ffi_soil_table_process(
-#       test_input$soils_table[33],
-#       test_input$plots[33],
-#       test_year,
-#       test_metadonnees,
-#       test_idp_def_ref
-#     )),
-#     "tbl"
-#   )
-#   expect_true(nrow(test_error) < 1L)
-#   # error in plot name, should return an empty tibble
-#   expect_s3_class(
-#     test_error <- suppressWarnings(ffi_soil_table_process(
-#       test_input$soils_table[32],
-#       test_input$plots[32],
-#       test_year,
-#       test_metadonnees,
-#       test_idp_def_ref
-#     )),
-#     "tbl"
-#   )
-#   expect_true(nrow(test_error) < 1)
-# })
-
-
 test_that("ffi_regen_table_process works as intended", {
-  test_plots<- list(
+  test_plots <- list(
     "38" = 900306,
     "59" = 900684,
     "91" = 0,
     "tururu" = 3555
-    )
-    test_year <- 2014
-    test_departments <- names(test_plots)
-    test_input <- .build_ffi_input_with(
+  )
+  test_year <- 2014
+  test_departments <- names(test_plots)
+  test_input <- .build_ffi_input_with(
     test_departments, test_year, test_plots, test_folder,
     .verbose = FALSE
   )
@@ -608,25 +528,25 @@ test_that("ffi_tables_process works as intended", {
 
   # COUVERT , without COUVERT, the REGEN should be empty if year <2015
 
-  if (test_year<15){
+  if (test_year < 15) {
+    fs::file_move(fs::path(test_folder, "COUVERT.csv"), fs::path(test_folder, "_COUVERT.csv"))
+    withr::defer({
+      if (fs::file_exists(fs::path(test_folder, "_COUVERT.csv"))) {
+        fs::file_move(fs::path(test_folder, "_COUVERT.csv"), fs::path(test_folder, "COUVERT.csv"))
+      }
+    })
+    expect_true(
+      suppressWarnings(ffi_tables_process(
+        test_departments, test_year, test_plots, test_folder,
+        .parallel_options = test_parallel_conf,
+        .verbose = FALSE
+      ) |>
+        dplyr::pull(regen) |>
+        purrr::list_rbind() |>
+        nrow()) < 1
+    )
 
-  fs::file_move(fs::path(test_folder, "COUVERT.csv"), fs::path(test_folder, "_COUVERT.csv"))
-  withr::defer({
-    if (fs::file_exists(fs::path(test_folder, "_COUVERT.csv"))) {
-      fs::file_move(fs::path(test_folder, "_COUVERT.csv"), fs::path(test_folder, "COUVERT.csv"))
-    }
-  })
-  expect_true(
-    suppressWarnings(ffi_tables_process(
-      test_departments, test_year, test_plots, test_folder,
-      .parallel_options = test_parallel_conf,
-      .verbose = FALSE
-    ) |>
-      dplyr::pull(regen) |>
-      purrr::list_rbind() |>
-      nrow()) < 1
-  )
-  fs::file_move(fs::path(test_folder, "_COUVERT.csv"), fs::path(test_folder, "COUVERT.csv"))
+    fs::file_move(fs::path(test_folder, "_COUVERT.csv"), fs::path(test_folder, "COUVERT.csv"))
   }
 })
 
@@ -646,7 +566,7 @@ test_that("ffi_to_tibble works as intended", {
     "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
-  test_years <- c(2015,2019)
+  test_years <- c(2015, 2019)
 
   # object
   expect_s3_class(
@@ -666,12 +586,11 @@ test_that("ffi_to_tibble works as intended", {
   expect_true(all(unique(test_res$YEAR) %in% test_years))
 
   # for plot revisited after 5 year check that species name appear
-  
-  
-  # expect_true(!is.na(test_res[["tree"]][[60]]$SP_NAME))
+
+
   expect_identical(!is.na(test_res[["tree"]][[60]]$SP_NAME), rep(TRUE, 24))
-  
-  
+
+
   ### test all assertions done in fia_to_tibble
   # departments
   expect_error(

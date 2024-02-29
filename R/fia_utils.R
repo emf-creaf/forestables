@@ -50,15 +50,15 @@
   # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}} plots for {.val {year}}"
+      "Getting ready to retrieve
+      {.strong {filter_list |> purrr::flatten() |> purrr::flatten_dbl() |> length()}}
+      plots for {.val {year}}"
     )), .verbose
   )
 
   purrr::imap(
     filter_list,
     .f = \(counties_list, state) {
-      # browser()
-
       counties_list |>
         tibble::enframe() |>
         tidyr::unnest(cols = value) |>
@@ -152,7 +152,7 @@
 
   # For some states CRS is different so we use the correct crs to build the sf and transform
   # to 4326 to have all in the same coordinate system.
-  if (unique(plot_data[["STATECD"]]) %in%  c(60,64,66,68,69,70)) {
+  if (unique(plot_data[["STATECD"]]) %in%  c(60, 64, 66, 68, 69, 70)) {
     epgs <- 4269
     res <- plot_data |>
       sf::st_as_sf(
@@ -256,7 +256,8 @@ create_filter_list_fia <- function(plots_info) {
   assertthat::assert_that(
     inherits(plots_info, c("tbl", "sf", "data.frame")),
     msg = cli::cli_abort(c(
-      "{.arg plots_info} must be a data.frame or something coercible to one, as the result of {.code show_plots_from()}"
+      "{.arg plots_info} must be a data.frame or something coercible to one,
+      as the result of {.code show_plots_from()}"
     ))
   )
   # assert col names
@@ -358,8 +359,6 @@ create_filter_list_fia <- function(plots_info) {
         "subplot" = "_SUBPLOT.csv",
         "p3_understory" = "_VEG_SUBPLOT_SPP.csv",
         "seedling" = "_SEEDLING.csv",
-        # "soils_loc" = "_SOILS_SAMPLE_LOC.csv",
-        # "soils_lab" = "_SOILS_LAB.csv",
         "veg_subplot" = "_VEG_SUBPLOT.csv",
         "p2_veg_subplot" = "_P2VEG_SUBPLOT_SPP.csv"
       )
@@ -378,15 +377,16 @@ create_filter_list_fia <- function(plots_info) {
       }
 
       if (.custom) {
-        if (type %in% c("tree", "p3_understory", "veg_subplot", "p2_veg_subplot", "seedling", "subplot"))
-        customized_path <- glue::glue(
-          'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
-          # "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
-        ) else {
+        if (type %in% c(
+          "tree", "p3_understory", "veg_subplot", "p2_veg_subplot", "seedling", "subplot"
+        )) {
+          customized_path <- glue::glue(
+            'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+          )
+        } else {
           if (type %in% c("soils_lab", "soils_loc", "veg_subplot", "plot", "survey", "cond")) {
             customized_path <- glue::glue(
               'grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}'
-              # "grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"
             )
           }
         }
@@ -394,10 +394,10 @@ create_filter_list_fia <- function(plots_info) {
         return(customized_path)
       }
 
-     return(table_path)
+      return(table_path)
     }
   )
- }
+}
 
 
 #' Helper function to extract plot and soil metadata from from tables

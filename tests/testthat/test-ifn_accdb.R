@@ -2,7 +2,7 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
   # IFN3
   test_file_ifn3 <- fs::path("Ifn3p35.accdb")
   test_input_ifn3 <- glue::glue("{test_file_ifn3}|PCMayores")
-  test_colnames_ifn3 = c(
+  test_colnames_ifn3 <- c(
     "Estadillo",
     "Cla",
     "Subclase",

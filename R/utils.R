@@ -106,7 +106,7 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 
   # check if we are reading IFN data
   if (isTRUE(.ifn)) {
-    res <- .read_ifn_data(input,...) |>
+    res <- .read_ifn_data(input, ...) |>
       dtplyr::lazy_dt(immutable = TRUE)
 
     return(res)
@@ -133,8 +133,10 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   cmd = "grep",
   warn_vector = c(
     "x" = "{.emph {cmd}} system utility not found.",
-    "i" = "In Windows, {.emph {cmd}} is part of the {.emph RTools} suite, that can be installed from the CRAN page: {.url https://cran.r-project.org/bin/windows/Rtools/}",
-    "i" = "Mac and Linux users should have {.emph {cmd}} already installed, but if it is missing, please check your package manager to install it."
+    "i" = "In Windows, {.emph {cmd}} is part of the {.emph RTools} suite, that can be
+    installed from the CRAN page: {.url https://cran.r-project.org/bin/windows/Rtools/}",
+    "i" = "Mac and Linux users should have {.emph {cmd}} already installed, but if it is missing,
+    please check your package manager to install it."
   )
 ) {
   grep_path <- Sys.which(cmd)
@@ -143,9 +145,7 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
     return(invisible(FALSE))
   }
 
-  # cli::cli_inform(c("#####DEBUG#####", "v" = "{.emph {cmd}} found in {.envvar PATH}"))
+  # This is some cli for
+  # debugging cli::cli_inform(c("#####DEBUG#####", "v" = "{.emph {cmd}} found in {.envvar PATH}"))
   return(invisible(TRUE))
 }
-
-
-

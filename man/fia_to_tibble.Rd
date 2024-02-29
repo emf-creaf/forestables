@@ -28,7 +28,8 @@ fia_tables_process(
 \arguments{
 \item{years}{A numeric vector with the years to extract de data from.}
 
-\item{states}{A character vector with the two letters code for the states to extract the data from.}
+\item{states}{A character vector with the two letters code for the states to extract the data
+from.}
 
 \item{filter_list}{A list of counties and plots to extract the data from. If \code{NULL} all
 plots for the state for all years will be extracted, which can use a big amount of memory. See
@@ -54,9 +55,9 @@ Transform raw FIA plot data into tidy data for use in models
 Processing all tables for one year
 }
 \details{
-This function will take every year indicated and retrieve and transform the plot data for the states and
-plots provided. For that, csv files from FIA must reside in the folder indicated in the
-\code{folder} argument.
+This function will take every year indicated and retrieve and transform the plot data for the
+states and plots provided. For that, csv files from FIA must reside in the folder indicated in
+the \code{folder} argument.
 
 This function is intended to be called internally by \code{\link{fia_to_tibble}} for each
 year. This is implemented with furrr to allow parallelization of the plots data retrieval.
@@ -87,10 +88,10 @@ have the following structure:
 
 \section{Parallel}{
 
-Processing the plots from within a year can be done in parallel (\code{esus} uses internally the
-\code{\link[furrr]{furrr}} package for this). This means that, if parallelization is active,
-several processes are launched to retrieve the plots data for that year. This is repeated for
-all years provided.
+Processing the plots from within a year can be done in parallel (\code{esus} uses internally
+the \code{\link[furrr]{furrr}} package for this). This means that, if parallelization is
+active, several processes are launched to retrieve the plots data for that year. This is
+repeated for all years provided.
 
 \code{.parallel_options} controls the finer details of how parallelization is performed (see
 \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first

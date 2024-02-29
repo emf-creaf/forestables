@@ -45,22 +45,22 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
   # warnings and messages
   expect_warning(
-    .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
+    .build_ifn_input_with(test_version, test_provinces, test_plots, ".", .verbose = TRUE),
     "Files for provinces"
   )
   expect_warning(
-    .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
+    .build_ifn_input_with(test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
     "Files for provinces"
   )
   expect_message(
     suppressWarnings(
-      .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE)
+      .build_ifn_input_with(test_version, test_provinces, test_plots, test_folder, .verbose = TRUE)
     ),
     "Getting ready to retrieve"
   )
   expect_no_message(
     test_res <- suppressWarnings(
-      .build_ifn_input_with( test_version,test_provinces, test_plots, test_folder, .verbose = FALSE)
+      .build_ifn_input_with(test_version, test_provinces, test_plots, test_folder, .verbose = FALSE)
     )
   )
 
@@ -156,24 +156,23 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
   # warnings and messages
   expect_warning(
-    .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
+    .build_ifn_input_with(test_version, test_provinces, test_plots, ".", .verbose = TRUE),
     "Files for provinces"
   )
   expect_warning(
-    .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
+    .build_ifn_input_with(test_version, test_provinces, test_plots, test_folder, .verbose = TRUE),
     "Files for provinces"
   )
   expect_message(
     suppressWarnings(
-      .build_ifn_input_with( test_version, test_provinces, test_plots, test_folder, .verbose = TRUE)
+      .build_ifn_input_with(test_version, test_provinces, test_plots, test_folder, .verbose = TRUE)
     ),
     "Getting ready to retrieve"
   )
   expect_no_message(
-    test_res <-
-      suppressWarnings(
-        .build_ifn_input_with( test_version,test_provinces, test_plots, test_folder, .verbose = FALSE)
-      )
+    test_res <- suppressWarnings(.build_ifn_input_with(
+      test_version, test_provinces, test_plots, test_folder, .verbose = FALSE
+    ))
   )
 
   ## result tests
@@ -268,21 +267,21 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
     "coord_table"
   )
 
-
-# warnings and messages
-expect_warning(
-  .build_ifn_input_with( test_version, test_provinces, test_plots, ".", .verbose = TRUE),
-  "Files for provinces"
-)
-expect_message(
-  .build_ifn_input_with( test_version, test_provinces[-9], test_plots[-9], test_folder, .verbose = TRUE),
-  "Getting ready to retrieve"
-)
+  # warnings and messages
+  expect_warning(
+    .build_ifn_input_with(test_version, test_provinces, test_plots, ".", .verbose = TRUE),
+    "Files for provinces"
+  )
+  expect_message(
+    .build_ifn_input_with(
+      test_version, test_provinces[-9], test_plots[-9], test_folder, .verbose = TRUE
+    ),
+    "Getting ready to retrieve"
+  )
   expect_no_message(
-    suppressWarnings(
-    test_res <-
-      .build_ifn_input_with(test_version,test_provinces, test_plots, test_folder, .verbose = FALSE)
-    )
+    suppressWarnings(test_res <- .build_ifn_input_with(
+      test_version, test_provinces, test_plots, test_folder, .verbose = FALSE
+    ))
   )
 
   ## result tests
@@ -385,7 +384,8 @@ test_that(".get_plots_from_province works as intended for ifn2", {
   expect_named(
     test_res_ok,
     c(
-      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -395,10 +395,14 @@ test_that(".get_plots_from_province works as intended for ifn2", {
   expect_identical(unique(test_res_ok$province_code), "06")
   expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
+    "10"
   )
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+    unique(
+      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+    ),
+    "Cáceres"
   )
 
   ## wrong state
@@ -434,7 +438,7 @@ test_that("show_plots_from_ifn works as intended for ifn2", {
 
   # error
   expect_error(
-    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    suppressWarnings(show_plots_from_ifn(".", test_provinces[1], test_version)),
     "No data found at"
   )
 
@@ -449,7 +453,10 @@ test_that("show_plots_from_ifn works as intended for ifn2", {
   # names
   expect_named(
     test_res_ok,
-    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c(
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
+    ),
     ignore.order = TRUE
   )
   # expect rows
@@ -510,7 +517,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
   expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
   # expect results
   expect_length(test_res, 8)
-  for (prov in 1:length(test_res)) {
+  for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
 
@@ -573,7 +580,8 @@ test_that(".get_plots_from_province works as intended for ifn3", {
   expect_named(
     test_res_ok,
     c(
-      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -583,10 +591,14 @@ test_that(".get_plots_from_province works as intended for ifn3", {
   expect_identical(unique(test_res_ok$province_code), "06")
   expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
+    "10"
   )
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+    unique(
+      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+    ),
+    "Cáceres"
   )
 
   ## wrong state
@@ -622,7 +634,7 @@ test_that("show_plots_from_ifn works as intended for ifn3", {
 
   # error
   expect_error(
-    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    suppressWarnings(show_plots_from_ifn(".", test_provinces[1], test_version)),
     "No data found at"
   )
 
@@ -637,7 +649,10 @@ test_that("show_plots_from_ifn works as intended for ifn3", {
   # names
   expect_named(
     test_res_ok,
-    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c(
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
+    ),
     ignore.order = TRUE
   )
   # expect rows
@@ -698,7 +713,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
   expect_named(test_res, test_provinces[-length(test_provinces)], ignore.order = TRUE)
   # expect results
   expect_length(test_res, length(test_provinces[-length(test_provinces)]))
-  for (prov in 1:length(test_res)) {
+  for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
 
@@ -761,7 +776,8 @@ test_that(".get_plots_from_province works as intended for ifn4", {
   expect_named(
     test_res_ok,
     c(
-      "ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
     ),
     ignore.order = TRUE
   )
@@ -771,10 +787,14 @@ test_that(".get_plots_from_province works as intended for ifn4", {
   expect_identical(unique(test_res_ok$province_code), "06")
   expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code), "10"
+    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
+    "10"
   )
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original), "Cáceres"
+    unique(
+      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+    ),
+    "Cáceres"
   )
 
   ## wrong province
@@ -810,7 +830,7 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
 
   # error
   expect_error(
-    suppressWarnings(show_plots_from_ifn( ".", test_provinces[1], test_version)),
+    suppressWarnings(show_plots_from_ifn(".", test_provinces[1], test_version)),
     "No data found at"
   )
 
@@ -825,7 +845,10 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
   # names
   expect_named(
     test_res_ok,
-    c("ID_UNIQUE_PLOT", "version", "province_code", "province_name_original", "PLOT", "crs", "geometry"),
+    c(
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
+    ),
     ignore.order = TRUE
   )
   # expect rows
@@ -886,7 +909,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn4", {
   expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
   # expect results
   expect_length(test_res, 8)
-  for (prov in 1:length(test_res)) {
+  for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
 

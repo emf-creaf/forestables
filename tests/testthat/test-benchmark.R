@@ -55,7 +55,6 @@ folder <- "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
 .parallel_options <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
 .verbose <- TRUE
 
-# debug(esus:::fia_tables_process)
 tictoc::tic()
 foo <- esus:::fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose)
 tictoc::toc()
@@ -63,13 +62,15 @@ tictoc::toc()
 test <- bench::mark(
   seq = {
     future::plan(future::sequential)
-    seq_test <- esus:::fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose)
+    seq_test <-
+      esus:::fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose)
     future::plan(future::sequential)
     seq_test
   },
   multisession = {
     future::plan(future::multisession, workers = 3)
-    ms_test <- esus:::fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose)
+    ms_test <-
+      esus:::fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose)
     future::plan(future::sequential)
     ms_test
   },
@@ -91,7 +92,7 @@ test_fia <- bench::mark(
   multisession = {
     future::plan(future::multisession, workers = 6)
     ms_test_fia <- esus:::fia_to_tibble(
-      years = c(2017,2018,2019,2020),
+      years = c(2017, 2018, 2019, 2020),
       states, filter_list, folder, .parallel_options = .parallel_options, .verbose = .verbose
     )
     future::plan(future::sequential)
@@ -132,7 +133,11 @@ res <- fia_to_tibble(
   filter_list = filter_list,
   folder = "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023/"
 ) |>
-  dplyr::filter(purrr::map_lgl(tree, \(x) {!nrow(x) < 1})) |>
+  dplyr::filter(
+    purrr::map_lgl(tree, \(x) {
+      !nrow(x) < 1
+    })
+  ) |>
   dplyr::group_by(ID_UNIQUE_PLOT) |>
   dplyr::filter(length(YEAR) > 1) |>
   sf::st_as_sf(coords = c("LON", "LAT"), crs = sf::st_crs(4326))
@@ -143,7 +148,8 @@ test <- res |>
   dplyr::summarise(DIA = mean(tree_DIA, na.rm = TRUE), HT = mean(tree_HT, na.rm = TRUE))
 
 
-states_map_data <- rnaturalearth::ne_states(country = "United States of America", returnclass = "sf") |>
+states_map_data <-
+  rnaturalearth::ne_states(country = "United States of America", returnclass = "sf") |>
   dplyr::filter(postal %in% c("OR", "CA", "WA")) |>
   dplyr::select(postal) |>
   sf::st_transform(crs = sf::st_crs(test)) |>
@@ -234,8 +240,8 @@ counties_map_data |>
 # tictoc::toc()
 
 bench_press_parallel <- bench::press(
-  workers = c(3,6,12),
-  scheduling = c(1L,2L),
+  workers = c(3, 6, 12),
+  scheduling = c(1L, 2L),
   {
     future::plan(future.callr::callr, workers = workers)
     opt <- furrr::furrr_options(scheduling = scheduling, stdout = TRUE)

@@ -25,12 +25,12 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
     "59" = 960829,
     "64" = 912307,
     "76" = 951430,
-    "80" = c(1417044,1452529),
+    "80" = c(1417044, 1452529),
     "81" = c(1428398, 973950),
-    "86" = c(957495,921133),
-    "87" = c(975666,979897),
+    "86" = c(957495, 921133),
+    "87" = c(975666, 979897),
     "89" = 1433956,
-    "91" = c(1406115, 0) ,
+    "91" = c(1406115, 0),
     "tururu" = 3555
   )
 
@@ -48,17 +48,17 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   )
 
   # warnings and messages
-   expect_warning(
+  expect_warning(
     .build_ffi_input_with(test_departments, test_year, test_plots, ".", .verbose = TRUE),
     "file doesn't exist"
-   )
+  )
   expect_message(
-     .build_ffi_input_with(test_departments, test_year,  test_plots, test_folder, .verbose = TRUE),
+    .build_ffi_input_with(test_departments, test_year,  test_plots, test_folder, .verbose = TRUE),
     "Getting ready to retrieve"
   )
   expect_no_message(
     test_res <-
-      .build_ffi_input_with(test_departments, test_year , test_plots, test_folder, .verbose = FALSE)
+      .build_ffi_input_with(test_departments, test_year, test_plots, test_folder, .verbose = FALSE)
   )
 
   ## result tests
@@ -90,16 +90,22 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   # a correct custom one
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
-    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {test_folder}PLACETTE.csv')
+    glue::glue(
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {test_folder}PLACETTE.csv'
+    )
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
     test_res[["plot_table"]][32],
-    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})0;((?:[^;]+;){{2}})91" {test_folder}PLACETTE.csv')
+    glue::glue(
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})0;((?:[^;]+;){{2}})91" {test_folder}PLACETTE.csv'
+    )
   )
   expect_identical(
     test_res[["plot_table"]][33],
-    glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv')
+    glue::glue(
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv'
+    )
   )
 
   ## Test filter_list = NULL
@@ -129,7 +135,7 @@ test_that(".get_plots_from_department works as intended", {
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
-  expect_named(test_res_ok,c("CAMPAGNE", "IDP", "DEP", "geometry"))
+  expect_named(test_res_ok, c("CAMPAGNE", "IDP", "DEP", "geometry"))
   # expect rows
   expect_true(
     nrow(test_res_ok) > 0
@@ -151,7 +157,7 @@ test_that(".get_plots_from_department works as intended", {
   # crs
   expect_identical(sf::st_crs(test_res_multiple), sf::st_crs(4326))
   # names
-  expect_named(test_res_multiple,c("CAMPAGNE", "IDP", "DEP", "geometry"))
+  expect_named(test_res_multiple, c("CAMPAGNE", "IDP", "DEP", "geometry"))
   # expect rows
   expect_true(
     nrow(test_res_multiple) > 0

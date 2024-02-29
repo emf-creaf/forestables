@@ -68,7 +68,8 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
 
   # warnings and messages
   expect_warning(
-    test_res <- .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = TRUE),
+    test_res <-
+      .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = TRUE),
     "file doesn't exists"
   )
   expect_message(
@@ -94,7 +95,10 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # and correct_plots
   expect_identical(
     unique(test_res[["plots"]]) |> sort(),
-    purrr::map_depth(test_plots, 1, purrr::flatten_dbl) |> purrr::flatten_dbl() |> unique() |> sort()
+    purrr::map_depth(test_plots, 1, purrr::flatten_dbl) |>
+      purrr::flatten_dbl() |>
+      unique() |>
+      sort()
   )
 
   # we can test here also if .build_fia_file_path works
@@ -107,7 +111,9 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # a correct custom one
   expect_identical(
     test_res[["plot_table"]][1],
-    paste0("grep -P \",INVYR,|,137,(29396|29396.0),\" ", test_folder, names(test_plots)[1], "_PLOT.csv")
+    paste0(
+      "grep -P \",INVYR,|,137,(29396|29396.0),\" ", test_folder, names(test_plots)[1], "_PLOT.csv"
+    )
   )
   # an incorrect one
   expect_identical(
@@ -165,7 +171,7 @@ test_that("show_plots_from_fia works as intended", {
 
   # error
   expect_error(
-    suppressWarnings(show_plots_from_fia( ".", test_states[1])),
+    suppressWarnings(show_plots_from_fia(".", test_states[1])),
     "folder doesn't contain"
   )
 
@@ -195,17 +201,17 @@ test_that(".transform_plot_summary works as intended", {
   # One state, one year
   # correct object
   expect_type(
-    test_res_2005_OR <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
+    test_res_2005_or <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
     "list"
   )
   # correct names
-  expect_named(test_res_2005_OR, "OR")
+  expect_named(test_res_2005_or, "OR")
   # expect results
-  expect_length(test_res_2005_OR, 1)
-  expect_true(length(test_res_2005_OR[[1]]) > 1)
+  expect_length(test_res_2005_or, 1)
+  expect_true(length(test_res_2005_or[[1]]) > 1)
   # correct counties
   expect_named(
-    test_res_2005_OR[["OR"]],
+    test_res_2005_or[["OR"]],
     test_summary |>
       dplyr::filter(STATEAB == "OR", INVYR == test_years[1]) |>
       dplyr::pull(COUNTYCD) |>

@@ -21,7 +21,11 @@ plot_paths_ifn2 <- province_codes |>
   )
 province_codes_ifn2 <- province_codes[which(!is.na(plot_paths_ifn2))]
 plot_paths_ifn2 <- plot_paths_ifn2 |>
-  purrr::discard(.p = \(path) {is.na(path)}) |>
+  purrr::discard(
+    .p = \(path) {
+      is.na(path)
+    }
+  ) |>
   purrr::set_names(province_codes_ifn2)
 
 plot_paths_ifn3 <- province_codes |>
@@ -32,7 +36,11 @@ plot_paths_ifn3 <- province_codes |>
   )
 province_codes_ifn3 <- province_codes[which(!is.na(plot_paths_ifn3))]
 plot_paths_ifn3 <- plot_paths_ifn3 |>
-  purrr::discard(.p = \(path) {is.na(path)}) |>
+  purrr::discard(
+    .p = \(path) {
+      is.na(path)
+    }
+  ) |>
   purrr::set_names(province_codes_ifn3)
 
 plot_paths_ifn4 <- province_codes |>
@@ -43,7 +51,11 @@ plot_paths_ifn4 <- province_codes |>
   )
 province_codes_ifn4 <- province_codes[which(!is.na(plot_paths_ifn4))]
 plot_paths_ifn4 <- plot_paths_ifn4 |>
-  purrr::discard(.p = \(path) {is.na(path)}) |>
+  purrr::discard(
+    .p = \(path) {
+      is.na(path)
+    }
+  ) |>
   purrr::set_names(province_codes_ifn4)
 
 # ifn2 ----------------------------------------------------------------------------------------
@@ -113,7 +125,7 @@ plots_ifn4 <- plot_paths_ifn4 |>
   purrr::list_rbind() |>
   dplyr::distinct()
 
-# Creating the dictionary -----------------------------------------------------------------------------
+# Creating the dictionary -------------------------------------------------------------------------
 # The process is as follows, each IFN version is broken in parts:
 #   - IFN2:
 #       + ifn2_only: Plots only in IFN2
@@ -191,12 +203,14 @@ ifn3_satellites <- plots_ifn3 |>
     id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_xx_{Cla}{Subclase}_")
   )
 
-# ## Testing time!!
-# # Rows sum must be equal
-# sum(nrow(ifn3_both), nrow(ifn3_only_conflict), nrow(ifn3_only_no_conflict), nrow(ifn3_satellites)) ==
-#   nrow(plots_ifn3)
+# Testing time!!
+# Rows sum must be equal
+# sum(
+#   nrow(ifn3_both), nrow(ifn3_only_conflict),
+#   nrow(ifn3_only_no_conflict), nrow(ifn3_satellites)
+# ) == nrow(plots_ifn3)
 #
-# # Bad formatted subclasses in IFN3
+# Bad formatted subclasses in IFN3
 # plots_ifn3$Subclase |> unique()
 
 ## Now let's create the id code for IFN2 based on the ones in IFN3
@@ -214,7 +228,11 @@ ifn2_codes_temp <- ifn3_both |>
   # IFN3)
   dplyr::right_join(plots_ifn2) |>
   # if id_code is NA, then they are only present in 2
-  dplyr::mutate(id_code = dplyr::if_else(is.na(id_code), glue::glue("{PROVINCIA}_{ESTADILLO}_NN_xx_xx"), id_code))
+  dplyr::mutate(
+    id_code = dplyr::if_else(
+      is.na(id_code), glue::glue("{PROVINCIA}_{ESTADILLO}_NN_xx_xx"), id_code
+    )
+  )
 
 ifn2_only <- ifn2_codes_temp |>
   dplyr::filter(stringr::str_detect(id_code, "_xx_xx$"))
@@ -352,7 +370,9 @@ ifn3_satellites <- ifn3_satellites |>
     by = c("PROVINCIA", "ESTADILLO", "Subclase" = "Cla")
   ) |>
   dplyr::mutate(
-    id_code = dplyr::if_else(is.na(id_code.y), glue::glue("{id_code.x}xx"), glue::glue("{id_code.x}{Subclase}1")),
+    id_code = dplyr::if_else(
+      is.na(id_code.y), glue::glue("{id_code.x}xx"), glue::glue("{id_code.x}{Subclase}1")
+    ),
     Cla.y = dplyr::if_else(is.na(id_code.y), NA_character_, glue::glue("{Subclase}"))
   ) |>
   dplyr::select(-id_code.x, -id_code.y)

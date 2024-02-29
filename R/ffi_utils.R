@@ -2,8 +2,8 @@
 #'
 #' Build the input dataframe
 #'
-#' This function takes the user input (year, departments, plots and folder) and build the input to be
-#' able to iterate by plots in a year. If no plots filter list is provided, this function uses
+#' This function takes the user input (year, departments, plots and folder) and build the input to
+#' be able to iterate by plots in a year. If no plots filter list is provided, this function uses
 #' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
@@ -13,16 +13,13 @@
 #'
 #' @noRd
 .build_ffi_input_with <- function(
-    departments, year, filter_list, folder, .verbose, .call = rlang::caller_env()
+  departments, year, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
 
-  # # first, if is null filter list, create it
-
-   # browser()
-
+  # first, if is null filter list, create it
   if (is.null(filter_list)) {
-      filter_list <-  .get_plots_from_department(departments, folder , .call = .call) |>
-          .transform_plot_summary_ffi(year, departments)
+    filter_list <-  .get_plots_from_department(departments, folder, .call = .call) |>
+      .transform_plot_summary_ffi(year, departments)
   }
 
   # inform the user about the amount of plots for this year
@@ -32,67 +29,60 @@
     )), .verbose
   )
 
-# browser()
-  dep_list <- filter_list
-
-
-  dep_list |>
-        tibble::enframe() |>
-        tidyr::unnest(cols = value) |>
-        purrr::set_names(c("department", "plots")) |>
-      dplyr::mutate(
-        plots = as.character(plots)
-      ) |>
-        dplyr::select(department, plots) |>
-
-        dplyr::mutate(
-          plot_table = .build_ffi_file_path(
-             department,
-             "plot",
-             folder,
-            .plot = plots,
-            .year = year,
-            .custom = TRUE,
-            .call = .call
-          ),
-          tree_table = .build_ffi_file_path(
-            department,
-             "tree", folder,
-            .plot = plots,
-            .year = year,
-            .custom = TRUE,
-            .call = .call
-          ),
-          shrub_table = .build_ffi_file_path(
-            department,
-            "shrub",
-            folder,
-            .plot = plots,
-            .year = year,
-            .custom = TRUE,
-            .call = .call
-          ),
-          soils_table = .build_ffi_file_path(
-            department,
-            "soils",
-            folder,
-            .plot = plots,
-            .year = year,
-            .custom = TRUE,
-            .call = .call
-          ),
-          regen_table = .build_ffi_file_path(
-            department,
-            "regen",
-            folder,
-            .plot = plots,
-            .year = year,
-            .custom = TRUE,
-            .call = .call
-          )
-        )
-
-
+  filter_list |>
+    tibble::enframe() |>
+    tidyr::unnest(cols = value) |>
+    purrr::set_names(c("department", "plots")) |>
+    dplyr::mutate(
+      plots = as.character(plots)
+    ) |>
+    dplyr::select(department, plots) |>
+    dplyr::mutate(
+      plot_table = .build_ffi_file_path(
+        department,
+        "plot",
+        folder,
+        .plot = plots,
+        .year = year,
+        .custom = TRUE,
+        .call = .call
+      ),
+      tree_table = .build_ffi_file_path(
+        department,
+        "tree", folder,
+        .plot = plots,
+        .year = year,
+        .custom = TRUE,
+        .call = .call
+      ),
+      shrub_table = .build_ffi_file_path(
+        department,
+        "shrub",
+        folder,
+        .plot = plots,
+        .year = year,
+        .custom = TRUE,
+        .call = .call
+      ),
+      soils_table = .build_ffi_file_path(
+        department,
+        "soils",
+        folder,
+        .plot = plots,
+        .year = year,
+        .custom = TRUE,
+        .call = .call
+      ),
+      regen_table = .build_ffi_file_path(
+        department,
+        "regen",
+        folder,
+        .plot = plots,
+        .year = year,
+        .custom = TRUE,
+        .call = .call
+      )
+    )
 }
 
 
@@ -103,7 +93,6 @@
 
 .get_plots_from_department <- function(department, folder, .call = rlang::caller_env()) {
 
-  # browser()
   ## TODO Assertion to ensure PLACETTE.csv file exists, because .build_fia_file_path is fail
   ## resistant, returning always a result (NA_character) to allow its use in loops.
   ## .get_plots_from_department_ is only called from .build_ffi_input_with or show_plots_from_ffia,
@@ -132,7 +121,8 @@
 
   if (nrow(plot_data) < 1) {
     cli::cli_abort(c(
-      "{.path PLACETTE.csv} file doesn't contain any plot for {.val {department}} department, aborting."
+      "{.path PLACETTE.csv} file doesn't contain any plot
+      for {.val {department}} department, aborting."
     ), call = .call)
   }
 
@@ -213,7 +203,8 @@ create_filter_list_ffi <- function(plots_info) {
   assertthat::assert_that(
     inherits(plots_info, c("tbl", "sf", "data.frame")),
     msg = cli::cli_abort(c(
-      "{.arg plots_info} must be a data.frame or something coercible to one, as the result of {.code show_plots_from_ffi()}"
+      "{.arg plots_info} must be a data.frame or something coercible to one,
+      as the result of {.code show_plots_from_ffi()}"
     ))
   )
   # assert col names
@@ -295,17 +286,14 @@ create_filter_list_ffi <- function(plots_info) {
 #'
 #' @noRd
 .build_ffi_file_path <- function(
-    departments,
-    type,
-    folder = ".",
-    .plot = rep(NA, length(departments)),
-    .year = NULL,
-    .custom = FALSE,
-    .call = rlang::caller_env()
-)
-{
-  #
-  # browser()
+  departments,
+  type,
+  folder = ".",
+  .plot = rep(NA, length(departments)),
+  .year = NULL,
+  .custom = FALSE,
+  .call = rlang::caller_env()
+) {
 
   ending <- switch(
     type,
@@ -329,22 +317,12 @@ create_filter_list_ffi <- function(plots_info) {
     return(NA_character_)
   }
 
-  # browser()
-
-
   if (.custom) {
-    # if (type %in% c("plot")) {
-    #   customized_path <- glue::glue(
-    #     'grep -E "CAMPAGNE|^{.year};.*;{.plot};" {table_path}'
-    #     # "grep -E ';{.year};.*;{plots};' {table_path}"
-    #   )
-    # }
-
     if (type %in% c("tree", "shrub", "soils", "regen")) {
       customized_path <- glue::glue(
         'grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'
       )
-    } else{
+    } else {
       customized_path <- glue::glue(
         'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
       )
@@ -405,8 +383,6 @@ create_filter_list_ffi <- function(plots_info) {
     .y = vars_orig,
     .f = \(var, var_orig) {
 
-
-      # browser()
       filter_nas <- TRUE
       if (!.soil_mode) {
         filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
@@ -448,4 +424,3 @@ create_filter_list_ffi <- function(plots_info) {
     data.table::as.data.table() |>
     dtplyr::lazy_dt(immutable = TRUE)
 }
-
