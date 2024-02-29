@@ -1,17 +1,23 @@
+# rlang .data global variable exporting.
+utils::globalVariables(".data")
+
 #' Build the input dataframe to iterate by plots for the year
 #'
 #' Build the input dataframe
 #'
 #' This function takes the user input (year, departments, plots and folder) and build the input to
-#' be able to iterate by plots in a year. If no plots filter list is provided, this function uses
+#' be able to iterate by plots in a year. If no filter list is provided, this function uses
 #' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
 #' @inheritParams ffi_tables_process
+#' @param .call caller environment for correct error workflow
 #'
-#' @return A data frame with  departments, plot and table file names
+#' @return A data frame with departments, plot and table file names
 #'
 #' @noRd
+#'
+#' @importFrom rlang .data
 .build_ffi_input_with <- function(
   departments, year, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
@@ -31,53 +37,53 @@
 
   filter_list |>
     tibble::enframe() |>
-    tidyr::unnest(cols = value) |>
+    tidyr::unnest(cols = "value") |>
     purrr::set_names(c("department", "plots")) |>
     dplyr::mutate(
-      plots = as.character(plots)
+      plots = as.character(.data$plots)
     ) |>
-    dplyr::select(department, plots) |>
+    dplyr::select("department", "plots") |>
     dplyr::mutate(
       plot_table = .build_ffi_file_path(
-        department,
+        .data$department,
         "plot",
         folder,
-        .plot = plots,
+        .plot = .data$plots,
         .year = year,
         .custom = TRUE,
         .call = .call
       ),
       tree_table = .build_ffi_file_path(
-        department,
+        .data$department,
         "tree", folder,
-        .plot = plots,
+        .plot = .data$plots,
         .year = year,
         .custom = TRUE,
         .call = .call
       ),
       shrub_table = .build_ffi_file_path(
-        department,
+        .data$department,
         "shrub",
         folder,
-        .plot = plots,
+        .plot = .data$plots,
         .year = year,
         .custom = TRUE,
         .call = .call
       ),
       soils_table = .build_ffi_file_path(
-        department,
+        .data$department,
         "soils",
         folder,
-        .plot = plots,
+        .plot = .data$plots,
         .year = year,
         .custom = TRUE,
         .call = .call
       ),
       regen_table = .build_ffi_file_path(
-        department,
+        .data$department,
         "regen",
         folder,
-        .plot = plots,
+        .plot = .data$plots,
         .year = year,
         .custom = TRUE,
         .call = .call
@@ -90,13 +96,7 @@
 
 #' Helper to read the PLACETTE.csv file from an state to retrieve the list of plots for that state
 #' @noRd
-
 .get_plots_from_department <- function(department, folder, .call = rlang::caller_env()) {
-
-  ## TODO Assertion to ensure PLACETTE.csv file exists, because .build_fia_file_path is fail
-  ## resistant, returning always a result (NA_character) to allow its use in loops.
-  ## .get_plots_from_department_ is only called from .build_ffi_input_with or show_plots_from_ffia,
-  ## that can not check for file existence (this is done in the individual plot functions)
 
   plot_path <- .build_ffi_file_path(department, "plot", folder)
 
@@ -109,13 +109,13 @@
   # If file exists, business as usual:
   plot_data <- plot_path |>
     .read_inventory_data(select = c("CAMPAGNE", "IDP", "XL", "YL", "DEP")) |>
-    dplyr::group_by(DEP, IDP) |>
-    dplyr::filter(DEP %in% department) |>
+    dplyr::group_by(.data$DEP, .data$IDP) |>
+    dplyr::filter(.data$DEP %in% department) |>
     #IN THE CASE THAT THERE ARE NA
-    dplyr::filter(!all(is.na(XL))) |>
-    dplyr::arrange(CAMPAGNE) |>
+    dplyr::filter(!all(is.na(.data$XL))) |>
+    dplyr::arrange(.data$CAMPAGNE) |>
     tidyr::fill(
-      c(XL, YL), .direction = "updown"
+      c(.data$XL, .data$YL), .direction = "updown"
     ) |>
     dplyr::as_tibble()
 
@@ -158,7 +158,7 @@ show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()
   #     rlang::cnd_signal(err$parent)
   #   }
   # )
-  .get_plots_from_department(departments, folder)
+  .get_plots_from_department(departments, folder, .call = .call)
 }
 
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_department}} in a
@@ -169,17 +169,17 @@ show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
     dplyr::filter(
-      CAMPAGNE %in% years,
-      DEP %in% departments
+      .data$CAMPAGNE %in% years,
+      .data$DEP %in% departments
     ) |>
-    dplyr::select(DEP, IDP) |>
+    dplyr::select("DEP", "IDP") |>
     dplyr::distinct() |>
-    dplyr::group_by(DEP) |>
+    dplyr::group_by(.data$DEP) |>
     dplyr::mutate(
-      IDP = as.character(IDP)
+      IDP = as.character(.data$IDP)
     ) |>
-    dplyr::summarise(plots = list(IDP)) |>
-    dplyr::group_by(DEP) |>
+    dplyr::summarise(plots = list(.data$IDP)) |>
+    dplyr::group_by(.data$DEP) |>
     dplyr::group_map(.f = \(department_plots, department_name) {
       tibble::deframe(department_plots) |>
         purrr::set_names(department_name[[1]])
@@ -232,7 +232,7 @@ create_filter_list_ffi <- function(plots_info) {
     sort()
 
   res <- plots_info |>
-    dplyr::group_by(DEP) |>
+    dplyr::group_by(.data$DEP) |>
     dplyr::group_split() |>
     purrr::set_names(departments_names) |>
     purrr::imap(
@@ -385,25 +385,26 @@ create_filter_list_ffi <- function(plots_info) {
 
       filter_nas <- TRUE
       if (!.soil_mode) {
-        filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
+        # filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
+        filter_nas <- rlang::expr(!is.na({{ var }}))
       }
 
       # value at most recent year
       var_value <- data_processed |>
         dplyr::filter(
-          PLOT == plot,
-          !!filter_nas
+          .data$PLOT == plot,
+          {{ filter_nas }}
         ) |>
-        dplyr::filter(YEAR == max(YEAR, na.rm = TRUE)) |>
-        dplyr::pull(var)
+        dplyr::filter(.data$YEAR == max(.data$YEAR, na.rm = TRUE)) |>
+        dplyr::pull({{ var }})
 
       # value at queried year
       var_orig_value <- data_processed |>
         dplyr::filter(
-          PLOT == plot,
-          YEAR == year
+          .data$PLOT == plot,
+          .data$YEAR == year
         ) |>
-        dplyr::pull(var)
+        dplyr::pull({{ var }})
 
       # NA if data is not found
       if (length(var_orig_value) < 1) {
@@ -415,8 +416,8 @@ create_filter_list_ffi <- function(plots_info) {
 
       # build the tibble
       dplyr::tibble(
-        !!var := var_value,
-        !!var_orig := var_orig_value
+        "{var}" := var_value,
+        "{var_orig}" := var_orig_value
       )
     }
   ) |>
