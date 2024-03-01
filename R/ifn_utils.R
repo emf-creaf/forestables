@@ -43,37 +43,37 @@
 
   input_df <- filter_list |>
     tibble::enframe() |>
-    tidyr::unnest(cols = value) |>
+    tidyr::unnest(cols = "value") |>
     purrr::set_names(c("province", "plots")) |>
     dplyr::mutate(
-      plots = as.character(plots),
+      plots = as.character(.data$plots),
       version = as.character(version)
     ) |>
-    dplyr::select(province, plots, version) |>
+    dplyr::select("province", "plots", "version") |>
     dplyr::mutate(
       plot_table = .build_ifn_file_path(
-        province,
+        .data$province,
         type = "plot",
         version,
         folder,
         .call = .call
       ),
       tree_table = .build_ifn_file_path(
-        province,
+        .data$province,
         type = "tree",
         version,
         folder,
         .call = .call
       ),
       shrub_table = .build_ifn_file_path(
-        province,
+        .data$province,
         type = "shrub",
         version,
         folder,
         .call = .call
       ),
       regen_table = .build_ifn_file_path(
-        province,
+        .data$province,
         type = "regen",
         version,
         folder,
@@ -82,7 +82,7 @@
       coord_table = ifelse(
         test = version %in% c("ifn3", "ifn4"),
         yes = .build_ifn_file_path(
-          province,
+          .data$province,
           type = "coord",
           version,
           folder,
@@ -125,12 +125,12 @@
   res <- ifn_plot_table_process(
     plot_path, coord_path, version, plots_arg_value, province, ifn_provinces_dictionary
   ) |>
-    dplyr::filter(!is.na(ID_UNIQUE_PLOT)) |>
+    dplyr::filter(!is.na(.data$ID_UNIQUE_PLOT)) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "version", "province_code",
       "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
     ) |>
-    dplyr::group_by(crs) |>
+    dplyr::group_by(.data$crs) |>
     dplyr::group_modify(
       .f = \(crs_group, crs_code) {
         crs_group |>
@@ -153,14 +153,11 @@
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
-    dplyr::filter(
-      version %in% versions,
-      province_code %in% provinces
-    ) |>
-    dplyr::select(province_code, ID_UNIQUE_PLOT) |>
+    dplyr::filter(.data$version %in% versions, .data$province_code %in% provinces) |>
+    dplyr::select("province_code", "ID_UNIQUE_PLOT") |>
     dplyr::distinct() |>
-    dplyr::group_by(province_code) |>
-    dplyr::summarise(plots = list(ID_UNIQUE_PLOT), .groups = "keep") |>
+    dplyr::group_by(.data$province_code) |>
+    dplyr::summarise(plots = list(.data$ID_UNIQUE_PLOT), .groups = "keep") |>
     dplyr::group_map(.f = \(province_plots, province_code) {
       tibble::deframe(province_plots) |>
         # list() |>
@@ -245,16 +242,17 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
     "DBF" = foreign::read.dbf(input, as.is = TRUE) |>
       dplyr::select(dplyr::any_of(colnames)) |>
       dplyr::mutate(
-        PROVINCIA = as.character(PROVINCIA),
-        PROVINCIA = stringr::str_pad(PROVINCIA, width = 2, side = "left", pad = "0"),
-        ESTADILLO = as.character(ESTADILLO)
+        PROVINCIA = stringr::str_pad(
+          as.character(.data$PROVINCIA), width = 2, side = "left", pad = "0"
+        ),
+        ESTADILLO = as.character(.data$ESTADILLO)
       ) |>
       .ifn_unique_id_creator(...),
     "accdb" = .read_accdb_data(input, table_name) |>
       dplyr::select(dplyr::any_of(colnames)) |>
       dplyr::mutate(
-        Estadillo = as.character(Estadillo),
-        Subclase = .ifn_subclass_fixer(Subclase)
+        Estadillo = as.character(.data$Estadillo),
+        Subclase = .ifn_subclass_fixer(.data$Subclase)
       ) |>
       .ifn_unique_id_creator(...)
   )
@@ -298,8 +296,8 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
 .ifn4_prov_code_translator <- function(province) {
   res <- ifn_provinces_dictionary |>
-    dplyr::filter(province_code %in% province) |>
-    dplyr::pull(ifn4_files_labels)
+    dplyr::filter(.data$province_code %in% province) |>
+    dplyr::pull(.data$ifn4_files_labels)
 
   # In case province provided is not in the dictionary (because error, tururu tests)
   # then res is going to be character(0), so we convert to empty string
@@ -404,54 +402,53 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
       # due to the lack of Subclase in those, we can safely assume the var is called Estadillo
       data <- data |>
         dplyr::mutate(
-          Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0")
+          Estadillo = stringr::str_pad(.data$Estadillo, width = 4, side = "left", pad = "0")
         )
     }
-
 
     return(data)
   }
 
   if (version == "ifn2") {
     res <- ifn_plots_thesaurus |>
-      dplyr::filter(class_ifn2 == "NN") |>
-      dplyr::select(id_code, PROVINCIA, ESTADILLO) |>
+      dplyr::filter(.data$class_ifn2 == "NN") |>
+      dplyr::select("id_code", "PROVINCIA", "ESTADILLO") |>
       dplyr::right_join(
         data |>
           dplyr::mutate(
-            ESTADILLO = stringr::str_pad(ESTADILLO, width = 4, side = "left", pad = "0")
+            ESTADILLO = stringr::str_pad(.data$ESTADILLO, width = 4, side = "left", pad = "0")
           ),
         by = c("PROVINCIA", "ESTADILLO")
       ) |>
-      dplyr::rename(ID_UNIQUE_PLOT = id_code)
+      dplyr::rename(ID_UNIQUE_PLOT = "id_code")
   } else {
 
     data_temp <- data |>
       dplyr::mutate(
-        Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
-        class = paste0(Cla, Subclase)
+        Estadillo = stringr::str_pad(.data$Estadillo, width = 4, side = "left", pad = "0"),
+        class = paste0(.data$Cla, .data$Subclase)
       )
 
     if (version == "ifn4") {
       data_temp <- data |>
         dplyr::filter(
-          province == stringr::str_pad(Provincia, width = 2, side = "left", pad = "0")
+          province == stringr::str_pad(.data$Provincia, width = 2, side = "left", pad = "0")
         ) |>
         dplyr::mutate(
-          Estadillo = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
-          class = paste0(Cla, Subclase)
+          Estadillo = stringr::str_pad(.data$Estadillo, width = 4, side = "left", pad = "0"),
+          class = paste0(.data$Cla, .data$Subclase)
         )
     }
 
     res <- ifn_plots_thesaurus |>
-      dplyr::filter(PROVINCIA == province) |>
-      dplyr::select(id_code, Estadillo = ESTADILLO, class = paste0("class_", version)) |>
-      dplyr::filter(!is.na(class), class != "xx") |>
+      dplyr::filter(.data$PROVINCIA == province) |>
+      dplyr::select("id_code", Estadillo = "ESTADILLO", class = paste0("class_", version)) |>
+      dplyr::filter(!is.na(.data$class), .data$class != "xx") |>
       dplyr::right_join(
         data_temp,
         by = c("Estadillo", "class")
       ) |>
-      dplyr::rename(ID_UNIQUE_PLOT = id_code)
+      dplyr::rename(ID_UNIQUE_PLOT = "id_code")
   }
 
   return(res)

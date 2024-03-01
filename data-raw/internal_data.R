@@ -14,7 +14,7 @@ ifn_provinces_dictionary <- readxl::read_xls(
     province_name_original = `NOMBRE PROVINCIA`,
     ca_name_original = `NOMBRE COMUNIDAD AUTÓNOMA`
   ) |>
-  tidyr::fill(ca_name_original, .direction = "down") |>
+  tidyr::fill("ca_name_original", .direction = "down") |>
   dplyr::mutate(
     # add zeros to province code
     province_code = as.character(province_code) |> stringr::str_pad(2, "left", "0"),

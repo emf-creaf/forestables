@@ -523,7 +523,7 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
     dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
     dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
     dplyr::as_tibble() |>
-    tidyr::fill(c(.data$ESPAR, .data$SP_CODE, .data$SP_NAME)) |>
+    tidyr::fill(c("ESPAR", "SP_CODE", "SP_NAME")) |>
     dplyr::filter(.data$YEAR == year)
 
   return(tree)

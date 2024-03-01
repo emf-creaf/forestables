@@ -114,9 +114,7 @@ utils::globalVariables(".data")
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(.data$XL))) |>
     dplyr::arrange(.data$CAMPAGNE) |>
-    tidyr::fill(
-      c(.data$XL, .data$YL), .direction = "updown"
-    ) |>
+    tidyr::fill(c("XL", "YL"), .direction = "updown") |>
     dplyr::as_tibble()
 
   if (nrow(plot_data) < 1) {

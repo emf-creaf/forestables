@@ -185,19 +185,11 @@ ifn_tables_process <- function(
 
       # we put together all tables in a data frame
       understory <- plot_info |>
-        dplyr::select(
-          ID_UNIQUE_PLOT,
-          YEAR,
-          province_code,
-          PLOT
-        ) |>
+        dplyr::select("ID_UNIQUE_PLOT", "YEAR", "province_code", "PLOT") |>
         dplyr::mutate(shrub = list(shrub))
 
       plot_info |>
-        dplyr::rename(
-          COORD1 = COORDEX,
-          COORD2 = COORDEY
-        ) |>
+        dplyr::rename(COORD1 = "COORDEX", COORD2 = "COORDEY") |>
         dplyr::mutate(
           tree = list(tree),
           understory = list(understory),
@@ -229,7 +221,6 @@ ifn_tables_process <- function(
             "tree",
             "understory",
             "regen"
-            # "soils"
           ))
         )
     }
@@ -244,7 +235,7 @@ ifn_tables_process <- function(
   # filtering the missing plots. This is done based on the fact plot table functions returns NAs
   # for all vars, including coords, when the plot is not found
   temp_res |>
-    dplyr::filter(!(is.na(COORD1) & is.na(COORD2)))
+    dplyr::filter(!(is.na(.data$COORD1) & is.na(.data$COORD2)))
 
 }
 
@@ -300,7 +291,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == plot
+        .data$ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
@@ -319,46 +310,46 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
     tree <- tree_filtered_data |>
       # transformations and filters
       dplyr::rename(
-        province_code = PROVINCIA,
-        PLOT = ESTADILLO,
-        SP_CODE = ESPECIE,
-        TREE = ARBOL,
-        Dn1 = DIAMETRO1,
-        Dn2 = DIAMETRO2,
-        HT = ALTURA
+        province_code = "PROVINCIA",
+        PLOT = "ESTADILLO",
+        SP_CODE = "ESPECIE",
+        TREE = "ARBOL",
+        Dn1 = "DIAMETRO1",
+        Dn2 = "DIAMETRO2",
+        HT = "ALTURA"
       ) |>
       dplyr::mutate(
-        PLOT = as.character(PLOT),
-        province_code = as.character(province_code),
-        Dn1 = as.numeric(Dn1),
-        Dn2 = as.numeric(Dn2),
-        HT = as.numeric(stringr::str_replace(HT, ",", ".")),
-        SP_CODE = as.numeric(SP_CODE),
-        DIA = ((Dn1 + Dn2) / 2) * 0.1, # From mm to cm
-        HT = HT, # in meters
+        PLOT = as.character(.data$PLOT),
+        province_code = as.character(.data$province_code),
+        Dn1 = as.numeric(.data$Dn1),
+        Dn2 = as.numeric(.data$Dn2),
+        HT = as.numeric(stringr::str_replace(.data$HT, ",", ".")),
+        SP_CODE = as.numeric(.data$SP_CODE),
+        DIA = ((.data$Dn1 + .data$Dn2) / 2) * 0.1, # From mm to cm
+        HT = .data$HT, # in meters
         DENSITY = dplyr::case_when(
-          DIA < 12.5 ~ 127.3239546,
-          DIA >= 12.5 & DIA < 22.5 ~ 31.83098865,
-          DIA >= 22.5 & DIA < 42.5 ~ 14.14710607,
-          DIA >= 42.5 ~ 5.092958185
+          .data$DIA < 12.5 ~ 127.3239546,
+          .data$DIA >= 12.5 & .data$DIA < 22.5 ~ 31.83098865,
+          .data$DIA >= 22.5 & .data$DIA < 42.5 ~ 14.14710607,
+          .data$DIA >= 42.5 ~ 5.092958185
         )
       )  |>
       # add species info ---> WHAT REFERENCE SHOULD I USEE???
       dplyr::left_join(
         y = species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
-      dplyr::arrange(SP_CODE) |>
+      dplyr::arrange(.data$SP_CODE) |>
       dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        PLOT,
-        SP_CODE,
-        SP_NAME,
-        DIA, # diameter in cm
-        HT, # height in m
-        DENSITY
+        "ID_UNIQUE_PLOT",
+        "province_code",
+        "PLOT",
+        "SP_CODE",
+        "SP_NAME",
+        "DIA", # diameter in cm
+        "HT", # height in m
+        "DENSITY"
       )
 
     # Return tree
@@ -388,13 +379,13 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       province = province,
       .ifn = TRUE
     ) |>
-      dplyr::filter(ID_UNIQUE_PLOT == plot) |>
+      dplyr::filter(.data$ID_UNIQUE_PLOT == plot) |>
       tibble::as_tibble()
 
     # IFN3 doesn't have Provincia, so we check
     if ("Provincia" %in% names(tree_filtered_data)) {
       tree_filtered_data <- tree_filtered_data |>
-        dplyr::filter(Provincia == as.integer(province))
+        dplyr::filter(.data$Provincia == as.integer(province))
     }
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -408,35 +399,31 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
     }
 
     tree <- tree_filtered_data |>
-      dplyr::rename(
-        PLOT = Estadillo,
-        HT = Ht,
-        Clase = Cla,
-      ) |>
+      dplyr::rename(PLOT = "Estadillo", HT = "Ht", Clase = "Cla") |>
       # units transformations
       dplyr::mutate(
-        province_code =  province,
+        province_code = province,
         # Subclass fixes
-        Subclase = .ifn_subclass_fixer(Subclase),
-        DIA = (Dn1 + Dn2) / 2,
+        Subclase = .ifn_subclass_fixer(.data$Subclase),
+        DIA = (.data$Dn1 + .data$Dn2) / 2,
         # MM TO CM
-        DIA = DIA * 0.1,
-        SP_CODE = as.numeric(Especie),
+        DIA = .data$DIA * 0.1,
+        SP_CODE = as.numeric(.data$Especie),
         # density represented by each tree considering  plot design (variable radious)
         DENSITY = dplyr::case_when(
-          DIA < 12.5 ~ 127.3239546,
-          DIA >= 12.5 & DIA < 22.5 ~ 31.83098865,
-          DIA >= 22.5 & DIA < 42.5 ~ 14.14710607,
-          DIA >= 42.5 ~ 5.092958185
+          .data$DIA < 12.5 ~ 127.3239546,
+          .data$DIA >= 12.5 & .data$DIA < 22.5 ~ 31.83098865,
+          .data$DIA >= 22.5 & .data$DIA < 42.5 ~ 14.14710607,
+          .data$DIA >= 42.5 ~ 5.092958185
         )
       ) |>
       # add species info
       dplyr::left_join(
         y =  species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
-      dplyr::arrange(SP_CODE) |>
+      dplyr::arrange(.data$SP_CODE) |>
       dplyr::select(
         dplyr::any_of(c(
           "ID_UNIQUE_PLOT",
@@ -500,7 +487,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
       province = province,
       .ifn = TRUE
     ) |>
-      dplyr::filter(ID_UNIQUE_PLOT == plot) |>
+      dplyr::filter(.data$ID_UNIQUE_PLOT == plot) |>
       tibble::as_tibble()
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -515,37 +502,25 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
 
     #we add the id code
     shrub <- shrub_filtered_data |>
-      dplyr::rename(
-        PLOT = ESTADILLO,
-        COVER = FRACCAB,
-        HT = ALTUMED
-      ) |>
+      dplyr::rename(PLOT = "ESTADILLO", COVER = "FRACCAB", HT = "ALTUMED") |>
       dplyr::mutate(
-        PLOT = as.character(PLOT),
-        province_code = as.character(PROVINCIA),
-        HT = as.numeric(HT),
-        COVER = as.numeric(COVER),
-        HT = HT * 10, # DM TO cm
-        SP_CODE = as.numeric(ESPECIE)
+        PLOT = as.character(.data$PLOT),
+        province_code = as.character(.data$PROVINCIA),
+        HT = as.numeric(.data$HT),
+        COVER = as.numeric(.data$COVER),
+        HT = .data$HT * 10, # DM TO cm
+        SP_CODE = as.numeric(.data$ESPECIE)
       ) |>
       # 3. ref_plant_dictionary
       # we join data from plant ref dictionary
       # some symbols apply for multiple species
       dplyr::left_join(
         y =  species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
-      dplyr::arrange(SP_CODE) |>
-      dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        PLOT,
-        SP_NAME,
-        SP_CODE,
-        HT,
-        COVER
-      )
+      dplyr::arrange(.data$SP_CODE) |>
+      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER")
     # Return shrub
     return(shrub)
   }
@@ -567,14 +542,14 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == plot
+        .data$ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
     # IFN3 doesn't have Provincia, so we check
     if ("Provincia" %in% names(shrub_filtered_data)) {
       shrub_filtered_data <- shrub_filtered_data |>
-        dplyr::filter(Provincia == as.integer(province))
+        dplyr::filter(.data$Provincia == as.integer(province))
     }
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -588,39 +563,28 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
     }
 
     shrub <- shrub_filtered_data |>
-      dplyr::rename(
-        PLOT = Estadillo,
-        HT = Hm,
-        Clase = Cla
-      ) |>
+      dplyr::rename(PLOT = "Estadillo", HT = "Hm", Clase = "Cla") |>
       dplyr::mutate(
         province_code = province,
         # Subclass fixes
-        Subclase = .ifn_subclass_fixer(Subclase),
-        COVER = Fcc,
+        Subclase = .ifn_subclass_fixer(.data$Subclase),
+        COVER = .data$Fcc,
         # DM TO CM
-        HT = HT * 10,
-        COVER = as.numeric(COVER),
-        SP_CODE = as.numeric(Especie)
+        HT = .data$HT * 10,
+        COVER = as.numeric(.data$COVER),
+        SP_CODE = as.numeric(.data$Especie)
       ) |>
       # 3. ref_plant_dictionary
       # we join data from plant ref dictionary
       # some symbols apply for multiple species
       dplyr::left_join(
         y =  species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
       dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        Clase,
-        Subclase,
-        PLOT,
-        SP_NAME,
-        SP_CODE,
-        HT,
-        COVER
+        "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase",
+        "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
       )
 
     return(shrub)
@@ -659,7 +623,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == plot
+        .data$ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
@@ -676,48 +640,45 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
     # we add the id code
     regeneration <- regen_filtered_data |>
       dplyr::mutate(
-        PLOT = as.character(ESTADILLO),
-        province_code = as.character(PROVINCIA),
-        NUMERO = as.numeric(NUMERO),
-        Hm = as.numeric(ALTUMED) * 10, # DM TO CM
-        SP_CODE = as.numeric(ESPECIE)
+        PLOT = as.character(.data$ESTADILLO),
+        province_code = as.character(.data$PROVINCIA),
+        NUMERO = as.numeric(.data$NUMERO),
+        Hm = as.numeric(.data$ALTUMED) * 10, # DM TO CM
+        SP_CODE = as.numeric(.data$ESPECIE)
       ) |>
       dplyr::left_join(
         y = species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
-      dplyr::arrange(SP_CODE) |>
-      dplyr::rename(Numero = NUMERO, Regena = REGENA) |>
+      dplyr::arrange(.data$SP_CODE) |>
+      dplyr::rename(Numero = "NUMERO", Regena = "REGENA") |>
       dplyr::slice(rep(dplyr::row_number(), each = 2)) |>
       dplyr::mutate(
-        Regena = ifelse(dplyr::row_number() %% 2 != 0, NA, Regena),
-        Numero  = ifelse(dplyr::row_number() %% 2 == 0, NA, Numero),
-        Hm = ifelse(dplyr::row_number() %% 2 == 0, NA, Hm),
-        DBH = dplyr::case_when(Numero > 0 ~ 5, Regena > 0 ~ 1, TRUE ~ NA),
-        N = Numero * 127.3239546,
+        Regena = ifelse(dplyr::row_number() %% 2 != 0, NA, .data$Regena),
+        Numero  = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Numero),
+        Hm = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Hm),
+        DBH = dplyr::case_when(.data$Numero > 0 ~ 5, .data$Regena > 0 ~ 1, TRUE ~ NA),
+        N = .data$Numero * 127.3239546,
         N = dplyr::case_when(
-          Regena == 1 ~ 2.5 * 127.3239546,
-          Regena == 2 ~ 10 * 127.3239546,
-          Regena == 3 ~ 20 * 127.3239546,
-          N > 0 ~ N,
+          .data$Regena == 1 ~ 2.5 * 127.3239546,
+          .data$Regena == 2 ~ 10 * 127.3239546,
+          .data$Regena == 3 ~ 20 * 127.3239546,
+          .data$N > 0 ~ .data$N,
           TRUE ~ NA
         ),
-        Height = dplyr::case_when(Hm > 0 ~ Hm, Regena > 0 ~ 100, TRUE ~ NA),
+        Height = dplyr::case_when(
+          .data$Hm > 0 ~ .data$Hm,
+          .data$Regena > 0 ~ 100,
+          TRUE ~ NA
+        ),
         DENSITY = 127.3239546
       ) |>
       dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        PLOT,
-        SP_CODE,
-        SP_NAME, # nombre en latin
-        DBH,
-        Height,
-        DENSITY,
-        N
+        "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE",
+        "SP_NAME", "DBH", "Height", "DENSITY", "N"
       ) |>
-      dplyr::filter(complete.cases(DBH, Height, N))
+      dplyr::filter(complete.cases(.data$DBH, .data$Height, .data$N))
 
     # Return regen
     return(regeneration)
@@ -743,14 +704,14 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == plot
+        .data$ID_UNIQUE_PLOT == plot
       ) |>
       tibble::as_tibble()
 
     # IFN3 doesn't have Provincia, so we check
     if ("Provincia" %in% names(regen_filtered_data)) {
       regen_filtered_data <- regen_filtered_data |>
-        dplyr::filter(Provincia == as.integer(province))
+        dplyr::filter(.data$Provincia == as.integer(province))
     }
 
 
@@ -765,59 +726,47 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
     }
 
 
-    #we add the id code
+    # we add the id code
     regeneration <- regen_filtered_data |>
-      dplyr::rename(
-        PLOT = Estadillo,
-        Clase = Cla
-      ) |>
+      dplyr::rename(PLOT = "Estadillo", Clase = "Cla") |>
       dplyr::mutate(
         province_code = province,
-        Subclase = .ifn_subclass_fixer(Subclase), # Subclass fixes
-        Hm = Hm * 10, # DM TO CM
-        SP_CODE = as.numeric(Especie)
+        Subclase = .ifn_subclass_fixer(.data$Subclase), # Subclass fixes
+        Hm = .data$Hm * 10, # DM TO CM
+        SP_CODE = as.numeric(.data$Especie)
       ) |>
       dplyr::left_join(
         y =  species_ifn_internal |>
-          dplyr::select(SP_CODE, SP_NAME),
+          dplyr::select("SP_CODE", "SP_NAME"),
         by = "SP_CODE"
       ) |>
       dplyr::mutate(
         DBH = dplyr::case_when(
-          CatDes == 1 ~ 0.1,
-          CatDes == 2 ~ 0.5,
-          CatDes == 3 ~ 1.5,
-          CatDes == 4 ~ 5,
+          .data$CatDes == 1 ~ 0.1,
+          .data$CatDes == 2 ~ 0.5,
+          .data$CatDes == 3 ~ 1.5,
+          .data$CatDes == 4 ~ 5,
           TRUE ~ NA
         ),
         N = dplyr::case_when(
-          CatDes == 1 ~ 2.5 * 127.3239546,
-          CatDes == 2 ~ 10 * 127.3239546,
-          CatDes == 3 ~ 20 * 127.3239546,
-          CatDes == 4 ~ NumPies * 127.3239546,
+          .data$CatDes == 1 ~ 2.5 * 127.3239546,
+          .data$CatDes == 2 ~ 10 * 127.3239546,
+          .data$CatDes == 3 ~ 20 * 127.3239546,
+          .data$CatDes == 4 ~ NumPies * 127.3239546,
           TRUE ~ NA
         ),
         Height = dplyr::case_when(
-          CatDes == 1 ~ 10,
-          CatDes == 2 ~ 80,
-          CatDes == 3 ~ 100,
-          CatDes == 4 ~ Hm,
+          .data$CatDes == 1 ~ 10,
+          .data$CatDes == 2 ~ 80,
+          .data$CatDes == 3 ~ 100,
+          .data$CatDes == 4 ~ Hm,
           TRUE ~ NA
         ),
         DENSITY = 127.3239546
       ) |>
       dplyr::select(
-        ID_UNIQUE_PLOT,
-        province_code,
-        Clase,
-        Subclase,
-        PLOT,
-        SP_CODE,
-        SP_NAME,
-        DBH,
-        Height,
-        N,
-        DENSITY
+        "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT",
+        "SP_CODE", "SP_NAME", "DBH", "Height", "N", "DENSITY"
       )
 
     # Return regen
@@ -886,8 +835,8 @@ ifn_plot_table_process <- function(
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == !!plot,
-        PROVINCIA == !!province
+        .data$ID_UNIQUE_PLOT == !!plot,
+        .data$PROVINCIA == !!province
       ) |>
       tibble::as_tibble()
 
@@ -915,49 +864,45 @@ ifn_plot_table_process <- function(
     # exporting/formatting/blackbox process numbers were converted to letters. B is 2, C is 3...
     # So we try to fix this
     plot_coord_fixed_data <- plot_filtered_data |>
-      dplyr::filter(!is.na(COORDEX), !is.na(COORDEY)) |>
+      dplyr::filter(!is.na(.data$COORDEX), !is.na(.data$COORDEY)) |>
       dplyr:::mutate(
-        COORDEX = stringr::str_replace_all(COORDEX, "A", "1"),
-        COORDEX = stringr::str_replace_all(COORDEX, "B", "2"),
-        COORDEX = stringr::str_replace_all(COORDEX, "C", "3"),
-        COORDEX = stringr::str_replace_all(COORDEX, "D", "4"),
-        COORDEX = stringr::str_replace_all(COORDEX, "E", "5"),
-        COORDEX = stringr::str_replace_all(COORDEX, "F", "6"),
-        COORDEX = stringr::str_replace_all(COORDEX, "G", "7"),
-        COORDEX = stringr::str_replace_all(COORDEX, "H", "8"),
-        COORDEX = stringr::str_replace_all(COORDEX, "I", "9"),
-        COORDEY = stringr::str_replace_all(COORDEY, "A", "1"),
-        COORDEY = stringr::str_replace_all(COORDEY, "B", "2"),
-        COORDEY = stringr::str_replace_all(COORDEY, "C", "3"),
-        COORDEY = stringr::str_replace_all(COORDEY, "D", "4"),
-        COORDEY = stringr::str_replace_all(COORDEY, "E", "5"),
-        COORDEY = stringr::str_replace_all(COORDEY, "F", "6"),
-        COORDEY = stringr::str_replace_all(COORDEY, "G", "7"),
-        COORDEY = stringr::str_replace_all(COORDEY, "H", "8"),
-        COORDEY = stringr::str_replace_all(COORDEY, "I", "9")
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "A", "1"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "B", "2"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "C", "3"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "D", "4"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "E", "5"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "F", "6"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "G", "7"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "H", "8"),
+        COORDEX = stringr::str_replace_all(.data$COORDEX, "I", "9"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "A", "1"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "B", "2"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "C", "3"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "D", "4"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "E", "5"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "F", "6"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "G", "7"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "H", "8"),
+        COORDEY = stringr::str_replace_all(.data$COORDEY, "I", "9")
       )
 
     # we add the id code
     info_plot <- plot_coord_fixed_data |>
       dplyr::rename(
-        PLOT = ESTADILLO,
-        SLOPE = MAXPEND2,
-        ELEV = ALTITUD2,
-        YEAR = ANO,
-        ASPECT = ORIENTA2
+        PLOT = "ESTADILLO", SLOPE = "MAXPEND2", ELEV = "ALTITUD2", YEAR = "ANO", ASPECT = "ORIENTA2"
       ) |>
       dplyr::mutate(
         COUNTRY = "ES",
-        province_code = PROVINCIA,
-        ELEV = as.numeric(ELEV) * 100,
-        SLOPE = as.numeric(stringr::str_replace(SLOPE, ",", ".")),
-        ASPECT = as.numeric(ASPECT),
-        COORDEX = as.numeric(COORDEX) * 1000,
-        COORDEY = as.numeric(COORDEY) * 1000,
+        province_code = .data$PROVINCIA,
+        ELEV = as.numeric(.data$ELEV) * 100,
+        SLOPE = as.numeric(stringr::str_replace(.data$SLOPE, ",", ".")),
+        ASPECT = as.numeric(.data$ASPECT),
+        COORDEX = as.numeric(.data$COORDEX) * 1000,
+        COORDEY = as.numeric(.data$COORDEY) * 1000,
         version = version,
         Huso = dplyr::case_when(
-          province_code %in% c("35", "38") ~ 28,
-          province_code %in% c(
+          .data$province_code %in% c("35", "38") ~ 28,
+          .data$province_code %in% c(
             "01", "07", "08", "15", "17", "20", "25", "26", "27", "28",
             "30", "32", "33", "36", "39", "43", "48", "02", "03", "04", "05",
             "06", "09", "10", "11", "12", "13", "14", "16", "18", "19", "21",
@@ -966,8 +911,8 @@ ifn_plot_table_process <- function(
           ) ~ 30
         ),
         COORD_SYS = dplyr::case_when(
-          province_code %in% c("35", "38") ~ "WGS84",
-          province_code %in% c(
+          .data$province_code %in% c("35", "38") ~ "WGS84",
+          .data$province_code %in% c(
             "01", "07", "08", "15", "17", "20", "25", "26", "27", "28",
             "30", "32", "33", "36", "39", "43", "48", "02", "03", "04", "05",
             "06", "09", "10", "11", "12", "13", "14", "16", "18", "19", "21",
@@ -976,24 +921,20 @@ ifn_plot_table_process <- function(
           ) ~ "ED50"
         ),
         crs = dplyr::case_when(
-          Huso == 30 & COORD_SYS == "ED50" ~ 23030,
-          Huso == 31 & COORD_SYS == "ED50" ~ 4326,
-          Huso == 29 & COORD_SYS == "ED50" ~ 23029,
-          Huso == 30 & COORD_SYS == "ETRS89" ~ 25830,
-          Huso == 31 & COORD_SYS == "ETRS89" ~ 25831,
-          Huso == 29 & COORD_SYS == "ETRS89" ~ 25829,
-          Huso == 28 & COORD_SYS == "ED50" ~ 23028,
-          Huso == 28 & COORD_SYS == "WGS84" ~ 32628,
+          .data$Huso == 30 & .data$COORD_SYS == "ED50" ~ 23030,
+          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 4326,
+          .data$Huso == 29 & .data$COORD_SYS == "ED50" ~ 23029,
+          .data$Huso == 30 & .data$COORD_SYS == "ETRS89" ~ 25830,
+          .data$Huso == 31 & .data$COORD_SYS == "ETRS89" ~ 25831,
+          .data$Huso == 29 & .data$COORD_SYS == "ETRS89" ~ 25829,
+          .data$Huso == 28 & .data$COORD_SYS == "ED50" ~ 23028,
+          .data$Huso == 28 & .data$COORD_SYS == "WGS84" ~ 32628,
           TRUE ~ NA_integer_
         )
       ) |>
       dplyr::left_join(
         y = ifn_provinces_dictionary |>
-          dplyr::select(
-            province_code = province_code,
-            province_name_original = province_name_original,
-            ca_name_original = ca_name_original
-          ),
+          dplyr::select("province_code", "province_name_original", "ca_name_original"),
         by = "province_code"
       ) |>
       dplyr::select(dplyr::any_of(c(
@@ -1047,8 +988,8 @@ ifn_plot_table_process <- function(
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        ID_UNIQUE_PLOT == !!plot,
-        Provincia == as.integer(province)
+        .data$ID_UNIQUE_PLOT == !!plot,
+        .data$Provincia == as.integer(province)
       ) |>
       tibble::as_tibble()
 
@@ -1065,38 +1006,34 @@ ifn_plot_table_process <- function(
     }
 
     plot_filtered_data <- plot_filtered_data |>
-      dplyr::rename(
-        YEAR = Ano,
-        PLOT = Estadillo
-      ) |>
+      dplyr::rename(YEAR = "Ano", PLOT = "Estadillo") |>
       dplyr::mutate(
-        YEAR = as.character(YEAR),
-        Subclase = .ifn_subclass_fixer(Subclase), # Subclass fixes
+        YEAR = as.character(.data$YEAR),
+        Subclase = .ifn_subclass_fixer(.data$Subclase), # Subclass fixes
         version = version,
-        province_code = province,
-        province_code = as.character(province_code)
+        province_code = as.character(province)
       )
 
     # we add the id code
     info_plot <- plot_filtered_data |>
-      dplyr::rename(ASPECT = Orienta1, SLOPE = MaxPend1) |>
+      dplyr::rename(ASPECT = "Orienta1", SLOPE = "MaxPend1") |>
       dplyr::mutate(
         COUNTRY = "ES",
         # de grados centesimales a sexagesimales??
-        ASPECT = as.numeric(ASPECT) * 0.9,
-        SLOPE = as.numeric(SLOPE),
+        ASPECT = as.numeric(.data$ASPECT) * 0.9,
+        SLOPE = as.numeric(.data$SLOPE),
         COORD_SYS = dplyr::case_when(
-          version == "ifn4" & province_code %in% c(
+          .data$version == "ifn4" & .data$province_code %in% c(
             "01", "07", "08", "15", "17", "20", "25", "26", "27", "28",
             "30", "32", "33", "36", "39", "43", "48"
           )  ~ "ED50",
-          version == "ifn4" & province_code %in% c("35", "38") ~ "WGS84",
-          version == "ifn4" & province_code %in% c(
+          .data$version == "ifn4" & .data$province_code %in% c("35", "38") ~ "WGS84",
+          .data$version == "ifn4" & .data$province_code %in% c(
             "02", "03", "04", "05", "06", "09", "10", "11", "12", "13", "14", "16", "18",
             "19", "21", "22", "23", "24", "29", "31", "34", "37", "40", "41", "42", "44",
             "45", "46", "47", "49", "50"
           ) ~ "ETRS89",
-          version == "ifn3" & province_code %in% c(
+          .data$version == "ifn3" & .data$province_code %in% c(
             "01", "07", "08", "15", "17", "20", "25", "26", "27", "28", "30", "32", "33",
             "36", "39", "43", "48", "02", "03", "04", "05", "06", "09", "10", "11", "12",
             "13", "14", "16", "18", "19", "21", "22", "23", "24", "29", "31", "34", "37",
@@ -1106,29 +1043,25 @@ ifn_plot_table_process <- function(
       ) |>
       dplyr::left_join(
         y = ifn_provinces_dictionary |>
-          dplyr::select(
-            province_code = province_code,
-            province_name_original = province_name_original,
-            ca_name_original
-          ),
+          dplyr::select("province_code", "province_name_original", "ca_name_original"),
         by = "province_code"
       ) |>
       # selection of final variables
       dplyr::select(
-        ID_UNIQUE_PLOT,
-        COUNTRY,
-        ca_name_original,
-        province_code,
-        province_name_original,
-        PLOT,
-        Cla,
-        Subclase,
-        COORD_SYS,
-        YEAR,
-        version,
-        Tipo,
-        ASPECT,
-        SLOPE
+        "ID_UNIQUE_PLOT",
+        "COUNTRY",
+        "ca_name_original",
+        "province_code",
+        "province_name_original",
+        "PLOT",
+        "Cla",
+        "Subclase",
+        "COORD_SYS",
+        "YEAR",
+        "version",
+        "Tipo",
+        "ASPECT",
+        "SLOPE"
       )
 
     files_validation <- assertthat::validate_that(!any(is.na(c(coord_data))))
@@ -1151,8 +1084,8 @@ ifn_plot_table_process <- function(
       .ifn = TRUE
     ) |>
       dplyr::filter(
-        Estadillo == !!plot_estadillo,
-        Provincia == as.integer(province)
+        .data$Estadillo == !!plot_estadillo,
+        .data$Provincia == as.integer(province)
       ) |>
       tibble::as_tibble()
 
@@ -1177,21 +1110,18 @@ ifn_plot_table_process <- function(
 
     # remove bad formatted or missing coordinates
     coords_fixed_data <- coords_filtered_data |>
-      dplyr::filter(!is.na(CoorX), !is.na(CoorY))
+      dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY))
 
     coords_data <- coords_fixed_data |>
       dplyr::rename(
-        PLOT = Estadillo,
-        COORDEX = CoorX,
-        COORDEY = CoorY,
-        HOJA = Hoja50,
+        PLOT = "Estadillo", COORDEX = "CoorX", COORDEY = "CoorY", HOJA = "Hoja50",
         Cla = dplyr::any_of(c("Clase", "Cla"))
       ) |>
       dplyr::mutate(
-        HOJA = as.character(HOJA),
-        Subclase = .ifn_subclass_fixer(Subclase), # Subclass fixes
+        HOJA = as.character(.data$HOJA),
+        Subclase = .ifn_subclass_fixer(.data$Subclase), # Subclass fixes
         province_code = province,
-        province_code = as.character(province_code),
+        province_code = as.character(.data$province_code),
         version = version,
         Huso = ifelse("Huso" %in% names(coords_fixed_data), coords_fixed_data$Huso, NA)
       )
@@ -1218,18 +1148,18 @@ ifn_plot_table_process <- function(
       ) |>
       # sometimes, plots present in data are not present in coords, so weç
       # remove them
-      dplyr::filter(!is.na(COORDEX)) |>
+      dplyr::filter(!is.na(.data$COORDEX)) |>
       dplyr::mutate(
         crs = dplyr::case_when(
-          is.na(Huso) & COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
-          Huso == 30 & COORD_SYS == "ED50" ~ 23030,
-          Huso == 31 & COORD_SYS == "ED50" ~ 4326,
-          Huso == 29 & COORD_SYS == "ED50" ~ 23029,
-          Huso == 30 & COORD_SYS == "ETRS89" ~ 25830,
-          Huso == 31 & COORD_SYS == "ETRS89" ~ 25831,
-          Huso == 29 & COORD_SYS == "ETRS89" ~ 25829,
-          Huso == 28 & COORD_SYS == "ED50" ~ 23028,
-          Huso == 28 & COORD_SYS == "WGS84" ~ 32628,
+          is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
+          .data$Huso == 30 & .data$COORD_SYS == "ED50" ~ 23030,
+          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 4326,
+          .data$Huso == 29 & .data$COORD_SYS == "ED50" ~ 23029,
+          .data$Huso == 30 & .data$COORD_SYS == "ETRS89" ~ 25830,
+          .data$Huso == 31 & .data$COORD_SYS == "ETRS89" ~ 25831,
+          .data$Huso == 29 & .data$COORD_SYS == "ETRS89" ~ 25829,
+          .data$Huso == 28 & .data$COORD_SYS == "ED50" ~ 23028,
+          .data$Huso == 28 & .data$COORD_SYS == "WGS84" ~ 32628,
           TRUE ~ NA_integer_
         )
       ) |>

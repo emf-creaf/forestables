@@ -182,7 +182,7 @@ fia_tables_process <- function(
   input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose) |>
     # filter file name NAs due to missing files (bad states or bad paths)
     # (missing plots are filtered at the end of the process, not ideal but ok)
-    dplyr::filter(!is.na(plot_table))
+    dplyr::filter(!is.na(.data$plot_table))
 
   # Get needed ancillary data
   ref_species <- .read_inventory_data(fs::path(folder, "REF_SPECIES.csv")) |> dplyr::as_tibble()
@@ -204,8 +204,6 @@ fia_tables_process <- function(
       p3_understory_table_file,
       seedling_table_file,
       subplot_table_file,
-      # soils_loc_table_file,
-      # soils_lab_table_file,
       veg_subplot_table_file,
       p2_veg_subplot_table_file
     ) {
@@ -253,19 +251,11 @@ fia_tables_process <- function(
         COUNTYCD = county,
         YEAR = year,
         STATECD = state,
-        ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
+        ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
         shrub = list(shrub),
         herbs = list(herbs)
       ) |>
-        dplyr::select(
-          ID_UNIQUE_PLOT,
-          PLOT,
-          COUNTYCD,
-          YEAR,
-          STATECD,
-          shrub,
-          herbs
-        )
+        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "YEAR", "STATECD", "shrub", "herbs")
 
       # finally we put together all tables in a data frame and return it
       plot_info |>
@@ -288,9 +278,10 @@ fia_tables_process <- function(
   temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
-    dplyr::filter(
-      !(is.na(COORD1) & is.na(COORD2_ORIGINAL) & is.na(COORD1) & is.na(COORD1_ORIGINAL))
-    )
+    dplyr::filter(!(
+      is.na(.data$COORD1) & is.na(.data$COORD2_ORIGINAL) &
+        is.na(.data$COORD1) & is.na(.data$COORD1_ORIGINAL)
+    ))
 }
 
 #' Data tables process
@@ -338,64 +329,37 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
     select = c("INVYR", "STATECD", "STATEAB", "STATENM", "RSCD", "ANN_INVENTORY")
   ) |>
     # we arrange by year to lately get the last record
-    dplyr::arrange(desc(INVYR)) |>
+    dplyr::arrange(desc(.data$INVYR)) |>
     #there might be more than 1 record
     dplyr::distinct() |>
     .extract_fia_metadata(
       c("RSCD", "STATECD", "STATEAB", "STATENM"), county, plot, year, .soil_mode = FALSE
     ) |>
-    dplyr::mutate(
-      PLOT  = plot,
-      INVYR  = year,
-      COUNTYCD = county,
-    )
+    dplyr::mutate(PLOT  = plot, INVYR  = year, COUNTYCD = county)
 
   # plot table
   data_plot <- .read_inventory_data(
     plot_data,
     select = c(
-      "INVYR",
-      "STATECD",
-      "UNITCD",
-      "COUNTYCD",
-      "PLOT",
-      "LAT",
-      "LON",
-      "ELEV",
-      "PLOT_STATUS_CD",
-      "SAMP_METHOD_CD",
-      "SUBP_EXAMINE_CD",
-      "P3PANEL",
-      "P2VEG_SAMPLING_STATUS_CD",
-      "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-      "DESIGNCD"
+      "INVYR", "STATECD", "UNITCD", "COUNTYCD", "PLOT", "LAT", "LON",
+      "ELEV", "PLOT_STATUS_CD", "SAMP_METHOD_CD", "SUBP_EXAMINE_CD",
+      "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD", "DESIGNCD"
     )
   ) |>
     # we arrange by year to catch last record lately
-    dplyr::arrange(desc(INVYR)) |>
+    dplyr::arrange(desc(.data$INVYR)) |>
     dplyr::mutate(
-      #elev in feet to meters
-      ELEV = ELEV * 0.3048,
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
-      COORD_SYS =  dplyr::if_else(STATECD %in% c(60, 64, 66, 68, 69, 70), "WGS84", "NAD83")
+      ELEV = .data$ELEV * 0.3048, # elev in feet to meters
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
+      COORD_SYS =  dplyr::if_else(.data$STATECD %in% c(60, 64, 66, 68, 69, 70), "WGS84", "NAD83")
     ) |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      P3PANEL,
-      P2VEG_SAMPLING_STATUS_CD,
-      P2VEG_SAMPLING_LEVEL_DETAIL_CD,
-      ELEV,
-      # LON, NAD 83 datum ;   EXCEPTIONS depending on  RSCD:
-      LON,
-      # LAT, NAD 83 datum    exceptions based on  RSCD
-      LAT,
-      COORD_SYS,
+      "ID_UNIQUE_PLOT", "PLOT", "INVYR", "STATECD", "COUNTYCD", "P3PANEL",
+      "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD", "ELEV",
+      # LON & LAT, NAD 83 datum ;   EXCEPTIONS depending on  RSCD
+      "LON", "LAT", "COORD_SYS",
       # DESIGN : can change between years:
-      DESIGNCD
+      "DESIGNCD"
     ) |>
     data.table::as.data.table() |>
     .extract_fia_metadata(
@@ -414,16 +378,10 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
   # CONDITION TABLE
   data_cond <- .read_inventory_data(
     cond_data,
-    select = c("INVYR",
-               "STATECD",
-               "UNITCD",
-               "COUNTYCD",
-               "PLOT",
-               "SLOPE",
-               "ASPECT",
-               "CONDID",
-               "COND_STATUS_CD",
-               "SOIL_ROOTING_DEPTH_PNW")
+    select = c(
+      "INVYR", "STATECD", "UNITCD", "COUNTYCD", "PLOT",
+      "SLOPE", "ASPECT", "CONDID", "COND_STATUS_CD", "SOIL_ROOTING_DEPTH_PNW"
+    )
   ) |>
     dplyr::filter(
       # FOREST LAND
@@ -436,69 +394,38 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
       # condition class 1.
 
       # condid 1 to use this as proxy
-      CONDID == 1
+      .data$CONDID == 1
     ) |>
     dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_")
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_")
     ) |>
-    dplyr::group_by(ID_UNIQUE_PLOT, INVYR) |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      COUNTYCD,
-      SLOPE,
-      ASPECT,
-      INVYR
-    ) |>
+    dplyr::group_by(.data$ID_UNIQUE_PLOT, .data$INVYR) |>
+    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "SLOPE", "ASPECT", "INVYR") |>
     dplyr::distinct() |>
     data.table::as.data.table() |>
     .extract_fia_metadata(c("SLOPE", "ASPECT"), county, plot, year, .soil_mode = FALSE) |>
-    dplyr::mutate(
-      PLOT = plot,
-      INVYR = year,
-      COUNTYCD = county,
-    )
+    dplyr::mutate(PLOT = plot, INVYR = year, COUNTYCD = county)
 
   # we extract the vars we need and return the object
   data_survey |>
     dplyr::left_join(data_plot, by = c("PLOT", "INVYR", "COUNTYCD")) |>
     dplyr::left_join(data_cond, by = c("PLOT", "INVYR", "COUNTYCD")) |>
     dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       COUNTRY = "US"
     ) |>
     dplyr::select(
-      INVYR,
-      ID_UNIQUE_PLOT,
-      COUNTRY,
-      STATECD,
-      STATEAB,
-      STATENM,
-      COUNTYCD,
-      PLOT,
-      P3PANEL,
-      P2VEG_SAMPLING_STATUS_CD,
-      P2VEG_SAMPLING_LEVEL_DETAIL_CD,
-      RSCD,
-      DESIGNCD,
-      LON,
-      LON_ORIGINAL,
-      LAT,
-      LAT_ORIGINAL,
-      COORD_SYS,
-      ELEV,
-      ELEV_ORIGINAL,
-      ASPECT,
-      ASPECT_ORIGINAL,
-      SLOPE,
-      SLOPE_ORIGINAL
+      "INVYR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM",
+      "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+      "RSCD", "DESIGNCD", "LON", "LON_ORIGINAL", "LAT", "LAT_ORIGINAL",
+      "COORD_SYS", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
     ) |>
     dplyr::rename(
-      YEAR = INVYR,
-      COORD1 = LON,
-      COORD2 = LAT,
-      COORD1_ORIGINAL = LON_ORIGINAL,
-      COORD2_ORIGINAL = LAT_ORIGINAL
+      YEAR = "INVYR",
+      COORD1 = "LON",
+      COORD2 = "LAT",
+      COORD1_ORIGINAL = "LON_ORIGINAL",
+      COORD2_ORIGINAL = "LAT_ORIGINAL"
     ) |>
     dplyr::as_tibble()
 }
@@ -527,11 +454,7 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
       "SPCD", "SPGRPCD", "DIA", "DIAHTCD", "HT", "TPA_UNADJ"
     )
   ) |>
-    dplyr::filter(
-      PLOT == plot,
-      INVYR == year,
-      COUNTYCD == county
-    ) |>
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
     dplyr::as_tibble()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -552,38 +475,24 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
     # units transformations
     dplyr::mutate(
       # unique inner code
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
-      DIA = DIA * 2.54, # INCHES TO CM
-      HT = HT * 0.3048, # FEET TO M
-      DENSITY = TPA_UNADJ / 0.4046856422 # acre to ha
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
+      DIA = .data$DIA * 2.54, # INCHES TO CM
+      HT = .data$HT * 0.3048, # FEET TO M
+      DENSITY = .data$TPA_UNADJ / 0.4046856422 # acre to ha
     ) |>
     # add species info
     dplyr::left_join(
       y = ref_species |>
-        dplyr::select(SPCD, GENUS, SPECIES, SPECIES_SYMBOL),
+        dplyr::select("SPCD", "GENUS", "SPECIES", "SPECIES_SYMBOL"),
       by = "SPCD"
     ) |>
-    dplyr::mutate(SP_NAME = (paste(GENUS, SPECIES, sep = " "))) |>
-    dplyr::arrange(SP_NAME) |>
+    dplyr::mutate(SP_NAME = (paste(.data$GENUS, .data$SPECIES, sep = " "))) |>
+    dplyr::arrange(.data$SP_NAME) |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      TREE,
-      STATUSCD,
-      DIA,
-      HT,
-      SP_NAME,
-      SPCD,
-      DENSITY
+      "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT",
+      "TREE", "STATUSCD", "DIA", "HT", "SP_NAME", "SPCD", "DENSITY"
     ) |>
-    dplyr::rename(
-      YEAR = INVYR,
-      STATUS = STATUSCD,
-      SP_CODE = SPCD
-    ) |>
+    dplyr::rename(YEAR = "INVYR", STATUS = "STATUSCD", SP_CODE = "SPCD") |>
     dplyr::as_tibble()
 
   # Return tree
@@ -630,7 +539,7 @@ fia_understory_table_process <- function(
     if (p2_rows > 0) {
       # join p3 and those species of p2 not present in p3
       understory_info <- p2_info |>
-        dplyr::filter(!SP_NAME %in% unique(p3_info$SP_NAME)) |>
+        dplyr::filter(!.data$SP_NAME %in% unique(p3_info$SP_NAME)) |>
         dplyr::bind_rows(p3_info)
       return(understory_info)
     }
@@ -664,12 +573,7 @@ fia_p3_understory_table_process <- function(
   filtered_data <- .read_inventory_data(
     understory_data,
     select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      "SUBP",
-      "VEG_FLDSPCD",
+      "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "VEG_FLDSPCD",
       # REF_SPECIES TABLE CODE
       "VEG_SPCD",
       "SP_CANOPY_COVER_TOTAL",
@@ -684,11 +588,7 @@ fia_p3_understory_table_process <- function(
     dplyr::rename(
       "SPECIES_SYMBOL" = "VEG_SPCD",
     ) |>
-    dplyr::filter(
-      PLOT == plot,
-      INVYR == year,
-      COUNTYCD == county
-    ) |>
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
     data.table::as.data.table()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -704,27 +604,31 @@ fia_p3_understory_table_process <- function(
 
   # we add the id code
   understory_filtered_data <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_")) |>
+    dplyr::mutate(
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_")
+    ) |>
     # we group by species to calculate means (height, cover)
-    dplyr::group_by(SPECIES_SYMBOL) |>
+    dplyr::group_by(.data$SPECIES_SYMBOL) |>
     # here we calculate an averaged height by species, for that we select the height that has
-    # the maximum percentage cover and we assign as a height the middle value of the interval of that
-    # layer in meters layer 1-2  = 0- 1,8288meters,
-    # layer 3 from 1,8288meters to 4,8768
+    # the maximum percentage cover and we assign as a height the middle value of the interval of
+    # that layer in meters layer 1-2  = 0- 1,8288meters, layer 3 from 1,8288meters to 4,8768
     # and layer 4 more than  4,8768m
     dplyr::mutate(
-      COVER_PCT = SP_CANOPY_COVER_TOTAL,
+      COVER_PCT = .data$SP_CANOPY_COVER_TOTAL,
       # HT in cm
       HT = dplyr::case_when(
         (which.max(c(
-          max(SP_CANOPY_COVER_LAYER_1_2), max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4)
+          max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
+          max(.data$SP_CANOPY_COVER_LAYER_4)
         ))) == 1 ~ 91,
         (which.max(c(
-          max(SP_CANOPY_COVER_LAYER_1_2), max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4)
+          max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
+          max(.data$SP_CANOPY_COVER_LAYER_4)
         ))) == 2 ~ 340,
         # for third layer this is the minimum height not the averaged  ! :)
         (which.max(c(
-          max(SP_CANOPY_COVER_LAYER_1_2), max(SP_CANOPY_COVER_LAYER_3), max(SP_CANOPY_COVER_LAYER_4)
+          max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
+          max(.data$SP_CANOPY_COVER_LAYER_4)
         ))) == 3 ~ 500
       )
     ) |>
@@ -748,7 +652,7 @@ fia_p3_understory_table_process <- function(
         ),
       by = "SPECIES_SYMBOL"
     ) |>
-    dplyr::filter(GROWTH_HABIT %in% growth_habit) |>
+    dplyr::filter(.data$GROWTH_HABIT %in% growth_habit) |>
     data.table::as.data.table()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -764,26 +668,13 @@ fia_p3_understory_table_process <- function(
 
   # we add latin name and select variables
   understory <- dtplyr::lazy_dt(understory_filtered_data, immutable = TRUE) |>
-    dplyr::mutate(SP_NAME = paste(GENUS, SPECIES, sep = " ")) |>
-    dplyr::arrange(SPECIES_SYMBOL, SUBP) |>
+    dplyr::mutate(SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " ")) |>
+    dplyr::arrange(.data$SPECIES_SYMBOL, .data$SUBP) |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      SUBP,
-      SPECIES_SYMBOL,
-      SP_NAME,
-      HT,
-      COVER_PCT,
-      GROWTH_HABIT
+      "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
+      "SPECIES_SYMBOL", "SP_NAME", "HT", "COVER_PCT", "GROWTH_HABIT"
     ) |>
-    dplyr::rename(
-      YEAR = INVYR,
-      SP_CODE = SPECIES_SYMBOL,
-      COVER = COVER_PCT
-    ) |>
+    dplyr::rename(YEAR = "INVYR", SP_CODE = "SPECIES_SYMBOL", COVER = "COVER_PCT") |>
     dplyr::distinct() |>
     dplyr::as_tibble()
 
@@ -833,11 +724,7 @@ fia_p2_understory_table_process <- function(
     dplyr::rename(
       "SPECIES_SYMBOL" = "VEG_SPCD",
     ) |>
-    dplyr::filter(
-      PLOT == plot,
-      INVYR == year,
-      COUNTYCD == county
-    ) |>
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
     data.table::as.data.table()
 
   # We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -853,20 +740,22 @@ fia_p2_understory_table_process <- function(
 
   # we add the id code
   understory_p2_filtered_data <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_")) |>
+    dplyr::mutate(
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_")
+    ) |>
     # we group by species to calculate means (height, cover)
-    dplyr::group_by(SPECIES_SYMBOL) |>
-    dplyr::filter(GROWTH_HABIT_CD %in% growth_habit) |>
+    dplyr::group_by(.data$SPECIES_SYMBOL) |>
+    dplyr::filter(.data$GROWTH_HABIT_CD %in% growth_habit) |>
     # we calculate mean cover an height from layer
     dplyr::mutate(
-      COVER_PCT,
+      # COVER_PCT,
       # HT in cm
       HT = dplyr::case_when(
-        LAYER == 1 ~  30.48,
-        LAYER == 2 ~ 121.92,
-        LAYER == 3 ~ 335.28,
+        .data$LAYER == 1 ~  30.48,
+        .data$LAYER == 2 ~ 121.92,
+        .data$LAYER == 3 ~ 335.28,
         # for 4TH layer this is the minimum height not the averaged  !
-        LAYER == 4 ~ 500
+        .data$LAYER == 4 ~ 500
       )
     ) |>
     # we join data from plant ref dictionary one symbol can apply for various species
@@ -905,31 +794,15 @@ fia_p2_understory_table_process <- function(
 
     # we add latin name
     dplyr::mutate(
-      SP_NAME = paste(GENUS, SPECIES, sep = " ")
+      SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " ")
     ) |>
-    dplyr::arrange(SPECIES_SYMBOL, SUBP) |>
+    dplyr::arrange(.data$SPECIES_SYMBOL, .data$SUBP) |>
     # we select final variables
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      SUBP,
-      # GENUS,
-      # FAMILY,
-      SPECIES_SYMBOL,
-      SP_NAME,
-      GROWTH_HABIT_CD,
-      HT,
-      COVER_PCT,
-      GROWTH_HABIT
+      "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
+      "SPECIES_SYMBOL", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER_PCT", "GROWTH_HABIT"
     ) |>
-    dplyr::rename(
-      YEAR = INVYR,
-      SP_CODE = SPECIES_SYMBOL,
-      COVER = COVER_PCT
-    ) |>
+    dplyr::rename(YEAR = "INVYR", SP_CODE = "SPECIES_SYMBOL", COVER = "COVER_PCT") |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
     dplyr::distinct() |>
@@ -942,7 +815,6 @@ fia_p2_understory_table_process <- function(
 
 #' @describeIn tables_processing Process to gather needed data from seedling table
 fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_species) {
-
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(seedling_data))))
@@ -957,9 +829,8 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
 
     return(dplyr::tibble())
   }
+
   # 2. col names
-
-
   filtered_data <- .read_inventory_data(
     seedling_data,
     select = c(
@@ -977,11 +848,7 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
       "TOTAGE"
     )
   ) |>
-    dplyr::filter(
-      PLOT == plot,
-      INVYR == year,
-      COUNTYCD == county
-    ) |>
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
     data.table::as.data.table()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -995,61 +862,40 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
     return(dplyr::tibble())
   }
 
-
   # we add the id code
   seedling <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
     # we filter by species to calculate means (height, cover)
     dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       #conversion from acre to ha
-      TPA_UNADJ = TPA_UNADJ / 0.4046856422
+      TPA_UNADJ = .data$TPA_UNADJ / 0.4046856422
     ) |>
     # join with ref_species
     dplyr::left_join(
       y = ref_species |>
-        dplyr::select(
-          SPCD,
-          GENUS,
-          SPECIES,
-          SPECIES_SYMBOL
-        ),
+        dplyr::select("SPCD", "GENUS", "SPECIES", "SPECIES_SYMBOL"),
       by = "SPCD"
     ) |>
     dplyr::mutate(
-      SP_NAME = paste(GENUS, SPECIES, sep = " "),
+      SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " "),
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
       Height = 15.24,
       #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
       DBH = 2.54
     ) |>
     # we arrange by species and tpa
-    dplyr::arrange(SPCD, TPA_UNADJ) |>
+    dplyr::arrange(.data$SPCD, .data$TPA_UNADJ) |>
     dplyr::mutate(
       #calculate density represented by tree
-      N = TPA_UNADJ * TREECOUNT_CALC
+      N = .data$TPA_UNADJ * .data$TREECOUNT_CALC
     ) |>
-    dplyr::arrange(SPCD, SUBP) |>
+    dplyr::arrange(.data$SPCD, .data$SUBP) |>
     #selection of final variables
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      SUBP,
-      SPCD,
-      SP_NAME,
-      TREECOUNT_CALC,
-      TPA_UNADJ,
-      N,
-      Height,
-      DBH
+      "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SPCD",
+      "SP_NAME", "TREECOUNT_CALC", "TPA_UNADJ", "N", "Height", "DBH"
     ) |>
-    dplyr::rename(
-      YEAR = INVYR,
-      SP_CODE = SPCD,
-      DENSITY = TREECOUNT_CALC
-    ) |>
+    dplyr::rename(YEAR = "INVYR", SP_CODE = "SPCD", DENSITY = "TREECOUNT_CALC") |>
     # # We have repeated rows after the selection because we summarised shrubs species.
     # We remove with distinct
     dplyr::distinct() |>
@@ -1094,11 +940,7 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
       "P2VEG_SUBP_STATUS_CD"
     )
   ) |>
-    dplyr::filter(
-      PLOT == plot,
-      INVYR == year,
-      COUNTYCD == county
-    ) |>
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
     dplyr::as_tibble()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -1116,25 +958,15 @@ fia_subplot_table_process <- function(subplot_data, plot, county, year) {
   subplot <- filtered_data |>
     # we add id code
     dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", STATECD, COUNTYCD, PLOT, sep = "_"),
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
     ) |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      INVYR,
-      STATECD,
-      COUNTYCD,
-      PLOT,
-      SUBP,
-      SLOPE,
-      ASPECT,
-      MACRCOND,
-      #Condition number for the condition at the center of the subplot.
-      SUBPCOND,
-      MICRCOND
+      "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD",
+      "PLOT", "SUBP", "SLOPE", "ASPECT", "MACRCOND",
+      # Condition number for the condition at the center of the subplot.
+      "SUBPCOND", "MICRCOND"
     ) |>
-    dplyr::rename(
-      YEAR = INVYR
-    ) |>
+    dplyr::rename(YEAR = "INVYR") |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
     dplyr::distinct() |>

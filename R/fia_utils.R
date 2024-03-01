@@ -58,60 +58,52 @@
 
   purrr::imap(
     filter_list,
-    .f = \(counties_list, state) {
+    .f = \(counties_list, state_fil) {
       counties_list |>
         tibble::enframe() |>
-        tidyr::unnest(cols = value) |>
+        tidyr::unnest(cols = "value") |>
         purrr::set_names(c("county", "plots")) |>
-        dplyr::mutate(state = state) |>
-        dplyr::select(state, county, plots)
+        dplyr::mutate(state = state_fil) |>
+        dplyr::select("state", "county", "plots")
     }
   ) |>
     purrr::list_rbind() |>
     dplyr::mutate(
       tree_table = .build_fia_file_path(
-        state, "tree", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "tree", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       plot_table = .build_fia_file_path(
-        state, "plot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "plot", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       survey_table = .build_fia_file_path(
-        state, "survey", folder,
-        .county = county, .plot = plots, .year = year, .custom = FALSE, .call = .call
+        .data$state, "survey", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = FALSE, .call = .call
       ),
       cond_table = .build_fia_file_path(
-        state, "cond", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "cond", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       subplot_table = .build_fia_file_path(
-        state, "subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "subplot", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       p3_understory_table = .build_fia_file_path(
-        state, "p3_understory", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "p3_understory", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       seedling_table = .build_fia_file_path(
-        state, "seedling", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "seedling", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
-      # soils_loc_table = .build_fia_file_path(
-      #   state, "soils_loc", folder,
-      #   .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
-      # ),
-      # soils_lab_table = .build_fia_file_path(
-      #   state, "soils_lab", folder,
-      #   .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
-      # ),
       veg_subplot_table = .build_fia_file_path(
-        state, "veg_subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "veg_subplot", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       ),
       p2_veg_subplot_table = .build_fia_file_path(
-        state, "p2_veg_subplot", folder,
-        .county = county, .plot = plots, .year = year, .custom = TRUE, .call = .call
+        .data$state, "p2_veg_subplot", folder,
+        .county = .data$county, .plot = .data$plots, .year = year, .custom = TRUE, .call = .call
       )
     )
 }
@@ -140,12 +132,10 @@
     ) |>
     # we need to weed out some plots that have all NAs in coordinates in some states
     # (i.e. CA or WA)
-    dplyr::group_by(STATECD, COUNTYCD, PLOT) |>
-    dplyr::filter(!all(is.na(LAT))) |>
-    dplyr::arrange(INVYR) |>
-    tidyr::fill(
-      c(LAT, LON), .direction = "updown"
-    ) |>
+    dplyr::group_by(.data$STATECD, .data$COUNTYCD, .data$PLOT) |>
+    dplyr::filter(!all(is.na(.data$LAT))) |>
+    dplyr::arrange(.data$INVYR) |>
+    tidyr::fill(c("LAT", "LON"), .direction = "updown") |>
     dplyr::mutate(STATEAB = state) |>
     dplyr::as_tibble()
 
@@ -201,14 +191,11 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
-    dplyr::filter(
-      INVYR %in% years,
-      STATEAB %in% states
-    ) |>
-    dplyr::select(STATEAB, COUNTYCD, PLOT) |>
+    dplyr::filter(.data$INVYR %in% years, .data$STATEAB %in% states) |>
+    dplyr::select("STATEAB", "COUNTYCD", "PLOT") |>
     dplyr::distinct() |>
-    dplyr::group_by(STATEAB, COUNTYCD) |>
-    dplyr::summarise(plots = list(PLOT)) |>
+    dplyr::group_by(.data$STATEAB, .data$COUNTYCD) |>
+    dplyr::summarise(plots = list(.data$PLOT)) |>
     dplyr::group_map(.f = \(state_plots, state_name) {
       tibble::deframe(state_plots) |>
         list() |>
@@ -227,15 +214,15 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
 
   if (is.null(states_abbr) && (!is.null(states_numeric))) {
     res <- fia_states_dictionary |>
-      dplyr::filter(VALUE %in% states_numeric) |>
-      dplyr::pull(ABBR) |>
+      dplyr::filter(.data$VALUE %in% states_numeric) |>
+      dplyr::pull(.data$ABBR) |>
       unique()
   }
 
   if ((!is.null(states_abbr)) && is.null(states_numeric)) {
     res <- fia_states_dictionary |>
-      dplyr::filter(ABBR %in% states_abbr) |>
-      dplyr::pull(VALUE) |>
+      dplyr::filter(.data$ABBR %in% states_abbr) |>
+      dplyr::pull(.data$VALUE) |>
       unique()
   }
 
@@ -284,7 +271,7 @@ create_filter_list_fia <- function(plots_info) {
     .translate_fia_states()
 
   res <- plots_info |>
-    dplyr::group_by(STATECD) |>
+    dplyr::group_by(.data$STATECD) |>
     dplyr::group_split() |>
     purrr::set_names(states_names) |>
     purrr::imap(
@@ -448,27 +435,23 @@ create_filter_list_fia <- function(plots_info) {
 
       filter_nas <- TRUE
       if (!.soil_mode) {
-        filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
+        filter_nas <- rlang::expr(!is.na({{ var }}))
       }
 
       # value at most recent year
       var_value <- data_processed |>
         dplyr::filter(
-          PLOT == plot,
-          COUNTYCD == county,
-          !!filter_nas
+          .data$PLOT == plot,
+          .data$COUNTYCD == county,
+          {{ filter_nas }}
         ) |>
-        dplyr::filter(INVYR == max(INVYR, na.rm = TRUE)) |>
-        dplyr::pull(var)
+        dplyr::filter(.data$INVYR == max(.data$INVYR, na.rm = TRUE)) |>
+        dplyr::pull({{ var }})
 
       # value at queried year
       var_orig_value <- data_processed |>
-        dplyr::filter(
-          PLOT == plot,
-          COUNTYCD == county,
-          INVYR == year
-        ) |>
-        dplyr::pull(var)
+        dplyr::filter(.data$PLOT == plot, .data$COUNTYCD == county, .data$INVYR == year) |>
+        dplyr::pull({{ var }})
 
       # NA if data is not found
       if (length(var_orig_value) < 1) {
@@ -480,8 +463,8 @@ create_filter_list_fia <- function(plots_info) {
 
       # build the tibble
       dplyr::tibble(
-        !!var := var_value,
-        !!var_orig := var_orig_value
+        "{var}" := var_value,
+        "{var_orig}" := var_orig_value
       )
     }
   ) |>
