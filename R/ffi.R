@@ -193,7 +193,7 @@ ffi_tables_process <- function(
     dplyr::as_tibble() |>
     dplyr::rename(
       ESPAR = "// espar",
-      Libellé  = lib_espar
+      Libellé = "lib_espar"
     ) |>
     #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
     dplyr::mutate(ESPAR = dplyr::case_when(
@@ -206,7 +206,7 @@ ffi_tables_process <- function(
       ESPAR == "9" ~ "09",
       TRUE ~ ESPAR
     )) |>
-    dplyr::arrange(ESPAR)
+    dplyr::arrange(.data$ESPAR)
 
   metadonnees <- suppressWarnings(
     readr::read_delim(
@@ -218,9 +218,9 @@ ffi_tables_process <- function(
     dplyr::as_tibble()
 
   cd_ref <-  metadonnees |>
-    dplyr::filter(UNITE == "CDREF13") |>
-    dplyr::mutate(lib_cdref = stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")) |>
-    dplyr::rename(CD_REF = Code)
+    dplyr::filter(.data$UNITE == "CDREF13") |>
+    dplyr::mutate(lib_cdref = stringr::str_remove_all(.data$Libellé, "\\s*\\(.*?\\)")) |>
+    dplyr::rename(CD_REF = "Code")
 
   idp_dep_ref <- .read_inventory_data(
     fs::path(folder, "PLACETTE.csv"),
@@ -248,8 +248,8 @@ ffi_tables_process <- function(
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
-          shrub <- shrub_regen |>  dplyr::filter(GrowthForm == "shrub")
-          regen <- shrub_regen |>  dplyr::filter(GrowthForm == "tree")
+          shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
+          regen <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "tree")
           # check if both have data
           if (nrow(shrub) < 1) {
             shrub <- tibble::tibble()
@@ -268,29 +268,11 @@ ffi_tables_process <- function(
 
       # we select herbs
       herbs <- plot_info |>
-        dplyr::select(
-          ID_UNIQUE_PLOT,
-          PLOT,
-          DEP,
-          VISITE,
-          YEAR,
-          HERB
-        )
+        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "VISITE", "YEAR", "HERB")
       # we create understory with herbs and shrub
       understory <- plot_info |>
-        dplyr::select(
-          ID_UNIQUE_PLOT,
-          PLOT,
-          DEP,
-          VISITE,
-          LIGN1,
-          LIGN2,
-          YEAR
-        ) |>
-        dplyr::mutate(
-          shrub = list(shrub),
-          herbs = list(herbs)
-        )
+        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "VISITE", "LIGN1", "LIGN2", "YEAR") |>
+        dplyr::mutate(shrub = list(shrub), herbs = list(herbs))
       # we put together all tables in a data frame
       plot_info <- plot_info |>
         dplyr::mutate(
@@ -300,37 +282,20 @@ ffi_tables_process <- function(
           regen = list(regen)
         ) |>
         dplyr::select(
-          ID_UNIQUE_PLOT,
-          PLOT,
-          DEP,
-          DEP_NAME,
-          COUNTRY,
-          VISITE,
-          YEAR,
-          XL,
-          XL_ORIGINAL,
-          YL,
-          YL_ORIGINAL,
-          crs,
-          EXPO,
-          EXPO_ORIGINAL,
-          PENT2,
-          PENT2_ORIGINAL,
-          COORD_SYS,
-          tree,
-          understory,
-          regen
+          "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+          "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "EXPO", "EXPO_ORIGINAL",
+          "PENT2", "PENT2_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
         ) |>
         # HARMONIZATION OF NAMES
         dplyr::rename(
-          ASPECT = EXPO,
-          ASPECT_ORIGINAL = EXPO_ORIGINAL,
-          SLOPE = PENT2,
-          SLOPE_ORIGINAL = PENT2_ORIGINAL,
-          COORD1 = XL,
-          COORD1_ORIGINAL = XL_ORIGINAL,
-          COORD2 = YL,
-          COORD2_ORIGINAL = YL_ORIGINAL
+          ASPECT = "EXPO",
+          ASPECT_ORIGINAL = "EXPO_ORIGINAL",
+          SLOPE = "PENT2",
+          SLOPE_ORIGINAL = "PENT2_ORIGINAL",
+          COORD1 = "XL",
+          COORD1_ORIGINAL = "XL_ORIGINAL",
+          COORD2 = "YL",
+          COORD2_ORIGINAL = "YL_ORIGINAL"
         )
       return(plot_info)
     }
@@ -345,9 +310,10 @@ ffi_tables_process <- function(
   temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
-    dplyr::filter(
-      !(is.na(COORD2) & is.na(COORD2_ORIGINAL) & is.na(COORD1) & is.na(COORD1_ORIGINAL))
-    )
+    dplyr::filter(!(
+      is.na(.data$COORD2) & is.na(.data$COORD2_ORIGINAL) &
+        is.na(.data$COORD1) & is.na(.data$COORD1_ORIGINAL)
+    ))
 }
 
 
@@ -399,28 +365,23 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     # join with metadonnes
     dplyr::left_join(
       y = metadonnees |>
-        dplyr::filter(UNITE == "DP") |>
-        dplyr::rename(DEP = Code, DEP_NAME = Libellé) |>
-        dplyr::select(DEP, DEP_NAME),
+        dplyr::filter(.data$UNITE == "DP") |>
+        dplyr::rename(DEP = "Code", DEP_NAME = "Libellé") |>
+        dplyr::select("DEP", "DEP_NAME"),
       by = "DEP"
     ) |>
     # transformations
-    dplyr::mutate(ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_")), COORD_SYS = "LAMBERT") |>
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      IDP,
-      DEP,
-      DEP_NAME,
-      VISITE,
-      CAMPAGNE,
-      XL,
-      YL,
-      COORD_SYS,
+    dplyr::mutate(
+      ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
+      COORD_SYS = "LAMBERT"
     ) |>
-    dplyr::arrange(desc(CAMPAGNE)) |>
-    dplyr::rename(PLOT = IDP, YEAR = CAMPAGNE) |>
+    dplyr::select(
+      "ID_UNIQUE_PLOT", "IDP", "DEP", "DEP_NAME", "VISITE", "CAMPAGNE", "XL", "YL", "COORD_SYS"
+    ) |>
+    dplyr::arrange(desc(.data$CAMPAGNE)) |>
+    dplyr::rename(PLOT = "IDP", YEAR = "CAMPAGNE") |>
     data.table::as.data.table() |>
-    dplyr::arrange(desc(YEAR)) |>
+    dplyr::arrange(desc(.data$YEAR)) |>
     #there might be more than 1 record
     dplyr::distinct() |>
     .extract_ffi_metadata(
@@ -438,15 +399,15 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     colClasses = list(character = c("IDP")),
     header = TRUE
   ) |>
-    dplyr::select(IDP, CAMPAGNE, EXPO, PENT2, LIGN1, LIGN2, HERB) |>
-    dplyr::arrange(desc(CAMPAGNE)) |>
+    dplyr::select("IDP", "CAMPAGNE", "EXPO", "PENT2", "LIGN1", "LIGN2", "HERB") |>
+    dplyr::arrange(desc(.data$CAMPAGNE)) |>
     #transformations
-    dplyr::rename(PLOT = IDP, YEAR = CAMPAGNE) |>
+    dplyr::rename(PLOT = "IDP", YEAR = "CAMPAGNE") |>
     dplyr::mutate(
       #CONVERSION TO SEXAGESIMAL
-      EXPO = 0.9 * EXPO
+      EXPO = 0.9 * .data$EXPO
     ) |>
-    dplyr::arrange(desc(YEAR)) |>
+    dplyr::arrange(desc(.data$YEAR)) |>
     # there might be more than 1 record
     dplyr::distinct() |>
     data.table::as.data.table() |>
@@ -464,28 +425,12 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     by = c("PLOT", "PLOT_ORIGINAL", "YEAR")
   ) |>
     dplyr::mutate(PLOT  = plot, YEAR  = year) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = paste("FR", DEP, PLOT, sep = "_"), COUNTRY = "FR") |>
+    dplyr::mutate(ID_UNIQUE_PLOT = paste("FR", .data$DEP, .data$PLOT, sep = "_"), COUNTRY = "FR") |>
     dplyr::as_tibble() |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      COUNTRY,
-      DEP,
-      DEP_NAME,
-      PLOT,
-      YEAR,
-      VISITE,
-      COORD_SYS,
-      XL,
-      XL_ORIGINAL,
-      YL,
-      YL_ORIGINAL,
-      EXPO,
-      EXPO_ORIGINAL,
-      PENT2,
-      PENT2_ORIGINAL,
-      LIGN1,
-      LIGN2,
-      HERB
+      "ID_UNIQUE_PLOT", "COUNTRY", "DEP", "DEP_NAME", "PLOT", "YEAR", "VISITE",
+      "COORD_SYS", "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "EXPO", "EXPO_ORIGINAL",
+      "PENT2", "PENT2_ORIGINAL", "LIGN1", "LIGN2", "HERB"
     )
 
   return(plot_info)
@@ -519,8 +464,8 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
 
   tree_filtered_data <- tree_raw_data |>
     dplyr::filter(
-      IDP == plot,
-      CAMPAGNE == year
+      .data$IDP == plot,
+      .data$CAMPAGNE == year
     ) |>
     tibble::as_tibble()
 
@@ -537,22 +482,18 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
 
   tree <- tree_raw_data |>
     # we filter the datqa for plot
-    dplyr::filter(IDP == plot) |>
+    dplyr::filter(.data$IDP == plot) |>
     # transformations and filters
     dplyr::mutate(
-      DENSITY = W,
-      C13 = as.numeric(C13),
-      DIA = (C13 / pi) * 100, # transformation to diameter
-      YEAR = CAMPAGNE
+      DENSITY = .data$W,
+      C13 = as.numeric(.data$C13),
+      DIA = (.data$C13 / pi) * 100, # transformation to diameter
+      YEAR = .data$CAMPAGNE
     ) |>
     # join with espar_cdref
     dplyr::left_join(
       y = espar_cdref |>
-        dplyr::select(
-          ESPAR,
-          cd_ref,
-          lib_cdref
-        ) |>
+        dplyr::select("ESPAR", "cd_ref", "lib_cdref") |>
         dplyr::as_tibble(),
       by = "ESPAR"
     ) |>
@@ -561,40 +502,29 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
       by = "IDP"
     ) |>
     dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("FR", DEP, IDP, sep = "_")
+      ID_UNIQUE_PLOT = paste("FR", .data$DEP, .data$IDP, sep = "_")
     ) |>
     dplyr::rename(
-      PLOT = IDP,
-      SP_NAME = lib_cdref,
-      SP_CODE = cd_ref,
-      TREE = A,
-      HT = HTOT, # ht in meters
-      STATUS = VEGET
+      PLOT = "IDP",
+      SP_NAME = "lib_cdref",
+      SP_CODE = "cd_ref",
+      TREE = "A",
+      HT = "HTOT", # ht in meters
+      STATUS = "VEGET"
     ) |>
     #selection of final variables
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      TREE,
-      ESPAR,
-      SP_CODE,
-      SP_NAME,
-      STATUS,
-      VEGET5,
-      DIA,
-      HT,
-      DENSITY
+      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
+      "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "HT", "DENSITY"
     ) |>
     # homogeneization
     # añadir condiciones en funcion de si es na o no ??
-    dplyr::group_by(ID_UNIQUE_PLOT) |>
-    dplyr::arrange(ID_UNIQUE_PLOT, TREE, YEAR) |>
-    dplyr::mutate(ESPAR = dplyr::na_if(ESPAR, "")) |>
+    dplyr::group_by(.data$ID_UNIQUE_PLOT) |>
+    dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
+    dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
     dplyr::as_tibble() |>
-    tidyr::fill(c(ESPAR, SP_CODE, SP_NAME)) |>
-    dplyr::filter(YEAR == year)
+    tidyr::fill(c(.data$ESPAR, .data$SP_CODE, .data$SP_NAME)) |>
+    dplyr::filter(.data$YEAR == year)
 
   return(tree)
 }
@@ -635,8 +565,8 @@ ffi_shrub_table_process <- function(
   ) |>
     # we  filtering the data for plot/year and status (alive)
     dplyr::filter(
-      IDP == plot,
-      CAMPAGNE == year
+      .data$IDP == plot,
+      .data$CAMPAGNE == year
     ) |>
     dplyr::as_tibble()
 
@@ -654,74 +584,51 @@ ffi_shrub_table_process <- function(
   # transformations and filters
   shrub <- shrub_filtered_data |>
     dplyr::mutate(
-      YEAR = CAMPAGNE,
+      YEAR = .data$CAMPAGNE,
       # conversion to percentage
       ABOND = dplyr::case_when(
         # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.
-        ABOND == 1 ~ 5,
+        .data$ABOND == 1 ~ 5,
         #présence nette	Taux de recouvrement de l'espèce inférieur à 25 % mais présence nette.
-        ABOND == 	2	~ 12.5,
+        .data$ABOND == 	2	~ 12.5,
         #Taux de recouvrement de l'espèce compris entre 25 et 50 %
-        ABOND	== 3 ~	37.5,
+        .data$ABOND	== 3 ~	37.5,
         #Taux de recouvrement de l'espèce compris entre 25 et 50 %
         #Taux de recouvrement de l'espèce compris entre 50% et 75 %.
-        ABOND	== 4 ~	62.5,
+        .data$ABOND	== 4 ~	62.5,
         #	Taux de recouvrement de l'espèce supérieur à 75%.
-        ABOND	== 5 ~	87.5
+        .data$ABOND	== 5 ~	87.5
       )
     ) |>
     dplyr::left_join(
       y = cd_ref |>
-        dplyr::select(
-          CD_REF,
-          lib_cdref
-        ),
+        dplyr::select("CD_REF", "lib_cdref"),
       by = "CD_REF"
     ) |>
     dplyr::left_join(
       y = idp_dep_ref,
       by = "IDP"
     ) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_")), HT = NA) |>
+    dplyr::mutate(ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")), HT = NA) |>
     dplyr::rename(
-      PLOT = IDP,
-      SP_NAME = lib_cdref,
-      SP_CODE = CD_REF,
-      COVER = ABOND
+      PLOT = "IDP",
+      SP_NAME = "lib_cdref",
+      SP_CODE = "CD_REF",
+      COVER = "ABOND"
     ) |>
     #selection of final variables
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      SP_CODE,
-      SP_NAME,
-      COVER,
-      HT
-    ) |>
+    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT") |>
     dplyr::as_tibble()
 
   # to eliminate herbs i do a join with a database from try
   growth_form_lignified_france <- growth_form_lignified_france |>
-    dplyr::select(
-      AccSpeciesName,
-      GrowthForm
-    ) |>
-    dplyr::mutate(SP_NAME = AccSpeciesName)
+    dplyr::select("AccSpeciesName", "GrowthForm") |>
+    dplyr::mutate(SP_NAME = .data$AccSpeciesName)
 
   understory_no_herbs <- shrub |>
     dplyr::left_join(growth_form_lignified_france, by = "SP_NAME") |>
     dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      SP_CODE,
-      SP_NAME,
-      COVER,
-      HT,
-      GrowthForm
+      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
     ) |>
     dplyr::as_tibble()
 
@@ -755,7 +662,7 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep
     colClasses = list(character = c("IDP", "ESPAR_C"))
   ) |>
     # we  filtering the data for plot/year and status (alive)
-    dplyr::filter(IDP == plot, CAMPAGNE == year) |>
+    dplyr::filter(.data$IDP == plot, .data$CAMPAGNE == year) |>
     dplyr::as_tibble()
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -771,12 +678,12 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep
   # transformations and filters
   regen <- regen_filtered_data |>
     dplyr::mutate(
-      YEAR = CAMPAGNE,
-      COVER = TCA,
-      ESPAR = ESPAR_C
+      YEAR = .data$CAMPAGNE,
+      COVER = .data$TCA,
+      ESPAR = .data$ESPAR_C
     ) |>
     dplyr::filter(
-      STRATE == "NR"
+      .data$STRATE == "NR"
     ) |>
     dplyr::left_join(
       y = idp_dep_ref,
@@ -785,37 +692,22 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep
     #join with espar_cdref
     dplyr::left_join(
       y = espar_cdref |>
-        dplyr::select(
-          cd_ref,
-          lib_cdref,
-          ESPAR
-        ) |>
-        dplyr::rename(
-          CD_REF = cd_ref
-        ) |>
+        dplyr::select("cd_ref", "lib_cdref", "ESPAR") |>
+        dplyr::rename(CD_REF = "cd_ref") |>
         dplyr::as_tibble(),
       by = "ESPAR"
     ) |>
     dplyr::mutate(
-      ID_UNIQUE_PLOT = (paste("FR", DEP, IDP, sep = "_")),
+      ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
       DBH =  7.5 # in cm
     ) |>
     dplyr::rename(
-      PLOT = IDP,
-      SP_NAME = lib_cdref,
-      SP_CODE = CD_REF
+      PLOT = "IDP",
+      SP_NAME = "lib_cdref",
+      SP_CODE = "CD_REF"
     ) |>
     #selection of final variables
-    dplyr::select(
-      ID_UNIQUE_PLOT,
-      PLOT,
-      DEP,
-      YEAR,
-      SP_CODE,
-      SP_NAME,
-      COVER,
-      DBH
-    ) |>
+    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH") |>
     dplyr::as_tibble()
 
   return(regen)
