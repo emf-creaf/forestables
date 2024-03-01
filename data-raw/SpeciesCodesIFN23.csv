@@ -1,4 +1,4 @@
-﻿IFNCODE;IFNNAME
+IFNCODE;IFNNAME
 1;Heberdenia bahamensis
 2;Amelanchier ovalis
 3;Frangula alnus
@@ -17,7 +17,7 @@
 16;Pyrus spp.
 17;Cedrus atlantica
 18;Chamaecyparis lawsoniana
-19;Otras coníferas
+19;Otras coniferas
 20;Pinos
 21;Pinus sylvestris
 22;Pinus uncinata
@@ -28,7 +28,7 @@
 27;Pinus canariensis
 28;Pinus radiata
 29;Otros pinos
-30;Mezcla de coníferas
+30;Mezcla de coniferas
 31;Abies alba
 32;Abies pinsapo
 33;Picea abies
@@ -48,7 +48,7 @@
 47;Quercus canariensis
 48;Quercus rubra
 49;Otros quercus
-50;Mezcla de árboles de ribera
+50;Mezcla de arboles de ribera
 51;Populus alba
 52;Populus tremula
 53;Tamarix spp.
@@ -57,7 +57,7 @@
 56;Ulmus minor
 57;Salix spp.
 58;Populus nigra
-59;Otros árboles ripícolas
+59;Otros arboles ripicolas
 60;Mezcla de eucaliptos
 61;Eucalyptus globulus
 62;Eucalyptus camaldulensis
@@ -83,14 +83,14 @@
 82;Ilex canariensis
 83;Erica arborea
 84;Persea indica
-85;Sideroxylon mirmulans
+85;Sideroxylon marmulano
 86;Picconia excelsa
 87;Ocotea phoetens
 88;Apollonias barbujana
 89;Otras laurisilvas
-90;Mezcla de pequeñas frondosas
+90;Mezcla de pequenas frondosas
 91;Buxus sempervirens
-92;Robinia pseudacacia
+92;Robinia pseudoacacia
 93;Pistacia terebinthus
 94;Laurus nobilis
 95;Prunus spp.
@@ -107,8 +107,8 @@
 237;Juniperus oxycedrus
 238;Juniperus turbinata
 239;Juniperus sabina
-243;Quercus pubescens
-244;Quercus lusitanica
+243;Quercus pubescens (Q. humilis)
+244;Quercus lusitanica (Q. fruticosa)
 253;Tamarix canariensis
 255;Fraxinus excelsior
 256;Ulmus glabra
@@ -164,7 +164,7 @@
 499;Morus alba
 515;Crataegus azarolus
 557;Salix cantabrica
-569;Dracaena drago
+569;Dracaena draco
 576;Acer pseudoplatanus
 578;Sorbus torminalis
 595;Prunus padus
@@ -225,7 +225,7 @@
 133;Atriplex spp.
 134;Spiraea spp.
 135;Osyris spp.
-136;Chamaespartium tridentatum
+136;Pterospartum tridentatum
 137;Vaccinium myrtillus
 138;Asparagus spp.
 139;Coriaria myrtifolia
@@ -267,7 +267,7 @@
 178;Dittrichia viscosa
 179;Teucrium spp.
 180;Sideritis spp.
-181;Securinega tinctoria
+181;Flueggea tinctoria
 182;Lithodora spp.
 183;Periploca laevigata
 184;Withania frutescens
@@ -334,7 +334,7 @@
 2129;Thymus zygis
 2131;Ribes rubrum
 2132;Clematis vitalba
-2135;Osyris quadripartita
+2135;Osyris lanceolata
 2144;Lonicera implexa
 2155;Genista patens
 2162;Euphorbia handiensis
@@ -373,7 +373,7 @@
 5129;Thymus granatensis
 5144;Lonicera xylosteum
 5155;Genista balansae
-6101;Cistus salvifolius
+6101;Cistus salviifolius
 6102;Erica scoparia
 6103;Ulex europaeus
 6104;Astragalus spp.

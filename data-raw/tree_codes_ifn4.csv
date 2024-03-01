@@ -11,7 +11,7 @@ IFNCODE;IFNNAME;COMMONNAME
 16;Pyrus spp.;Peral silvestre
 17;Cedrus atlantica;Cedro
 18;Chamaecyparis lawsoniana;Chameciparis
-19;Otras coníferas;Otras coníferas
+19;Otras coniferas;Otras coníferas
 20;Pinos;Pinos
 21;Pinus sylvestris;Pino silvestre
 22;Pinus uncinata;Pino uncinata
@@ -22,7 +22,7 @@ IFNCODE;IFNNAME;COMMONNAME
 27;Pinus canariensis;Pino canario
 28;Pinus radiata;Pino radiata
 29;Otros pinos;Otros pinos
-30;Mezcla de coníferas;Coníferas, excepto pinos
+30;Mezcla de coniferas;Coníferas, excepto pinos
 31;Abies alba;Pinabete
 32;Abies pinsapo;Pinsapo
 33;Picea abies;Pícea
@@ -42,7 +42,7 @@ IFNCODE;IFNNAME;COMMONNAME
 47;Quercus canariensis;Quejigo bética
 48;Quercus rubra;Roble americano
 49;Otros quercus;Otros quercus
-50;Mezcla de árboles de ribera;Árboles ripícolas
+50;Mezcla de arboles de ribera;Árboles ripícolas
 51;Populus alba;Álamo
 52;Populus tremula;Chopo temblón
 53;Tamarix spp.;Taraje
@@ -51,7 +51,7 @@ IFNCODE;IFNNAME;COMMONNAME
 56;Ulmus minor;Olmo
 57;Salix spp.;Sauce
 58;Populus nigra;Chopo
-59;Otros árboles ripícolas;Otros árboles ripícolas
+59;Otros arboles ripicolas;Otros árboles ripícolas
 60;Mezcla de eucaliptos;Eucaliptos
 61;Eucalyptus globulus;Eucalipto globulus
 62;Eucalyptus camaldulensis;Eucalipto rostrata
@@ -82,7 +82,7 @@ IFNCODE;IFNNAME;COMMONNAME
 87;Ocotea phoetens;Til
 88;Apollonias barbujana;Barbusano
 89;Otras laurisilvas;Otras laurisilvas.
-90;Mezcla de pequeñas frondosas;Frondosas de pequeño porte (H.t.<10 m)
+90;Mezcla de pequenas frondosas;Frondosas de pequeño porte (H.t.<10 m)
 92;Robinia pseudoacacia;Acacia robinia
 94;Laurus nobilis;Laurel
 95;Prunus spp.;Prunus
