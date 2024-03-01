@@ -4,3 +4,4 @@
 *.Rproj
 .Rhistory
 data-raw/27398.txt
+inst/doc
