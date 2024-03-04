@@ -1,11 +1,11 @@
 # rlang .data global variable exporting.
 utils::globalVariables(".data")
 
-#' Build the input dataframe to iterate by plots for the year
+#' Build the FFI input data frame to iterate by plots for the specified year
 #'
-#' Build the input dataframe
+#' FFI input table creator
 #'
-#' This function takes the user input (year, departments, plots and folder) and build the input to
+#' This function takes the user input (departments, year, plots and folder) and build the input to
 #' be able to iterate by plots in a year. If no filter list is provided, this function uses
 #' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary}} to create a
 #' \code{filter_list} with all plots for each state for that year.
@@ -49,7 +49,7 @@ utils::globalVariables(".data")
         "plot",
         folder,
         .plot = .data$plots,
-        .year = year,
+        # .year = year,
         .custom = TRUE,
         .call = .call
       ),
@@ -57,7 +57,7 @@ utils::globalVariables(".data")
         .data$department,
         "tree", folder,
         .plot = .data$plots,
-        .year = year,
+        # .year = year,
         .custom = TRUE,
         .call = .call
       ),
@@ -66,7 +66,7 @@ utils::globalVariables(".data")
         "shrub",
         folder,
         .plot = .data$plots,
-        .year = year,
+        # .year = year,
         .custom = TRUE,
         .call = .call
       ),
@@ -75,7 +75,7 @@ utils::globalVariables(".data")
         "soils",
         folder,
         .plot = .data$plots,
-        .year = year,
+        # .year = year,
         .custom = TRUE,
         .call = .call
       ),
@@ -84,17 +84,14 @@ utils::globalVariables(".data")
         "regen",
         folder,
         .plot = .data$plots,
-        .year = year,
+        # .year = year,
         .custom = TRUE,
         .call = .call
       )
     )
 }
 
-
-
-
-#' Helper to read the PLACETTE.csv file from an state to retrieve the list of plots for that state
+#' @inherit show_plots_from_ffi
 #' @noRd
 .get_plots_from_department <- function(departments, folder, .call = rlang::caller_env()) {
 
@@ -144,23 +141,35 @@ utils::globalVariables(".data")
   return(res)
 }
 
-#' show plots from department ffi helper
+#' Get available plots from departments
 #'
-#' Retrieve all the plots for selected departments
+#' Obtain an sf of available plots in the specified departments
 #'
-#' Opposite to what happens in \code{\link{show_plots_from_fia}}, here we don't need to
-#' iterate by the departments, as all the plots are in one file and
-#' \code{\link{.get_plots_from_department}} already works with multiple departments
+#' This function retrieves all plots for the departments in \code{departments} argument and
+#' return an sf object.
 #'
-#' @param folder Character, path to folder containing FFI csv files
-#' @param departments Character vector with numeric department code
+#' @inheritParams ffi_tables_process
+#'
+#' @return An \code{\link[sf]{sf}} object with all plots available in \code{departments}
+#'
 #' @noRd
 show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()) {
   .get_plots_from_department(departments, folder, .call = .call)
 }
 
-#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_department}} in a
-#' filter_list object
+#' Transform plots sf objects in a filter list
+#'
+#' Plots to filter list
+#'
+#' This function gets plots returned from \code{\link{.get_plots_from_department}} and transform
+#' then in a valid \code{filter_list} for using in \code{\link{ffi_to_tibble}}.
+#'
+#' @param plot_summary \code{\link[sf]{sf}} object from \code{\link{show_plots_from_ffi}}
+#' @param years Numeric vector with the years to filter by
+#' @param departments Character vector with the departments codes to filter by
+#'
+#' @return A valid \code{filter_list} with the needed structure for \code{ffi_to_tibble}
+#'
 #' @noRd
 .transform_plot_summary_ffi <- function(plot_summary, years, departments) {
 
@@ -187,8 +196,16 @@ show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()
   return(filter_list)
 }
 
-#' Create the \code{filter_list} for FFI inventory
+#' Create a filter list from the plots info
 #'
+#' User workflow for creating the filter list fromthe plots info
+#'
+#' @param plots_info \code{\link[sf]{sf}}, data frame or tibble with the plots info, as obtained
+#'   from \code{\link{show_plots_from_ffi}}
+#'
+#' @return  A valid \code{filter_list} with the needed structure for \code{ffi_to_tibble}
+#'
+#' @noRd
 create_filter_list_ffi <- function(plots_info) {
 
   ## assertions
@@ -256,28 +273,35 @@ create_filter_list_ffi <- function(plots_info) {
 #' to read the file to feed \code{fread} only with the rows we need. For this we build a
 #' regular expression that matches the county and plot code, as well as year in the case of
 #' some tables. This way we avoid loading the whole table and only the rows we need.
-#' In this case, the regular expression used is:
+#' For \code{"tree"}, \code{"shrub"}, \code{"soils"} and \code{"regen"} tables, the expression used
+#' is:
 #' \preformatted{
-#' ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),'
+#' "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};"
 #' }
-#' \code{",INVYR,"} matches the first row in all tables, because all tables have the Inventory
+#' \code{"CAMPAGNE"} matches the first row in the tables, because these tables have the Inventory
 #' year variable.
 #' \code{"|"} means \code{OR} as in R code. This way we match the first row with the part before
 #' "|", \emph{OR} the rows with the data as per the part after "|".
-#' \code{,{.year},.*,{county},({plot}|{plot}.0)} part matches any row with the values for
-#' year, county and plot in an specific order. First year between commas, after that an
-#' unspecified number of characters (\code{".*"}), and county and plot together between
-#' commas and separated by a comma.
-#' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
-#' because some states have this variable as a double value.
+#' \code{"(^(?:[^;]+;){{1}}){.plot};"} part matches any row with the values for
+#' plot in the second column, as it expects one block of "text;" at the start of the line followed
+#' by ".plot;"
+#' For the other tables, the expression used is:
+#' \preformatted{
+#' \code{"CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}"}
+#' }
+#' \code{"CAMPAGNE"} matches the first row in the tables, because these tables have the Inventory
+#' year variable.
+#' \code{"|"} means \code{OR} as in R code. This way we match the first row with the part before
+#' "|", \emph{OR} the rows with the data as per the part after "|".
+#' \code{"(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}"} matches the plot in the 3rd
+#' column and the department in the 6th column.
 #'
-#' @param type Character, table type. One of "tree", "plot", "soils",  "shrub" or "regen"
+#' @param departments Character vector with the plots departments
+#' @param type Character, table type. One of "tree", "plot", "soils", "shrub" or "regen"
 #' @param folder Character, path to the folder with the FFI csv files.
-#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
-#' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
+#' @param .plot Vector of the same length as \code{departments}, with plot codes
 #'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
-#' @param .year Numeric value (length one) with the year to build the \code{grep} command
-#'   if \code{.custom} is \code{TRUE}.
+#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
 #'
 #' @return Character vector with the paths (or custom command with path) to use with
 #'   \code{\link{.read_inventory_data}}.
@@ -288,7 +312,6 @@ create_filter_list_ffi <- function(plots_info) {
   type,
   folder = ".",
   .plot = rep(NA, length(departments)),
-  .year = NULL,
   .custom = FALSE,
   .call = rlang::caller_env()
 ) {
@@ -328,13 +351,8 @@ create_filter_list_ffi <- function(plots_info) {
     return(customized_path)
   }
 
-
-
   return(table_path)
 }
-
-
-
 
 #' Helper function to extract plot and soil metadata from from tables
 #'

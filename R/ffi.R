@@ -1,12 +1,13 @@
 #' Raw FFI data to tibble
 #'
-#' Transform raw FFI plot data into tidy data for use in models
+#' Transform raw FFI plot data into tidy data for easier use
 #'
-#' This function will take every year indicated and retrieve and transform the plot data for the
-#' departments and plots provided. For that, csv files from FFI must reside in the folder indicated
-#' in the \code{folder} argument.
+#' This function will take every year specified and will retrieve and transform the plot data for
+#' the departments and plots provided. For that, csv files from FFI must reside in the folder
+#' indicated in the \code{folder} argument.
 #'
-#' @param departments A character vector with the code for the departments.
+#' @param departments A character vector with the code for the departments, \emph{i.e.} \code{"01"}
+#'   or \code{c("01", "10")}. See examples for details.
 #' @param years A numeric vector with the years to extract de data from.
 #' @param filter_list A list of counties and plots to extract the data from. If \code{NULL} all
 #'   plots for the department for all years will be extracted, which can use a big amount of memory.
@@ -21,16 +22,15 @@
 #'   If no \code{filter_list} argument is provided, \code{ffi_to_tibble} will attempt to process all
 #'   plots for the departments and years provided. This will result in sometimes hundred of
 #'   thousands plots to be extracted, processed and returned, will in turn will cause a big use of
-#'   memory and long times of calculation (specially when parallelising). Is better to provide a
-#'   list of departments with the counties and plots to look after to narrow the process. This
-#'   \code{filter_list} should have the following structure:
+#'   memory (specially when running in parallel processes) and long times of calculation.
+#'   Is better to provide a list of departments with the counties and plots to look after to narrow
+#'   the process. This \code{filter_list} should have the following structure:
 #'   \preformatted{
 #'    list(
 #'    "01" = 1404119,
 #'    "10" = 900863,
-#'    "11" = c(1436508, 1410492))
-#'
-#'   )
+#'    "11" = c(1436508, 1410492))#'
+#'    )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
 #'   \code{vignette("filtering_plots", pkg = "esus")} for more details.
@@ -49,7 +49,7 @@
 #'   when retrieving the data.
 #'
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
-#'   metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
+#'   metadata included, as well as columns containing tibbles with tree, shrub, and herbs
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
 #'
 #' @export
