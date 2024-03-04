@@ -901,7 +901,7 @@ ifn_plot_table_process <- function(
           .data$SLOPE == 2 ~ 7.5,
           .data$SLOPE == 3 ~ 16,
           .data$SLOPE == 4 ~ 27,
-          .data$SLOPE == 4 ~ 40
+          .data$SLOPE == 5 ~ 40
           ),
         ASPECT = as.numeric(.data$ASPECT),
         COORDEX = as.numeric(.data$COORDEX) * 1000,
