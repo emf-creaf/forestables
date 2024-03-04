@@ -403,8 +403,8 @@ ffi_plot_table_process <- function(
     dplyr::select(
       "ID_UNIQUE_PLOT", "IDP", "DEP", "DEP_NAME", "VISITE", "CAMPAGNE", "XL", "YL", "COORD_SYS"
     ) |>
-    dplyr::arrange(desc(.data$CAMPAGNE)) |>
     dplyr::rename(PLOT = "IDP", YEAR = "CAMPAGNE") |>
+    # dplyr::arrange(desc(.data$CAMPAGNE)) |>
     data.table::as.data.table() |>
     dplyr::arrange(desc(.data$YEAR)) |>
     #there might be more than 1 record
@@ -425,9 +425,9 @@ ffi_plot_table_process <- function(
     header = TRUE
   ) |>
     dplyr::select("IDP", "CAMPAGNE", "EXPO", "PENT2", "LIGN1", "LIGN2", "HERB") |>
-    dplyr::arrange(desc(.data$CAMPAGNE)) |>
-    #transformations
     dplyr::rename(PLOT = "IDP", YEAR = "CAMPAGNE") |>
+    # dplyr::arrange(desc(.data$CAMPAGNE)) |>
+    # transformations
     dplyr::mutate(
       #CONVERSION TO SEXAGESIMAL
       EXPO = 0.9 * .data$EXPO
@@ -449,8 +449,10 @@ ffi_plot_table_process <- function(
     plot_processed, eco_filtered_data,
     by = c("PLOT", "PLOT_ORIGINAL", "YEAR")
   ) |>
-    dplyr::mutate(PLOT  = plot, YEAR  = year) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = paste("FR", .data$DEP, .data$PLOT, sep = "_"), COUNTRY = "FR") |>
+    dplyr::mutate(
+      PLOT  = plot, YEAR  = year,
+      ID_UNIQUE_PLOT = paste("FR", .data$DEP, .data$PLOT, sep = "_"), COUNTRY = "FR"
+    ) |>
     dplyr::as_tibble() |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "COUNTRY", "DEP", "DEP_NAME", "PLOT", "YEAR", "VISITE",
@@ -645,23 +647,33 @@ ffi_shrub_table_process <- function(
       SP_CODE = "CD_REF",
       COVER = "ABOND"
     ) |>
-    #selection of final variables
-    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT") |>
-    dplyr::as_tibble()
-
-  # to eliminate herbs i do a join with a database from try
-  growth_form_lignified_france <- growth_form_lignified_france |>
-    dplyr::select("AccSpeciesName", "GrowthForm") |>
-    dplyr::mutate(SP_NAME = .data$AccSpeciesName)
-
-  understory_no_herbs <- shrub |>
-    dplyr::left_join(growth_form_lignified_france, by = "SP_NAME") |>
+    # dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT") |>
+    dplyr::left_join(
+      growth_form_lignified_france |>
+        dplyr::select("AccSpeciesName", "GrowthForm") |>
+        dplyr::mutate(SP_NAME = .data$AccSpeciesName),
+      by = "SP_NAME"
+    ) |>
+    # selection of final variables
     dplyr::select(
       "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
     ) |>
     dplyr::as_tibble()
 
-  return(understory_no_herbs)
+  # to eliminate herbs i do a join with a database from try
+  # growth_form_lignified_france <- growth_form_lignified_france |>
+  #   dplyr::select("AccSpeciesName", "GrowthForm") |>
+  #   dplyr::mutate(SP_NAME = .data$AccSpeciesName)
+  #
+  # understory_no_herbs <- shrub |>
+  #   dplyr::left_join(growth_form_lignified_france, by = "SP_NAME") |>
+  #   dplyr::select(
+  #     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
+  #   ) |>
+  #   dplyr::as_tibble()
+
+  # return(understory_no_herbs)
+  return(shrub)
 }
 
 #' @describeIn ffi_tables_processing Process to gather needed data from regen tables
@@ -733,12 +745,8 @@ ffi_regen_table_process <- function(
       ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
       DBH =  7.5 # in cm
     ) |>
-    dplyr::rename(
-      PLOT = "IDP",
-      SP_NAME = "lib_cdref",
-      SP_CODE = "CD_REF"
-    ) |>
-    #selection of final variables
+    dplyr::rename(PLOT = "IDP", SP_NAME = "lib_cdref", SP_CODE = "CD_REF") |>
+    # selection of final variables
     dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH") |>
     dplyr::as_tibble()
 
