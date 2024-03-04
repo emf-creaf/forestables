@@ -41,26 +41,16 @@ HT (height) = m\
 \
 This function performs a set of operations to obtain the final table.
 
-Firstly, names are harmonized as follows:
-
-*province_code = PROVINCIA,\
-PLOT = ESTADILLO,\
-SP_CODE = ESPECIE,\
-TREE = nARBOL,\
-Dn1 = DIAMETRO1,\
-Dn2 = DIAMETRO2,\
-HT = ALTURA*\
-
 | Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
 |-----------------|--------------------|-----------------------|
 | PLOT            | ESTADILLO          | Estadillo             |
-| Height (cm)     | *ALTUMED (dm?)*    | Hm (dm?)              |
+| HT(m)           | ALTURA             | HT                    |
 | SP_CODE         | ESPECIE            | Especie               |
-| *province_code* | *PROVINCIA*        | Provincia             |
+| province_code   | PROVINCIA          | Provincia             |
 | TREE            | ARBOL              | nArbol                |
-| Dn1             | DIAMETRO1          | Dn1                   |
-| Dn2             | DIAMETRO2          | Dn2                   |
-| HT              | ALTURA             | Ht                    |
+| Dn1 (cm)        | DIAMETRO1 (mm)     | Dn1 (mm)              |
+| Dn2 (cm)        | DIAMETRO2 (mm)     | Dn2 (mm)              |
+| HT (m)          | ALTURA             | Ht (m)                |
 
 \
 The mean of diameters is calculated to obtain the variable DIA (diameter/DBH), and it is converted to cm.
@@ -88,10 +78,10 @@ Firstly, names are harmonized.
 | Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
 |-----------------|--------------------|-----------------------|
 | PLOT            | ESTADILLO          | Estadillo             |
-| Height (cm)     | *ALTUMED (dm?)*    | Hm (dm?)              |
+| Height (cm)     | ALTUMED (dm)       | Hm (dm)               |
 | SP_CODE         | ESPECIE            | Especie               |
-| *province_code* | *PROVINCIA*        | Provincia             |
-| *COVER*         | *FRACCAB*          | Fcc                   |
+| province_code   | PROVINCIA          | Provincia             |
+| COVER           | FRACCAB            | Fcc (%)               |
 
 \
 **Units:**
@@ -109,30 +99,34 @@ Firstly, names are harmonized.
 | Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
 |-----------------|--------------------|-----------------------|
 | PLOT            | ESTADILLO          | Estadillo             |
-| Height (cm)     | *ALTUMED (dm?)*    | Hm (dm?)              |
+| Height (cm)     | ALTUMED (dm?)      | Hm (dm?)              |
 | SP_CODE         | ESPECIE            | Especie               |
-| *province_code* | *PROVINCIA*        | Provincia             |
+| province_code   | PROVINCIA          | Provincia             |
 
 The data regeneration is approached differently in the IFN3-4 compared to the IFN2, thus the processing is different
 
 ***For IFN2 :***
 
-**Original codes**\
+**Original variables**
+
+\
 Numero : number of trees of a given species with a diameter between 25 and 75 mm in the 5m radius\
 R : avaraged number of trees of a given species with a diameter below 25 mm in the 5m radius\
 ![](images/clipboard-3757804920.png){width="154"}\
-For those with a diameter above 75mm the mean height is recorded in variable ALTUMED
+ALTUMED : mean height fro trees above 75mm of diameter
 
 To uniform all information and separate each record in a different file there are some assumptions/ default values. Additionally, new variables are generated (DBH, DENSITY, N)\
 
-Height for individuals below 25 mm = 100cm
+-   Height for individuals below 25 mm = 100cm
 
-DBH for individuals below 25 mm = 1 cm\
-DBH for individuals above 25 mm = 5 cm\
-DENSITY (FAC) for all records is 127.3239546 as they are collected in the 5m radius
+-   DBH for individuals below 25 mm = 1 cm
 
-N ( is actual density in trees/ ha ) is calculated by multiplying *Numero* \* *DENSITY.*\
-For those records with REGENA coges, the mid point of the interval is assumed to be the actual number of species .
+-   DBH for individuals above 25 mm = 5 cm
+
+-   DENSITY (FAC) for all records is 127.3239546 as they are collected in the 5m radius
+
+-   N ( actual density in trees/ ha ) is calculated by multiplying *Numero* \* *DENSITY.*\
+    For those records with REGENA codes, the mid point of the interval is assumed to be the actual number of species .
 
 ```         
 if Regena == 1 ~ Numero = 2.5,
@@ -140,31 +134,21 @@ if Regena == 2 ~ Numero = 10 ,
 if Regena == 3 ~ Numero = 20
 ```
 
-N = DENSITY \* Numero
-
 **For IFN3 - 4**
 
 **Original variables** are
 
 "CatDes", "NumPies", "Densidad", "Hm"
 
-Category 1: Trees with height less than 30 cm.
-
-Category 2: Trees with height between 30 and 130 cm.
-
-Category 3: Trees with height greater than 130 cm and normal diameter less than 2.5 cm.
-
-Category 4: Trees with height greater than 130 cm and normal diameter between 2.5 and 7.5 cm. This corresponds to smaller trees (PIESMENORES) in IFN2.
-
 Depending on the development category (*CatDes*), the regeneration densities will be quantified differently:
 
 For development categories 1, 2, and 3, counting the trees in the circular plot of 5 m radius and classifying the density according to the following scale:
 
-1.  Sparse: 1 to 4 trees in the plot.
-
-2.  Normal: 5 to 15 trees in the plot.
-
-3.  Abundant: More than 15 trees in the plot.
+| Densidad | Desription                                | NumPies default |
+|----------|-------------------------------------------|-----------------|
+| 1        | Sparse: 1 to 4 trees in the plot.         | 2.5             |
+| 2        | Normal: 5 to 15 trees in the plot.        | 10              |
+| 3        | Abundant: More than 15 trees in the plot. | 20              |
 
 For development category 4, by species, count those present in the 5 m radius subplot and record in the corresponding box ("NumPies") and the average total height of each group is also calculated ( Hm ) , approximately.
 
@@ -173,17 +157,9 @@ Density = FAC Expansion Factor per hectare wich is always 127.3239546
 
 *DBH = diameter at breast height in cm*
 
-if *CatDes* == 1 \~ 0.1, if *CatDes* == 2 \~ 0.5, if *CatDes* == 3 \~ 1.5, if *CatDes* == 4 \~ 5,
-
-*N = density in meters per ha*
-
-So if *CatDes* == 1 \~ NumPies = 2.5 , if *CatDes* == 2 \~ NumPies = 10 , if *CatDes* == 3 \~ NumPies = 20, for *CatDes* == 4 \~ NumPies ,
-
-Therefore it is calculated as follows = N = DENSITY \* NumPies
-
 *Height (cm)*
 
-if *CatDes* == 1 \~ 10, if *CatDes* == 2 \~ 80, if *CatDes* == 3 \~ 100, for *CatDes* == 4 \~ Hm,
+*N =* density in meters per ha calculated as DENSITY \* NumPies
 
 # Referencias
 

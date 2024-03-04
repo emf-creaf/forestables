@@ -749,9 +749,9 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
           TRUE ~ NA
         ),
         N = dplyr::case_when(
-          .data$CatDes == 1 ~ 2.5 * 127.3239546,
-          .data$CatDes == 2 ~ 10 * 127.3239546,
-          .data$CatDes == 3 ~ 20 * 127.3239546,
+          .data$Densidad == 1 ~ 2.5 * 127.3239546,
+          .data$Densidad == 2 ~ 10 * 127.3239546,
+          .data$Densidad == 3 ~ 20 * 127.3239546,
           .data$CatDes == 4 ~ NumPies * 127.3239546,
           TRUE ~ NA
         ),
@@ -896,6 +896,13 @@ ifn_plot_table_process <- function(
         province_code = .data$PROVINCIA,
         ELEV = as.numeric(.data$ELEV) * 100,
         SLOPE = as.numeric(stringr::str_replace(.data$SLOPE, ",", ".")),
+        SLOPE = dplyr::case_when( 
+          .data$SLOPE == 1 ~ 1.5,
+          .data$SLOPE == 2 ~ 7.5,
+          .data$SLOPE == 3 ~ 16,
+          .data$SLOPE == 4 ~ 27,
+          .data$SLOPE == 4 ~ 40
+          ),
         ASPECT = as.numeric(.data$ASPECT),
         COORDEX = as.numeric(.data$COORDEX) * 1000,
         COORDEY = as.numeric(.data$COORDEY) * 1000,
