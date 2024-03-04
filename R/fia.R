@@ -153,11 +153,18 @@ fia_to_tibble <- function(
     ),
     .verbose
   )
+
+  # get the caller environment to propagate errors
+  .call <- rlang::caller_env(0)
   ## send the years in loop to process table function
   purrr::map(
     years,
     .f = \(year) {
-      fia_tables_process(year, states, filter_list, folder, .parallel_options, .verbose, ...)
+      fia_tables_process(
+        year, states, filter_list, folder,
+        .parallel_options, .verbose, .call = .call,
+        ...
+      )
     },
     .progress = FALSE
   ) |>
@@ -174,8 +181,12 @@ fia_to_tibble <- function(
 #'
 #' @describeIn fia_to_tibble Process one year
 #'
+#' @param .call caller environment (\code{\link[rlang]{caller_env}}) to propagate errors
+#'
+#' @noRd
+#'
 fia_tables_process <- function(
-  year, states, filter_list, folder, .parallel_options, .verbose, ...
+  year, states, filter_list, folder, .parallel_options, .verbose, .call, ...
 ) {
 
   # Create input df for year. We need to remove the NAs due to missing files

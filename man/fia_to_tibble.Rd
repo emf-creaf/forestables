@@ -2,7 +2,6 @@
 % Please edit documentation in R/fia.R
 \name{fia_to_tibble}
 \alias{fia_to_tibble}
-\alias{fia_tables_process}
 \title{Raw FIA data to tibble}
 \usage{
 fia_to_tibble(
@@ -13,16 +12,6 @@ fia_to_tibble(
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
-)
-
-fia_tables_process(
-  year,
-  states,
-  filter_list,
-  folder,
-  .parallel_options,
-  .verbose,
-  ...
 )
 }
 \arguments{
@@ -51,22 +40,12 @@ information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
 }
 \description{
 Transform raw FIA plot data into tidy data for use in models
-
-Processing all tables for one year
 }
 \details{
 This function will take every year indicated and retrieve and transform the plot data for the
 states and plots provided. For that, csv files from FIA must reside in the folder indicated in
 the \code{folder} argument.
-
-This function is intended to be called internally by \code{\link{fia_to_tibble}} for each
-year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 }
-\section{Functions}{
-\itemize{
-\item \code{fia_tables_process()}: Process one year
-
-}}
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{fia_to_tibble} will attempt to process all

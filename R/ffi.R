@@ -148,11 +148,25 @@ ffi_to_tibble <- function(
     ),
     .verbose
   )
+
+  # get the caller environment to propagate errors
+  .call <- rlang::caller_env(0)
+
+  # create a safe version of ffi_tables_process to return NULL in errors
+  safe_ffi_tables_process <- purrr::safely(
+    ffi_tables_process,
+    otherwise = NULL
+  )
+
   ## send the years in loop to process table function
   purrr::map(
     years,
     .f = \(year) {
-      ffi_tables_process(departments, year, filter_list, folder, .parallel_options, .verbose, ...)
+      safe_ffi_tables_process(
+        departments, year, filter_list, folder,
+        .parallel_options, .verbose, .call = .call,
+        ...
+      )$result
     },
     .progress = .verbose
   ) |>
@@ -168,14 +182,17 @@ ffi_to_tibble <- function(
 #' year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 #'
 #' @inherit ffi_to_tibble
+#'
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
+#'
 #' @noRd
 ffi_tables_process <- function(
   departments, year, filter_list, folder,
-  .parallel_options, .verbose, ...
+  .parallel_options, .verbose, .call = rlang::caller_env(), ...
 ) {
 
   # Create input df for year
-  input_df <- .build_ffi_input_with(departments, year, filter_list, folder, .verbose)
+  input_df <- .build_ffi_input_with(departments, year, filter_list, folder, .verbose, .call = .call)
 
   # Get needed ancillary data (changed for excel)
   espar_cdref <- .read_inventory_data(
@@ -229,15 +246,15 @@ ffi_tables_process <- function(
     .progress = .verbose,
     .l = input_df,
     .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table, regen_table) {
-      plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees)
-      tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref)
+      plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees, .call)
+      tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref, .call)
       shrub_regen <- ffi_shrub_table_process(
-        shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref
+        shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref, .call
       )
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
       if (year < 2015) {
-        regen <- ffi_regen_table_process(regen_table, plots, year, espar_cdref, idp_dep_ref)
+        regen <- ffi_regen_table_process(regen_table, plots, year, espar_cdref, idp_dep_ref, .call)
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
@@ -297,7 +314,7 @@ ffi_tables_process <- function(
 
   # something went wrong (bad counties and plots, wrong filter list...)
   if (nrow(temp_res) < 1) {
-    cli::cli_abort("Ooops! Something went wrong, exiting...")
+    cli::cli_abort("Ooops! Something went wrong, exiting...", call = .call)
   }
 
   temp_res |>
@@ -321,6 +338,7 @@ ffi_tables_process <- function(
 #' @param espar_cdref,idp_dep_ref,metadonnees,growth_form_lignified_france tables. These tables
 #'   are automatically read/created in \code{\link{ffi_tables_process}} based on the folder
 #'   provided.
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
 #' @return A tibble with one or more rows (depending on the data retrieved) for each plot for that
 #'   year.
@@ -334,7 +352,9 @@ NULL
 #' FFI data tables process
 #' @describeIn ffi_tables_processing Process to gather needed data from plot and soils tables
 #' @noRd
-ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnees) {
+ffi_plot_table_process <- function(
+  plot_data, soils_data, plot, year, metadonnees, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(plot_data, soils_data))))
@@ -344,18 +364,30 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping plot info for plot {.var {plot}}  for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
 
-  plot_processed <- .read_inventory_data(
+  plot_raw <- .read_inventory_data(
     plot_data,
     select = c("CAMPAGNE", "VISITE", "IDP", "XL", "YL", "DEP"),
     colClasses = list(character = c("DEP", "IDP")),
     header = TRUE
-  ) |>
-    # join with metadonnes
+  )
+
+  # We check before continuing, because maybe we don't have rows
+  if (nrow(plot_raw) < 1) {
+    # warn the user
+    cli::cli_warn(c(
+      "Data missing for that combination of plot and year",
+      "i" = "Returning empty plot info for plot {.var {plot}} in year {.var {year}} "
+    ), call = .call)
+    return(dplyr::tibble())
+  }
+
+  # join with metadonnes
+  plot_processed <- plot_raw |>
     dplyr::left_join(
       y = metadonnees |>
         dplyr::filter(.data$UNITE == "DP") |>
@@ -433,7 +465,9 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
 
 #' @describeIn ffi_tables_processing Process to gather needed data from tree tables
 #' @noRd
-ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_ref) {
+ffi_tree_table_process <- function(
+  tree_data, plot, year, espar_cdref, idp_dep_ref, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(tree_data))))
@@ -443,12 +477,12 @@ ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_r
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping tree data for plot {.var {plot}}  for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
 
-  # we  filter the data for plot/year and status (alive)????
+  # we need the raw data for later, but the filtered data for the rows check, so we store both
   tree_raw_data <- .read_inventory_data(
     tree_data,
     select = c("CAMPAGNE", "IDP", "A", "W", "ESPAR", "VEGET", "VEGET5", "C13", "HTOT"),
@@ -456,6 +490,7 @@ ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_r
     header = TRUE
   )
 
+  # we filter the data for plot/year and status (alive)????
   tree_filtered_data <- tree_raw_data |>
     dplyr::filter(
       .data$IDP == plot,
@@ -469,8 +504,8 @@ ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_r
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
+      "i" = "Returning empty tree info for plot {.var {plot}} in year {.var {year}} "
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -528,7 +563,7 @@ ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_r
 #' @noRd
 ffi_shrub_table_process <- function(
   shrub_data, plot, year,
-  cd_ref, growth_form_lignified_france, idp_dep_ref
+  cd_ref, growth_form_lignified_france, idp_dep_ref, .call = rlang::caller_env()
 ) {
 
   # Assertions  and checks/validations
@@ -539,7 +574,7 @@ ffi_shrub_table_process <- function(
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping tree data for plot {.var {plot}}  for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -570,8 +605,8 @@ ffi_shrub_table_process <- function(
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
+      "i" = "Returning empty understory info for plot {.var {plot}} in year {.var {year}} "
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -631,7 +666,9 @@ ffi_shrub_table_process <- function(
 
 #' @describeIn ffi_tables_processing Process to gather needed data from regen tables
 #' @noRd
-ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep_ref) {
+ffi_regen_table_process <- function(
+  regen_data, plot, year, espar_cdref, idp_dep_ref, .call = rlang::caller_env()
+) {
 
   # TABLE FOR REGEN DEPEND ON YEAR , BEFORE 2015 COUVERT SHOULD BE USED, AFTER 2015 FLORE SHOULD
   # (SAME AS SHRUB PROCESS) SHALL WE INTEGRATE PART OF THIS PROCESS IN SHRUB PROCESS O "REPET"
@@ -645,7 +682,7 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping tree data for plot {.var {plot}}  for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -665,8 +702,8 @@ ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
-      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} "
-    ))
+      "i" = "Returning empty regeneration info for plot {.var {plot}} in year {.var {year}} "
+    ), call = .call)
     return(dplyr::tibble())
   }
 

@@ -150,7 +150,7 @@ test_that("ffi_plot_table_process works as intended", {
   )
   expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
-  # error in department name, gives a tibble with NAs in important vars
+  # error in department name, gives an empty tibble
   expect_s3_class(
     test_error <- suppressWarnings(ffi_plot_table_process(
       test_input$plot_table[33],
@@ -161,14 +161,9 @@ test_that("ffi_plot_table_process works as intended", {
     )),
     "tbl"
   )
-  expect_true(nrow(test_error) == 1L)
-  expect_true(all(
-    is.na(test_error[["XL"]]),
-    is.na(test_error[["XL_ORIGINAL"]]),
-    is.na(test_error[["YL"]]),
-    is.na(test_error[["YL_ORIGINAL"]])
-  ))
-  # error in plot name, gives a tibble with NAs in important vars
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
+  # error in plot name, gives an empty tibble
   expect_s3_class(
     test_error <- suppressWarnings(ffi_plot_table_process(
       test_input$plot_table[32],
@@ -179,13 +174,8 @@ test_that("ffi_plot_table_process works as intended", {
     )),
     "tbl"
   )
-  expect_true(nrow(test_error) == 1L)
-  expect_true(all(
-    is.na(test_error[["XL"]]),
-    is.na(test_error[["XL_ORIGINAL"]]),
-    is.na(test_error[["YL"]]),
-    is.na(test_error[["YL_ORIGINAL"]])
-  ))
+  expect_s3_class(test_error, "tbl")
+  expect_true(nrow(test_error) < 1)
 })
 
 test_that("ffi_tree_table_process works as intended", {
@@ -586,8 +576,6 @@ test_that("ffi_to_tibble works as intended", {
   expect_true(all(unique(test_res$YEAR) %in% test_years))
 
   # for plot revisited after 5 year check that species name appear
-
-
   expect_identical(!is.na(test_res[["tree"]][[60]]$SP_NAME), rep(TRUE, 24))
 
 
