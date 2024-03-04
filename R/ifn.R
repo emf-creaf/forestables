@@ -1029,6 +1029,13 @@ ifn_plot_table_process <- function(
         # de grados centesimales a sexagesimales??
         ASPECT = as.numeric(.data$ASPECT) * 0.9,
         SLOPE = as.numeric(.data$SLOPE),
+        SLOPE = dplyr::case_when(
+          SLOPE <= 0.6 ~ 1.5,
+          SLOPE < 0.6 & SLOPE >= 2.4 ~ 7.5 ,
+          SLOPE <2.4 & SLOPE >= 4 ~ 16 ,
+          SLOPE <4 & SLOPE >= 7 ~ 27 ,
+          SLOPE <7 ~ 40,
+        ),
         COORD_SYS = dplyr::case_when(
           .data$version == "ifn4" & .data$province_code %in% c(
             "01", "07", "08", "15", "17", "20", "25", "26", "27", "28",

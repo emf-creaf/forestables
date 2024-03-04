@@ -1,3 +1,5 @@
+------------------------------------------------------------------------
+
 ---
 title: "Description of functions"
 output: rmarkdown::html_vignette
@@ -27,17 +29,13 @@ Introduction
 
 This vignette documents the most important processes in handling official data sources from the national forest inventories of France, the United States, and Spain.
 
-# IFN : data processins
+# IFN : data processing
 
 ## Individual functions for IFN tables
 
 ### IFN TREE TABLE PROCESS
 
-Comes from *PCMAYORES* table of IFN.\
-\
-**Units**:\
-DIA (diameter)= cm\
-HT (height) = m\
+Comes from *PCMAYORES* table of IFN3-4 and *PIESMA* of IFN2\
 \
 This function performs a set of operations to obtain the final table.
 
@@ -50,7 +48,7 @@ This function performs a set of operations to obtain the final table.
 | TREE            | ARBOL              | nArbol                |
 | Dn1 (cm)        | DIAMETRO1 (mm)     | Dn1 (mm)              |
 | Dn2 (cm)        | DIAMETRO2 (mm)     | Dn2 (mm)              |
-| HT (m)          | ALTURA             | Ht (m)                |
+| HT (m)          | ALTURA (m ?)       | Ht (m)                |
 
 \
 The mean of diameters is calculated to obtain the variable DIA (diameter/DBH), and it is converted to cm.
@@ -61,18 +59,20 @@ The mean of diameters is calculated to obtain the variable DIA (diameter/DBH), a
 
 The density variable is similar to the FAC variable in the inventory, which corresponds to the Expansion Factor per hectare of the unit values of different dendrometric parameters of the measured foot. Smaller trees are measured at smaller radii of the plot, while larger trees are measured within a 25m radius, which is why the density value changes.
 
-```         
-DIA < 12.5 ~ 127.3239546,
-DIA >= 12.5 & DIA < 22.5 ~ 31.83098865,
-DIA >= 22.5 & DIA < 42.5 ~ 14.14710607,
-DIA >= 42.5 ~ 5.092958185
-```
+| DIA low limit | DIA upper limit | DENSITY VALUE |
+|---------------|-----------------|---------------|
+| 0             | \<12.5          | 127.3239546   |
+| 12.5          | 22.5            | 31.83098865   |
+| 22.5          | 42.5            | 14.14710607   |
+| 42.5          | 999             | 5.092958185   |
 
 # ![](images/clipboard-2643372046.png){width="311"}
 
-## IFN SHRUB TABLE PROCESS
+The final variables pprovided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "nArbol", "Calidad", "Forma", "OrdenIf2", "OrdenIf3", "OrdenIf4", "DIA", "HT", "DENSITY"
 
-Comes from the table *PCMatorral* of the IFN\
+### IFN SHRUB TABLE PROCESS
+
+Information comes from the table *PCMatorral* of the IFN3-4 and *MATORR* of IFN2\
 Firstly, names are harmonized.
 
 | Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
@@ -83,16 +83,11 @@ Firstly, names are harmonized.
 | province_code   | PROVINCIA          | Provincia             |
 | COVER           | FRACCAB            | Fcc (%)               |
 
-\
-**Units:**
+The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
 
-HT (Height) = cm\
-\
-This function performs a set of operations to obtain the final table.
+### IFN REGEN TABLE PROCESS
 
-## IFN REGEN TABLE PROCESS
-
-Comes from the table *PCRegenera* of IFN 3-4 or *PIESME* del IFN2
+Information comes from the table *PCRegenera* of IFN 3-4 or *PIESME* del IFN2
 
 Firstly, names are harmonized.
 
@@ -109,57 +104,114 @@ The data regeneration is approached differently in the IFN3-4 compared to the IF
 
 **Original variables**
 
-\
-Numero : number of trees of a given species with a diameter between 25 and 75 mm in the 5m radius\
-R : avaraged number of trees of a given species with a diameter below 25 mm in the 5m radius\
+"Numero": number of trees of a given species with a diameter between 25 and 75 mm in the 5m radius\
+"Regena" : averaged number of trees of a given species with a diameter below 25 mm in the 5m radius\
 ![](images/clipboard-3757804920.png){width="154"}\
-ALTUMED : mean height fro trees above 75mm of diameter
+"ALTUMED": mean height for trees above 25mm of diameter
 
-To uniform all information and separate each record in a different file there are some assumptions/ default values. Additionally, new variables are generated (DBH, DENSITY, N)\
-
--   Height for individuals below 25 mm = 100cm
-
--   DBH for individuals below 25 mm = 1 cm
-
--   DBH for individuals above 25 mm = 5 cm
-
--   DENSITY (FAC) for all records is 127.3239546 as they are collected in the 5m radius
+To uniform all information and separate each record in a different file there are some assumptions/ default values. Additionally, new variables are generated (DBH, DENSITY, N)
 
 -   N ( actual density in trees/ ha ) is calculated by multiplying *Numero* \* *DENSITY.*\
     For those records with REGENA codes, the mid point of the interval is assumed to be the actual number of species .
 
-```         
-if Regena == 1 ~ Numero = 2.5,
-if Regena == 2 ~ Numero = 10 ,
-if Regena == 3 ~ Numero = 20
-```
++-----------------+---------+------+-------------+----------------+------------------------+
+| CATEGORY        | Height  | DBH  | DENSITY     | Numero         | N                      |
++=================+=========+======+=============+================+========================+
+| DBH below 25 mm | 100cm   | 1 cm | 127.3239546 | Regena 0 = 0   | *Numero* \* *DENSITY.* |
+|                 |         |      |             |                |                        |
+|                 |         |      |             | Regena 1 = 2.5 |                        |
+|                 |         |      |             |                |                        |
+|                 |         |      |             | Regena 2 = 10  |                        |
+|                 |         |      |             |                |                        |
+|                 |         |      |             | Regena 3 = 20  |                        |
++-----------------+---------+------+-------------+----------------+------------------------+
+| DBH above 25 mm | ALTUMED | 5 cm | 127.3239546 | Numero         | *Numero* \* *DENSITY.* |
++-----------------+---------+------+-------------+----------------+------------------------+
 
 **For IFN3 - 4**
 
 **Original variables** are
 
-"CatDes", "NumPies", "Densidad", "Hm"
+"CatDes" = development category of regeneration\
+"NumPies"= number of trees for category 4\
+"Densidad" = interval of number of trees for category 1,2 and 3\
+"Hm" = mean height for category 4 in dm
 
 Depending on the development category (*CatDes*), the regeneration densities will be quantified differently:
 
 For development categories 1, 2, and 3, counting the trees in the circular plot of 5 m radius and classifying the density according to the following scale:
 
-| Densidad | Desription                                | NumPies default |
-|----------|-------------------------------------------|-----------------|
-| 1        | Sparse: 1 to 4 trees in the plot.         | 2.5             |
-| 2        | Normal: 5 to 15 trees in the plot.        | 10              |
-| 3        | Abundant: More than 15 trees in the plot. | 20              |
+| Densidad (Density) | Description                               | NumPies default |
+|--------------------|-------------------------------------------|-----------------|
+| 1                  | Sparse: 1 to 4 trees in the plot.         | 2.5             |
+| 2                  | Normal: 5 to 15 trees in the plot.        | 10              |
+| 3                  | Abundant: More than 15 trees in the plot. | 20              |
 
 For development category 4, by species, count those present in the 5 m radius subplot and record in the corresponding box ("NumPies") and the average total height of each group is also calculated ( Hm ) , approximately.
 
-Additionally new variables are generated and some assumption are made to uniform the information:\
-Density = FAC Expansion Factor per hectare wich is always 127.3239546
+Additionally new variables are generated and some assumption are made to uniform the information:
 
-*DBH = diameter at breast height in cm*
+Density = FAC Expansion Factor per hectare which is always 127.3239546
 
-*Height (cm)*
+DBH *=* diameter at breast height in cm
 
-*N =* density in meters per ha calculated as DENSITY \* NumPies
+Height (cm)
+
+N = density in meters per ha calculated as DENSITY \* NumPies
+
+| CatDes | Description                                                                                                                                | DBH (cm) | Height (cm) | NumPies   | DENSITY     | N                      |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------|-----------|-------------|------------------------|
+| 1      | Trees with height less than 30 cm.                                                                                                         | 0.1      | 10          | 2.5       | 127.3239546 | 2.5 \* 127.3239546     |
+| 2      | Trees with height between 30 and 130 cm.                                                                                                   | 0.5      | 80          | 10        | 127.3239546 | 10 \* 127.3239546      |
+| 3      | Trees with height between 30 and 130 cm.                                                                                                   | 1.5      | 100         | 20        | 127.3239546 | 20 \* 127.3239546      |
+| 4      | Trees with height greater than 130 cm and normal diameter between 2.5 and 7.5 cm. This corresponds to smaller trees (PIESMENORES) in IFN2. | 5        | *Hm*        | *NumPies* | 127.3239546 | NumPies \* 127.3239546 |
+
+The final variables given are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "DBH", "Height", "N", "DENSITY"
+
+### IFN PLOT TABLES PROCESS
+
+Information comes from tables DATEST of IFN2 and *PCDatosMap*, *PCParcelas* of IFN3-4
+
+Note that coordinates are approximate\
+
+| Harmonized name | Original name IFN2     | Original name IFN3/ 4 |
+|-----------------|------------------------|-----------------------|
+| PLOT            | ESTADILLO              | Estadillo             |
+| province_code   | PROVINCIA              | Provincia             |
+| COORD1          | COORDEX                | CoorX                 |
+| COORD2          | COORDEY                | CoorY                 |
+| SLOPE           | MAXPEND                | MaxPend1              |
+| ELEV            | ALTITUD2               | \-                    |
+| YEAR            | ANO                    | Ano                   |
+| ASPECT          | ORIENTA2               | Orienta1              |
+| HUSO            | Huso \* default values | Huso                  |
+
+Additionally, a new variable to indicate coordinate system and project coordinates is generated and it is called COORD_SYS.\
+**\
+For IFN2:**\
+\
+Coordinates are corrected where letters refer to numbers .
+
+SLOPE is assigned following IFN categories and approximated:\
+
+| Value at IFN | Description at IFN | Default value |
+|--------------|--------------------|---------------|
+| 1            | 0-3 % of slope     | 1.5%          |
+| 2            | 3-12 %             | 7.5%          |
+| 3            | 12-20%             | 16%           |
+| 4            | 20-35%             | 27%           |
+| 5            | More than 35%      | 40%           |
+
+The ELEVATION is indicated as the lower limit of the range of 100 in which the actual altitude is found. For example, if it's between 0 and 100 meters, it's indicated as 100; if it's between 100 and 200, it's indicated as 100, and so on.
+
+"Huso" (UTM zone) is not recorded in IFN2. Therefore, a default value of 28 is assigned for the Canary Islands, and for the rest of the peninsula, the default value is 30. Similarly , variable COORD_SYSTEM , which is new , have default values " WGS84" for Canary Islan and "ED50" for the rest.
+
+CRS = Coordinate reference system ESPG code
+
+**IFN3 -4**
+
+\
+Final variables are "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_code", "province_name_original", "PLOT", "Cla", "Subclase", "COORD_SYS", "YEAR", "version", "Tipo", "ASPECT", "SLOPE"\
 
 # Referencias
 
