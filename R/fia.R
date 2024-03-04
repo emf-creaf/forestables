@@ -303,10 +303,12 @@ fia_tables_process <- function(
 #'   year.
 #'
 #' @importFrom dplyr desc
-#' @name tables_processing
+#' @noRd
+#' @name fia_tables_processing
 NULL
 
-#' @describeIn tables_processing Process to gather needed data from plot, survey and cond tables
+#' @describeIn fia_tables_processing Process to gather needed data from plot, survey and cond tables
+#' @noRd
 fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, county, year) {
 
   # Assertions  and checks/validations
@@ -430,7 +432,8 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
     dplyr::as_tibble()
 }
 
-#' @describeIn tables_processing Process to gather needed data from tree table
+#' @describeIn fia_tables_processing Process to gather needed data from tree table
+#' @noRd
 fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
 
   # Assertions  and checks/validations
@@ -500,8 +503,9 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
 }
 
 #' General understory workflow
-#' @describeIn tables_processing Process to guess which understory data is available and launch the
+#' @describeIn fia_tables_processing Process to guess which understory data is available and launch the
 #'   corresponding function.
+#' @noRd
 fia_understory_table_process <- function(
   understory_data, understory_p2,
   plot, county, year, growth_habit_p3, growth_habit_p2, ref_plant_dictionary
@@ -549,7 +553,8 @@ fia_understory_table_process <- function(
 }
 
 
-#' @describeIn tables_processing Process to gather needed data from veg subplot spp table
+#' @describeIn fia_tables_processing Process to gather needed data from veg subplot spp table
+#' @noRd
 fia_p3_understory_table_process <- function(
   understory_data, plot, county, year, growth_habit, ref_plant_dictionary
 ) {
@@ -682,7 +687,8 @@ fia_p3_understory_table_process <- function(
   return(understory)
 }
 
-#' @describeIn tables_processing Process to gather needed data from p2 veg subplot spp table
+#' @describeIn fia_tables_processing Process to gather needed data from p2 veg subplot spp table
+#' @noRd
 fia_p2_understory_table_process <- function(
   understory_p2, plot, county, year, growth_habit, ref_plant_dictionary
 ) {
@@ -813,7 +819,8 @@ fia_p2_understory_table_process <- function(
   return(understory_p2)
 }
 
-#' @describeIn tables_processing Process to gather needed data from seedling table
+#' @describeIn fia_tables_processing Process to gather needed data from seedling table
+#' @noRd
 fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_species) {
 
   # Assertions  and checks/validations
@@ -905,7 +912,8 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
   return(seedling)
 }
 
-#' @describeIn tables_processing Process to gather needed data from subplot table
+#' @describeIn fia_tables_processing Process to gather needed data from subplot table
+#' @noRd
 fia_subplot_table_process <- function(subplot_data, plot, county, year) {
 
   # Assertions  and checks/validations

@@ -2,7 +2,6 @@
 % Please edit documentation in R/ffi.R
 \name{ffi_to_tibble}
 \alias{ffi_to_tibble}
-\alias{ffi_tables_process}
 \title{Raw FFI data to tibble}
 \usage{
 ffi_to_tibble(
@@ -13,16 +12,6 @@ ffi_to_tibble(
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
-)
-
-ffi_tables_process(
-  departments,
-  year,
-  filter_list,
-  folder,
-  .parallel_options,
-  .verbose,
-  ...
 )
 }
 \arguments{
@@ -51,22 +40,12 @@ information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
 }
 \description{
 Transform raw FFI plot data into tidy data for easier use
-
-Processing all tables for one year
 }
 \details{
 This function will take every year specified and will retrieve and transform the plot data for
 the departments and plots provided. For that, csv files from FFI must reside in the folder
 indicated in the \code{folder} argument.
-
-This function is intended to be called internally by \code{\link{ffi_to_tibble}} for each
-year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 }
-\section{Functions}{
-\itemize{
-\item \code{ffi_tables_process()}: Process one year
-
-}}
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{ffi_to_tibble} will attempt to process all
@@ -79,7 +58,7 @@ the process. This \code{filter_list} should have the following structure:
    list(
    "01" = 1404119,
    "10" = 900863,
-   "11" = c(1436508, 1410492))#'
+   "11" = c(1436508, 1410492))
    )
   }
 \code{esus} package offers workflows to create this automatically, see
@@ -96,7 +75,7 @@ repeated for all years provided.
 \code{.parallel_options} controls the finer details of how parallelization is performed (see
 \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first
 a \code{\link[future]{plan}}. By default, the chosen plan is \code{\link[future]{sequential}},
-so no parellization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
+so no parellelization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
 to \code{\link[future.callr]{callr}}, will allow \code{ffi_to_tibble} to use parallelization
 when retrieving the data.
 }

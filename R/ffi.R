@@ -29,7 +29,7 @@
 #'    list(
 #'    "01" = 1404119,
 #'    "10" = 900863,
-#'    "11" = c(1436508, 1410492))#'
+#'    "11" = c(1436508, 1410492))
 #'    )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
@@ -44,7 +44,7 @@
 #'   \code{.parallel_options} controls the finer details of how parallelization is performed (see
 #'   \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first
 #'   a \code{\link[future]{plan}}. By default, the chosen plan is \code{\link[future]{sequential}},
-#'   so no parellization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
+#'   so no parellelization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
 #'   to \code{\link[future.callr]{callr}}, will allow \code{ffi_to_tibble} to use parallelization
 #'   when retrieving the data.
 #'
@@ -112,11 +112,6 @@ ffi_to_tibble <- function(
       }
     }
   }
-  ## TODO
-  # Check counties and plots??
-
-  ## TODO
-  # Check ancillary data is present!!
 
   # parallel options
   assertthat::assert_that(
@@ -146,8 +141,6 @@ ffi_to_tibble <- function(
     )
   )
 
-
-
   ## inform the user
   verbose_msg(
     cli::cli_inform(
@@ -161,7 +154,7 @@ ffi_to_tibble <- function(
     .f = \(year) {
       ffi_tables_process(departments, year, filter_list, folder, .parallel_options, .verbose, ...)
     },
-    .progress = FALSE
+    .progress = .verbose
   ) |>
     purrr::list_rbind()
 }
@@ -174,15 +167,15 @@ ffi_to_tibble <- function(
 #' This function is intended to be called internally by \code{\link{ffi_to_tibble}} for each
 #' year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 #'
-#' @describeIn ffi_to_tibble Process one year
-#'
+#' @inherit ffi_to_tibble
+#' @noRd
 ffi_tables_process <- function(
   departments, year, filter_list, folder,
   .parallel_options, .verbose, ...
 ) {
 
   # Create input df for year
-  input_df <- .build_ffi_input_with(departments, year,  filter_list, folder, .verbose)
+  input_df <- .build_ffi_input_with(departments, year, filter_list, folder, .verbose)
 
   # Get needed ancillary data (changed for excel)
   espar_cdref <- .read_inventory_data(
@@ -316,9 +309,7 @@ ffi_tables_process <- function(
     ))
 }
 
-
-
-#' Data tables process
+#' FFI data tables process
 #'
 #' Process to gather needed data from FFI csv tables
 #'
@@ -326,21 +317,23 @@ ffi_tables_process <- function(
 #'
 #' @param plot_data,tree_data,shrub_data,soils_data Paths to the files with the corresponding data
 #' @param plot Numeric, plot code
-#' @param dep department code
 #' @param year Numeric, year to extract
-#' @param espar_cdref,metadonnees,growth_form_lignified_france tables. These tables
-#'   are automatically read in \code{\link{ffi_tables_process}} based on the folder provided.
-#' @param growth_habit Character, growth habit value to filter data (to distinguish between herbs
-#'   and shrubs)
+#' @param espar_cdref,idp_dep_ref,metadonnees,growth_form_lignified_france tables. These tables
+#'   are automatically read/created in \code{\link{ffi_tables_process}} based on the folder
+#'   provided.
 #'
 #' @return A tibble with one or more rows (depending on the data retrieved) for each plot for that
 #'   year.
 #'
 #' @importFrom dplyr desc
-#' @name tables_processing
+#'
+#' @name ffi_tables_processing
+#' @noRd
 NULL
 
-#' @describeIn tables_processing Process to gather needed data from plot, survey and cond tables
+#' FFI data tables process
+#' @describeIn ffi_tables_processing Process to gather needed data from plot and soils tables
+#' @noRd
 ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnees) {
 
   # Assertions  and checks/validations
@@ -438,8 +431,9 @@ ffi_plot_table_process <- function(plot_data, soils_data, plot, year, metadonnee
 
 
 
-#' @describeIn tables_processing Process to gather needed data from tree table
-ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_ref) {
+#' @describeIn ffi_tables_processing Process to gather needed data from tree tables
+#' @noRd
+ffi_tree_table_process <- function(tree_data, plot, year, espar_cdref, idp_dep_ref) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(tree_data))))
@@ -530,8 +524,8 @@ ffi_tree_table_process <- function(tree_data, plot,  year, espar_cdref, idp_dep_
 }
 
 
-#' @describeIn tables_processing
-#' Process to gather needed data from shrub table
+#' @describeIn ffi_tables_processing Process to gather needed data from shrub tables
+#' @noRd
 ffi_shrub_table_process <- function(
   shrub_data, plot, year,
   cd_ref, growth_form_lignified_france, idp_dep_ref
@@ -635,7 +629,8 @@ ffi_shrub_table_process <- function(
   return(understory_no_herbs)
 }
 
-#' @describeIn tables_processing Process to gather needed data from soil table
+#' @describeIn ffi_tables_processing Process to gather needed data from regen tables
+#' @noRd
 ffi_regen_table_process <- function(regen_data, plot, year, espar_cdref, idp_dep_ref) {
 
   # TABLE FOR REGEN DEPEND ON YEAR , BEFORE 2015 COUVERT SHOULD BE USED, AFTER 2015 FLORE SHOULD
