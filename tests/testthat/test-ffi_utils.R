@@ -151,7 +151,7 @@ test_that(".get_plots_from_department works as intended", {
   )
   # multiple departments
   expect_s3_class(
-    test_res_multiple <- .get_plots_from_department(test_departments, test_folder),
+    test_res_multiple <- suppressWarnings(.get_plots_from_department(test_departments, test_folder)),
     "sf"
   )
   # crs
@@ -180,7 +180,10 @@ test_that("show_plots_from_ffi works as intended", {
 
   ## results are ok
   # class
-  expect_s3_class(test_res_ok <- show_plots_from_ffi(test_folder, test_departments), "sf")
+  expect_s3_class(
+    test_res_ok <- suppressWarnings(show_plots_from_ffi(test_folder, test_departments)),
+    "sf"
+  )
   # crs
   expect_identical(sf::st_crs(test_res_ok), sf::st_crs(4326))
   # names
@@ -258,7 +261,7 @@ test_that("create_filter_list_ffi works as inteded", {
   # test data
   test_folder <- Sys.getenv("ffi_path")
   test_departments <- c("01", "10", "11", "tururu")
-  test_summary <- show_plots_from_ffi(test_folder, test_departments) |>
+  test_summary <- suppressWarnings(show_plots_from_ffi(test_folder, test_departments)) |>
     dplyr::filter(CAMPAGNE %in% c(2005, 2010, 2015))
 
   # errors

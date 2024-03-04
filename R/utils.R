@@ -21,25 +21,29 @@ verbose_msg <- function(msg, .verbose) {
 #'
 #' Show plots with minimal metadata from any inventory
 #'
-#' This function show the plots available in any inventory. Take into account that this can
-#' potentially show all plots in any inventory, so the object returned can be big.
+#' This function show the plots available in any inventory for the given administrative units.
+#' Take into account that this can potentially show all plots in any inventory, so the object
+#' returned can be memory heavy.
 #'
 #' @param inventory Character indicating the inventory. Allowed values are \code{"FIA"} for the
 #'   USA forest inventory, \code{"FFI"} for the French \emph{Inventaire Forestier} and
 #'   \code{"IFN"}, for the Spanish \emph{Inventario Forestal Nacional}.
 #'
 #' @param folder Character, path to the folder containing the \code{inventory} files.
-#' @param ... Other arguments, depending on the \code{inventory}, see details.
+#' @param ... Other arguments, depending on the \code{inventory}, see inventory sections.
 #'
 #' @section FIA:
-#' FIA inventory needs an extra argument, \code{states}, a character vector with the two-letter
+#' FIA needs an extra argument, \code{states}, a character vector with the two-letter
 #' code for the desired states.
 #'
 #' @section FFI:
-#' TODO
+#' FFI needs an extra argument, \code{departments}, a character vector with the desired
+#' department codes.
 #'
 #' @section IFN:
-#' TODO
+#' IFN needs two extra arguments, \code{provinces}, a character vector with the numeric codes for
+#' the provinces and \code{version}, a character with the IFN version to look at (\code{"ifn2"},
+#' \code{"ifn3"} or \code{"ifn4"}).
 #'
 #' @return A \code{\link[sf]{sf}} spatial object in which each row is a plot,. The metadata provided
 #'   varies depending on the inventory, but usually includes the state (FIA) / department (FFI)/
@@ -48,11 +52,13 @@ verbose_msg <- function(msg, .verbose) {
 #' @examples
 #' library(esus)
 #'
+#' # FIA
 #' show_plots_from("FIA", folder = ".", states = "OR")
-#' # TODO
+#' # FFI
+#' show_plots_from("FFI", folder = ".", departments = "21")
+#' # IFN
+#' show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4")
 #'
-#'
-#' @family Inventory Utils
 #' @export
 show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ...) {
 
@@ -62,26 +68,26 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
     .sys_cmd_warning()
   )
 
-  inventory <- match.arg(inventory)
   assertthat::assert_that(
     fs::dir_exists(folder),
-    msg = cli::cli_abort(
-      cli::cli_abort(c(
-        "Folder especified ({.path {folder}}) doesn't exist.",
-        "i" = "Please create the folder first and populate it with the needed {inventory} files"
-      ))
-    )
+    msg = cli::cli_abort(c(
+      "Folder especified ({.path {folder}}) doesn't exist.",
+      "i" = "Please create the folder first and populate it with the needed {inventory} files"
+    ))
   )
 
-  # Switch to each inventory functions
-  show_plots_function <- switch(
+  # Switch to each inventory functions, but ensuring the inventory is one of the allowed ones.
+  inventory <- match.arg(inventory)
+  res <- switch(
     inventory,
-    "FIA" = show_plots_from_fia,
-    "FFI" = show_plots_from_ffi,
-    "IFN" = show_plots_from_ifn
+    "FIA" = show_plots_from_fia(folder, ..., .call = rlang::caller_env(0)),
+    "FFI" = show_plots_from_ffi(folder, ..., .call = rlang::caller_env(0)),
+    "IFN" = show_plots_from_ifn(folder, ..., .call = rlang::caller_env(0))
   )
 
-  show_plots_function(folder, ...)
+  return(res)
+
+  # show_plots_function(folder, ..., .call = rlang::caller_env())
 }
 
 #' Function to read inventory files

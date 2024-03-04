@@ -96,9 +96,9 @@ utils::globalVariables(".data")
 
 #' Helper to read the PLACETTE.csv file from an state to retrieve the list of plots for that state
 #' @noRd
-.get_plots_from_department <- function(department, folder, .call = rlang::caller_env()) {
+.get_plots_from_department <- function(departments, folder, .call = rlang::caller_env()) {
 
-  plot_path <- .build_ffi_file_path(department, "plot", folder)
+  plot_path <- .build_ffi_file_path(departments, "plot", folder, .call = .call)
 
   if (is.na(plot_path)) {
     cli::cli_abort(c(
@@ -110,7 +110,7 @@ utils::globalVariables(".data")
   plot_data <- plot_path |>
     .read_inventory_data(select = c("CAMPAGNE", "IDP", "XL", "YL", "DEP")) |>
     dplyr::group_by(.data$DEP, .data$IDP) |>
-    dplyr::filter(.data$DEP %in% department) |>
+    dplyr::filter(.data$DEP %in% departments) |>
     #IN THE CASE THAT THERE ARE NA
     dplyr::filter(!all(is.na(.data$XL))) |>
     dplyr::arrange(.data$CAMPAGNE) |>
@@ -120,7 +120,15 @@ utils::globalVariables(".data")
   if (nrow(plot_data) < 1) {
     cli::cli_abort(c(
       "{.path PLACETTE.csv} file doesn't contain any plot
-      for {.val {department}} department, aborting."
+      for {.val {departments}} department/s, aborting."
+    ), call = .call)
+  }
+
+  if (!all(departments %in% unique(plot_data$DEP))) {
+    cli::cli_warn(c(
+      "{.path PLACETTE.csv} file doesn't contain any plot
+      for {.val {departments[which(!(departments %in% unique(plot_data$DEP)))]}}
+      department/s, skipping."
     ), call = .call)
   }
 
@@ -148,14 +156,6 @@ utils::globalVariables(".data")
 #' @param departments Character vector with numeric department code
 #' @noRd
 show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()) {
-  # withCallingHandlers(
-  #   purrr::map(departments, .f = .get_plots_from_department, folder = folder) |>
-  #     purrr::list_rbind() |>
-  #     sf::st_as_sf(),
-  #   purrr_error_indexed = function(err) {
-  #     rlang::cnd_signal(err$parent)
-  #   }
-  # )
   .get_plots_from_department(departments, folder, .call = .call)
 }
 

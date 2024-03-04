@@ -13,7 +13,7 @@ USA forest inventory, \code{"FFI"} for the French \emph{Inventaire Forestier} an
 
 \item{folder}{Character, path to the folder containing the \code{inventory} files.}
 
-\item{...}{Other arguments, depending on the \code{inventory}, see details.}
+\item{...}{Other arguments, depending on the \code{inventory}, see inventory sections.}
 }
 \value{
 A \code{\link[sf]{sf}} spatial object in which each row is a plot,. The metadata provided
@@ -24,31 +24,37 @@ provincia (IFN) and year/date/IFN version
 Show plots with minimal metadata from any inventory
 }
 \details{
-This function show the plots available in any inventory. Take into account that this can
-potentially show all plots in any inventory, so the object returned can be big.
+This function show the plots available in any inventory for the given administrative units.
+Take into account that this can potentially show all plots in any inventory, so the object
+returned can be memory heavy.
 }
 \section{FIA}{
 
-FIA inventory needs an extra argument, \code{states}, a character vector with the two-letter
+FIA needs an extra argument, \code{states}, a character vector with the two-letter
 code for the desired states.
 }
 
 \section{FFI}{
 
-TODO
+FFI needs an extra argument, \code{departments}, a character vector with the desired
+department codes.
 }
 
 \section{IFN}{
 
-TODO
+IFN needs two extra arguments, \code{provinces}, a character vector with the numeric codes for
+the provinces and \code{version}, a character with the IFN version to look at (\code{"ifn2"},
+\code{"ifn3"} or \code{"ifn4"}).
 }
 
 \examples{
 library(esus)
 
+# FIA
 show_plots_from("FIA", folder = ".", states = "OR")
-# TODO
-
+# FFI
+show_plots_from("FFI", folder = ".", departments = "21")
+# IFN
+show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4")
 
 }
-\concept{Inventory Utils}

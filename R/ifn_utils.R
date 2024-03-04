@@ -176,36 +176,31 @@
 #' @param provinces Character vector with two-number code for provinces
 #' @noRd
 show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::caller_env()) {
-  withCallingHandlers(
-    {
-      # safe version
-      get_plots_safe <- purrr::safely(
-        .get_plots_from_province,
-        otherwise = NULL
-      )
-
-      res <- purrr::map(
-        provinces,
-        .f = \(prov) {
-          get_plots_safe(prov, folder, version, .call = .call)$result
-        }
-      ) |>
-        purrr::list_rbind()
-
-      if (nrow(res) < 1) {
-        cli::cli_abort(
-          c("No data found at {.folder {folder}} for {.values {provinces}} province codes",
-            "i" = "Please check if {.folder {folder}} is the correct folder for IFN data")
-        )
-      }
-
-      res |>
-        sf::st_as_sf()
-    },
-    purrr_error_indexed = function(err) {
-      rlang::cnd_signal(err$parent)
-    }
+  # safe version
+  get_plots_safe <- purrr::safely(
+    .get_plots_from_province,
+    otherwise = NULL
   )
+
+  res <- purrr::map(
+    provinces,
+    .f = \(prov) {
+      get_plots_safe(prov, folder, version, .call = .call)$result
+    }
+  ) |>
+    purrr::list_rbind()
+
+  if (nrow(res) < 1) {
+    cli::cli_abort(c(
+      "No data found at {.path {folder}} for the provided province codes",
+      "i" = "Please check if {.path {folder}} is the correct folder for IFN data"
+    ), call = .call)
+  }
+
+  res <- res |>
+    sf::st_as_sf()
+
+  return(res)
 }
 
 #' Read IFN data
@@ -374,9 +369,9 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
   if (sum(is.na(res)) > 0) {
     cli::cli_warn(c(
-      "Files for provinces {.values {province[which(is.na(res))] |> unique()}} not found.",
-      "Skipping plots {type} data from those provinces"
-    ))
+      "!" = "Files for provinces {.values {province[which(is.na(res))] |> unique()}} not found.",
+      "i" = "Skipping plots {type} data from those provinces"
+    ), call = .call)
   }
 
   return(res)

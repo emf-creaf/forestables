@@ -172,7 +172,7 @@ test_that("show_plots_from_fia works as intended", {
   # error
   expect_error(
     suppressWarnings(show_plots_from_fia(".", test_states[1])),
-    "folder doesn't contain"
+    "No data found at"
   )
 
   ## results are ok

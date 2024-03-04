@@ -112,12 +112,7 @@
 #' @noRd
 .get_plots_from_state <- function(state, folder, .call = rlang::caller_env()) {
 
-  ## TODO Assertion to ensure PLOT.csv file exists, because .build_fia_file_path is fail
-  ## resistant, returning always a result (NA_character) to allow its use in loops.
-  ## .get_plots_from_state is only called from .build_fia_input_with or show_plots_from_fia,
-  ## that can not check for file existence (this is done in the individual plot functions)
-
-  plot_path <- .build_fia_file_path(state, "plot", folder)
+  plot_path <- .build_fia_file_path(state, "plot", folder, .call = .call)
 
   if (is.na(plot_path)) {
     cli::cli_abort(c(
@@ -172,16 +167,31 @@
 #' @param states Character vector with two-letter code for states
 #' @noRd
 show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
-  withCallingHandlers(
-    purrr::map(
-      states, .f = .get_plots_from_state, folder = folder
-    ) |>
-      purrr::list_rbind() |>
-      sf::st_as_sf(),
-    purrr_error_indexed = function(err) {
-      rlang::cnd_signal(err$parent)
-    }
+  # safe version
+  get_plots_safe <- purrr::safely(
+    .get_plots_from_state,
+    otherwise = NULL
   )
+
+  res <- purrr::map(
+    states,
+    .f = \(state) {
+      get_plots_safe(state, folder, .call = .call)$result
+    }
+  ) |>
+    purrr::list_rbind()
+
+  if (nrow(res) < 1) {
+    cli::cli_abort(c(
+      "No data found at {.path {folder}} for the provided states",
+      "i" = "Please check if {.path {folder}} is the correct folder for FIA data"
+    ), call = .call)
+  }
+
+  res <- res |>
+    sf::st_as_sf()
+
+  return(res)
 }
 
 #' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
