@@ -92,18 +92,19 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 
 #' Function to read inventory files
 #'
-#' Read inventory csv file
+#' Read inventory files
 #'
-#' This function uses internally \code{\link[data.table]{fread}} to read the csv files. This way
+#' This function dispatch the correct reading function depending on the inventory and the file
+#' format. For FIA and FFI, uses \code{\link[data.table]{fread}} to read the csv files. This way
 #' we can leverage the options of \code{fread} to execute \code{grep} system tool to prefilter the
-#' rows and others.
+#' rows and others. For IFN, it uses the custom \code{\link{.read_ifn_data}}.
 #'
-#' @param input character vector as provided by \code{\link{.build_fia_file_path}},
-#' \code{\link{.build_ffi_file_path}}. See there for details about the \code{grep} usage.
-#' @param ... optional arguments for \code{\link[data.table]{fread}}. Most usually fo providing
+#' @param input character vector as provided by the .build_path functions for each inventory.
+#' @param ... optional arguments for the reading function. Most usually fo providing
 #'   a list of columns to read with the \code{select} argument.
 #' @param .ifn logical value (default \code{FALSE}), indicating if the inventory read is the IFN.
-#'   This is needed because the IFN is in DB formats, not csv formats.
+#'   This is needed because the IFN is in DB formats, not csv formats and we need to use a custom
+#'   function
 #'
 #' @return A \code{\link[dtplyr]{lazy_dt}} object, with immutable set to TRUE (to avoid shenanigans
 #'   with caching if used)
@@ -134,7 +135,22 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   return(res)
 }
 
-
+#' Helper for system commands needed
+#'
+#' Check if a system command exists
+#'
+#' This function checks if the especified command exists in the SO and through an informative
+#' warning if not.
+#'
+#' @param cmd Character with the system command to check. Default to grep, as is the most common
+#'   check in the package.
+#' @param warn_vector Character vector \emph{a la cli} for the warning to show. Default to grep
+#'   command warning.
+#'
+#' @return \code{invisible(TRUE)} if command exists, \code{invisible(FALSE)} and a warning if it
+#'   doesn't.
+#'
+#' @noRd
 .sys_cmd_warning <- function(
   cmd = "grep",
   warn_vector = c(
