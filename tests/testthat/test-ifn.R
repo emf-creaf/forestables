@@ -111,6 +111,25 @@ test_ifn4_input <- suppressWarnings(
   )
 )
 
+test_ifn234_plots <- esus:::ifn_plots_thesaurus |>
+  dplyr::filter(dplyr::if_all(dplyr::starts_with("class_"), ~ . != "xx")) |>
+  dplyr::select(id_code, PROVINCIA) |>
+  dplyr::group_by(PROVINCIA) |>
+  dplyr::summarise(plots = list(id_code), .groups = "keep") |>
+  dplyr::group_map(.f = \(province_plots, province_code) {
+    tibble::deframe(province_plots) |>
+      # list() |>
+      purrr::set_names(province_code[[1]])
+  }) |>
+  purrr::flatten()
+test_ifn234_plots$tururu <- c("tururu_0355_NN_A1_A1")
+test_ifn234_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
+test_ifn234_provinces <- names(test_ifn234_plots)
+test_ifn234_folder <- Sys.getenv("ifn_path")
+test_ifn234_especies <- esus:::species_ifn_internal
+test_ifn234_provinces_dictionary <- esus:::ifn_provinces_dictionary
+test_ifn234_versions <- c("ifn2", "ifn3", "ifn4")
+
 # individual tables ---------------------------------------------------------------------------
 
 test_that("ifn_tree_table_process for ifn2 works as intended", {
@@ -1434,218 +1453,149 @@ test_that("ifn_tables_process ifn4 works as intended", {
 
 # ifn_to_tibble -------------------------------------------------------------------------------
 
-# test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
-#
-#   test_plots <- list(
-#       "06" = c(2064,1138,325),
-#       "07" = c(679,114,499),
-#       "10" = c(3374,261),
-#       "30" = c(78, 1223),
-#       "31" = c(135,761,1518),
-#       "33" = c(283),
-#       "40" = c(412,1216,1728),
-#       "49" = c(105,99,532),
-#       "91" = c(1406115, 0),
-#       "tururu" = 3555
-# )
-# #   test_plots <- list(
-# #     "01" = c(19,80,1120),
-# #     "02"= c(11,444,1839),
-# #     "03"= c(626,1021,23),
-# #     "04"= c(233,5,445),
-# #     "05" = c(61, 14, 328),
-# #     "06" = c(2064,1138,325),
-# #     "07" = c(679,114,499),
-# #     "10" = c(3374,261),
-# #     "12" = c(156,1463,377),
-# #     "13" = c(51, 419,783),
-# #     "17" = c(2003,629,2944),
-# #     "23" = c(269,1460,444),
-# #     "26" = c(960,495,172),
-# #     "27" = c(90, 190,537),
-# #     "30" = c(78,1223,1057),
-# #     "33" = c(818,283,1483),
-# #     "31" = c(135,761,1518),
-# #     "38" = c(672,426,1557),
-# #     "40" = c(412,1216,1728),
-# #     "50" = c(172, 479,744),
-# #     "49" = c(105,99,532)
-# #   )
-# #
-# #
-#   test_provinces <- names(test_plots)
-#
-#
-#   test_input_ifn2 <- suppressWarnings(
-#     .build_ifn_input_with (
-#    "ifn2",
-#     test_provinces,
-#     test_plots,
-#     test_folder,
-#     .verbose = TRUE
-#     )
-#   )
-#
-#
-#   test_input_ifn3 <- suppressWarnings(
-#     .build_ifn_input_with (
-#     "ifn3",
-#     test_provinces,
-#     test_plots,
-#     test_folder,
-#     .verbose = TRUE
-#     )
-#   )
-#
-#   test_input_ifn4 <- suppressWarnings(
-#   .build_ifn_input_with (
-#     "ifn4",
-#     test_provinces,
-#     test_plots,
-#     test_folder,
-#     .verbose = TRUE
-#   )
-#   )
-#
-#   test_input <- rbind(test_input_ifn2,test_input_ifn3,test_input_ifn4)
-#   test_version <- c("ifn2", "ifn3", "ifn4")
-#
-#
-#   # tests config
-#   test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
-#   future::plan(future::multisession, workers = 3)
-#   withr::defer(future::plan(future::sequential))
-#
-#   # tests data
-#   expected_names <- c(
-#     "ID_UNIQUE_PLOT",
-#     "COUNTRY",
-#     "YEAR",
-#     "ca_name_original",
-#     "province_name_original",
-#     "province_code",
-#     "PLOT",
-#     "version",
-#     "HOJA",
-#     "Huso",
-#     "COORD_SYS",
-#     "COORD1",
-#     "COORD2",
-#     "crs",
-#     "PENDIEN2",
-#     "SLOPE",
-#     "ELEV",
-#     "ASPECT",
-#     "tree",
-#     "understory",
-#     "regen",
-#     # "soils",
-#     "Cla",
-#     "Subclase",
-#     "Tipo")
-#
-#
-#   # object
-#   expect_s3_class(
-#     test_res <- suppressWarnings(ifn_to_tibble(
-#       test_provinces, test_version, test_plots, test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     )),
-#     "tbl"
-#   )
-#
-#   # data integrity
-#   expect_named(test_res, expected_names)
-#   expect_false("tururu" %in% unique(test_res$province_code))
-#   expect_identical(nrow(test_res), 53L) # two plots dont exist, so 2x2=4 rows less
-#   expect_true(all(unique(test_res$province_code) %in% names(test_plots)))
-#   expect_true(all(unique(test_res$version) %in% test_version))
-#
-#   ### test all assertions done in ifn_to_tibble
-#   # provinces
-#   expect_error(
-#     ifn_to_tibble(
-#       1:7, test_version, test_plots, test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     ),
-#     "provinces must be a character vector with at least one province code"
-#   )
-#   expect_error(
-#     ifn_to_tibble(
-#       character(), test_version, test_plots, test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     ),
-#     "provinces must be a character vector with at least one province code"
-#   )
-#   # VERSION
-#   expect_error(
-#     ifn_to_tibble(
-#       test_provinces, numeric(), test_plots, test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     ),
-#     "version must be a character vector with at least one"
-#   )
-#   expect_error(
-#     ifn_to_tibble(
-#       test_provinces, character(), test_plots, test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     ),
-#     "version must be a character vector with at least one"
-#   )
-#   # folder
-#   expect_error(
-#     ifn_to_tibble(
-#       test_provinces, test_version, test_plots, "nonexistantfolder",
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     ),
-#     "Folder especified"
-#   )
-#   # filter list (TODO as testng interactive commands is tricky)
-#   # parallel options
-#   expect_error(
-#     ifn_to_tibble(
-#       test_provinces, test_version, test_plots, test_folder,
-#       .parallel_options = list(scheduling = 2L, stdout = TRUE),
-#       .verbose = FALSE
-#     ),
-#     ".parallel_options"
-#   )
-# # verbose
-# expect_error(
-#   ifn_to_tibble(
-#     test_provinces, test_version, test_plots, test_folder,
-#     .parallel_options = test_parallel_conf,
-#     .verbose = "FALSE"
-#   ),
-#   ".verbose"
-# )
-# # ancillary data (tested just by providing an existing wrong folder)
-# expect_error(
-#   suppressWarnings(
-#   ifn_to_tibble(
-#     test_provinces, test_version, test_plots, ".",
-#     .parallel_options = test_parallel_conf,
-#     .verbose = FALSE
-#   )
-#   ),
-#   "Ooops! Something went wrong, exiting..."
-# )
-#
-# # what to expect if provinces or filter list are all wrong
-#   expect_error(
-#     suppressWarnings(ifn_to_tibble(
-#       "tururu", test_version, list("tururu" = 0), test_folder,
-#       .parallel_options = test_parallel_conf,
-#       .verbose = FALSE
-#     )
-#     ),
-#     "Ooops! Something went wrong, exiting..."
-#   )
-#
-# })
+test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
+
+  # tests config
+  test_ifn234_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  future::plan(future::multisession, workers = 3)
+  withr::defer(future::plan(future::sequential))
+
+  # we have 16000 plots in test_ifn234_plots, so we do reduce a little, because it takes around
+  # 4 minutes.
+  test_ifn234_plots <- test_ifn234_plots |>
+    purrr::map(\(x) {
+      sample(x, 5, replace = TRUE) |> unique()
+    })
+
+  # tests data
+  expected_names <- c(
+    "ID_UNIQUE_PLOT",
+    "COUNTRY",
+    "YEAR",
+    "ca_name_original",
+    "province_name_original",
+    "province_code",
+    "PLOT",
+    "version",
+    "HOJA",
+    "Huso",
+    "COORD_SYS",
+    "COORD1",
+    "COORD2",
+    "crs",
+    "PENDIEN2",
+    "SLOPE",
+    "ELEV",
+    "ASPECT",
+    "tree",
+    "understory",
+    "regen",
+    "Cla",
+    "Subclase",
+    "Tipo"
+    # "soils"
+  )
+
+  # object
+  expect_s3_class(
+    test_ifn234_res <- suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "tbl"
+  )
+
+  # data integrity
+  expect_named(test_ifn234_res, expected_names)
+  expect_false("tururu" %in% unique(test_ifn234_res$province_code))
+  expect_identical(
+    nrow(test_ifn234_res),
+    (((test_ifn234_plots |> purrr::flatten() |> length()) - 3) |> as.integer()) * 3L
+  )
+  expect_true(all(unique(test_ifn234_res$province_code) %in% names(test_ifn234_plots)))
+  expect_true(all(unique(test_ifn234_res$version) %in% test_ifn234_versions))
+
+  ## test assertions in ifn_to_tibble
+  # provinces
+  expect_error(
+    ifn_to_tibble(
+      1:7, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    ),
+    "character vector"
+  )
+  expect_error(
+    ifn_to_tibble(
+      character(), test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    ),
+    "at least one"
+  )
+  expect_error(
+    ifn_to_tibble(
+      c("tururu"), test_ifn234_versions, list("tururu" = c(2345)), test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    ),
+    "Any of the provided"
+  )
+  # versions
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, 1:3, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "character vector"
+  )
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, character(), test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "at least one"
+  )
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, c("ifn4", "ifn5"), test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "Only valid"
+  )
+
+  # folder
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, "nonexistantfolder",
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "Folder especified"
+  )
+
+  # parallel optios
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = list(scheduling = 2L, stdout = TRUE),
+      .verbose = FALSE
+    )),
+    ".parallel_options"
+  )
+
+  # verbose
+  expect_error(
+    suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = "FALSE"
+    )),
+    ".verbose"
+  )
+
+})
