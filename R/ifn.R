@@ -65,18 +65,39 @@ ifn_to_tibble <- function(
   # grep
   assertthat::assert_that(.sys_cmd_warning())
 
-  # departments
+  # provinces
   assertthat::assert_that(
     is.character(provinces), length(provinces) > 0,
     msg = cli::cli_abort("provinces must be a character vector with at least one province code")
   )
-  ## TODO
-  # check all provinces are valid
+  # provinces are valid
+  valid_provinces <- esus:::ifn_plots_thesaurus |>
+    dplyr::pull(PROVINCIA) |>
+    unique() |>
+    sort()
+  invalid_provinces <- which(!provinces %in% valid_provinces)
+
+  if (identical(length(provinces), length(invalid_provinces))) {
+    cli::cli_abort(c(
+      "x" = "Any of the provided {.arg provinces} ({.val {provinces}}) are valid. Aborting."
+    ))
+  } else {
+    if (length(invalid_provinces) > 0) {
+      cli::cli_warn(c(
+        "!" = "Some {.arg provinces} are not valid: {.val {provinces[invalid_provinces]}}",
+        "i" = "These will be skipped in the process"
+      ))
+    }
+  }
 
   # versions
   assertthat::assert_that(
     is.character(versions), length(versions) > 0,
     msg = cli::cli_abort("versions must be a character vector with at least one")
+  )
+  assertthat::assert_that(
+    all(versions %in% c("ifn2", "ifn3", "ifn4")),
+    msg = cli::cli_abort('Only valid {.arg versions} are "ifn2", "ifn3" or "ifn4"')
   )
 
   # folder
@@ -88,29 +109,23 @@ ifn_to_tibble <- function(
     )
   )
 
+  # filter_list
+  if (is.null(filter_list)) {
+    if (interactive()) {
+      cli::cli_inform(c(
+        "You haven't specified any plots in the {.arg filter_list} argument.",
+        "x" = "This will cause to retrieve {.strong ALL} plots  for the selected departments and years",
+        "!" = "This will use a lot of memory and time, as hundred of thousands plots will potentially be evaluated",
+        "TODO: add info about how to create the filter list",
+        ""
+      ))
 
-  # # filter_list
-  # if (is.null(filter_list)) {
-  #   if (interactive()) {
-  #     cli::cli_inform(c(
-  #       "You haven't specified any plots in the {.arg filter_list} argument.",
-  #       "x" = "This will cause to retrieve {.strong ALL} plots  for the selected departments and years",
-  #       "!" = "This will use a lot of memory and time, as hundred of thousands plots will potentially be evaluated",
-  #       "TODO: add info about how to create the filter list",
-  #       ""
-  #     ))
-  #
-  #     user_auth <- utils::menu(c("Yes", "No"), title = "Do you wish to continue anyway?")
-  #     if (user_auth == 2L) {
-  #       cli::cli_abort("Aborting per user request")
-  #     }
-  #   }
-  # }
-  ## TODO
-  # Check provinces and plots??
-
-  ## TODO
-  # Check ancillary data is present!!
+      user_auth <- utils::menu(c("Yes", "No"), title = "Do you wish to continue anyway?")
+      if (user_auth == 2L) {
+        cli::cli_abort("Aborting per user request")
+      }
+    }
+  }
 
   # parallel options
   assertthat::assert_that(
@@ -146,7 +161,6 @@ ifn_to_tibble <- function(
   ) |>
     purrr::list_rbind()
 }
-
 
 #' Inner function to process all tables for one version
 #'
