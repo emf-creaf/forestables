@@ -73,16 +73,54 @@ ffi_to_tibble <- function(
     is.character(departments), length(departments) > 0,
     msg = cli::cli_abort("departments must be a character vector with at least one department code")
   )
-  ## TODO
-  # check all departments are valid
+
+  # departments are valid
+  valid_departments <- c(
+    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "21", "22",
+    "23", "24", "25", "26", "27", "28", "29", "2A", "2B", "30", "31",
+    "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42",
+    "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53",
+    "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64",
+    "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "76",
+    "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87",
+    "88", "89", "90", "91", "92", "93", "94", "95"
+  )
+  invalid_departments <- which(!departments %in% valid_departments)
+
+  if (identical(length(departments), length(invalid_departments))) {
+    cli::cli_abort(c(
+      "x" = "Any of the provided {.arg departments} ({.val {departments}}) are valid. Aborting."
+    ))
+  } else {
+    if (length(invalid_departments) > 0) {
+      cli::cli_warn(c(
+        "!" = "Some {.arg departments} are not valid: {.val {departments[invalid_departments]}}",
+        "i" = "These will be skipped in the process"
+      ))
+    }
+  }
 
   # years
   assertthat::assert_that(
     is.numeric(years), length(years) > 0,
     msg = cli::cli_abort("years must be a numeric vector with at least one year")
   )
-  ## TODO
-  # check years are valid
+
+  # years are valid, meaning that years before 2005 are removed.
+  if (any(years < 2005)) {
+    years <- years[years >= 2005]
+
+    if (length(years) < 1) {
+      cli::cli_abort(c(
+        "x" = "All {.arg years} provided are from before 2005. FFI data starts in 2005. Aborting..."
+      ))
+    }
+
+    cli::cli_warn(c(
+      "!" = "Years before 2005 will be ignored as FFI data starts in 2005."
+    ))
+  }
 
   # folder
   assertthat::assert_that(
