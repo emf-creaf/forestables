@@ -946,7 +946,7 @@ ifn_plot_table_process <- function(
           SLOPE > 0.6 & SLOPE <= 2.4 ~ 7.5 ,
           SLOPE > 2.4 & SLOPE <= 4 ~ 16 ,
           SLOPE > 4 & SLOPE <= 7 ~ 27 ,
-          SLOPE > 7 ~ 40,
+          SLOPE > 7 ~ 40
         ),
         COORD_SYS = dplyr::case_when(
           .data$version == "ifn4" & .data$province_code %in% c(
