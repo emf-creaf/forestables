@@ -286,7 +286,7 @@ fia_tables_process <- function(
 
   # something went wrong (bad counties and plots, wrong filter list...)
   if (nrow(temp_res) < 1) {
-    cli::cli_abort("Ooops! Something went wrong, exiting...")
+    cli::cli_abort("Ooops! Something went wrong, exiting...", call = .call)
   }
 
   # return the res, but filtering first
@@ -337,7 +337,7 @@ fia_plot_table_process <- function(
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping plot info for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -464,7 +464,7 @@ fia_tree_table_process <- function(
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping tree data for plot {.var {plot}} at county {.var {county}} for {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -487,7 +487,7 @@ fia_tree_table_process <- function(
       "There is no tree data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -556,7 +556,7 @@ fia_understory_table_process <- function(
         "No understory data found",
         "i" = "Skipping understory data for plot {.var {plot}} at county {.var {county}} for
         {.var {year}}"
-      ))
+      ), call = .call)
       return(tibble::tibble())
     }
   } else {
@@ -589,7 +589,7 @@ fia_p3_understory_table_process <- function(
       "Some files can't be found",
       "i" = "Skipping understory p3 data for plot {.var {plot}} at county {.var {county}} for
       {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -624,7 +624,7 @@ fia_p3_understory_table_process <- function(
       "There is no p3 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -688,7 +688,7 @@ fia_p3_understory_table_process <- function(
       "There is no p3 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -725,7 +725,7 @@ fia_p2_understory_table_process <- function(
       "Some files can't be found",
       "i" = "Skipping understory p2 data for plot {.var {plot}} at county {.var {county}} for
       {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -761,7 +761,7 @@ fia_p2_understory_table_process <- function(
       "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -812,7 +812,7 @@ fia_p2_understory_table_process <- function(
       "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -855,7 +855,7 @@ fia_seedling_table_process <- function(
       "Some files can't be found",
       "i" = "Skipping seedling data for plot {.var {plot}} at county {.var {county}} for
       {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -888,7 +888,7 @@ fia_seedling_table_process <- function(
       "There is no seedling data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
@@ -950,7 +950,7 @@ fia_subplot_table_process <- function(
       "Some files can't be found",
       "i" = "Skipping subplot data for plot {.var {plot}} at county {.var {county}} for
       {.var {year}}"
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -983,7 +983,7 @@ fia_subplot_table_process <- function(
       "There is no subplot data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ))
+    ), call = .call)
     return(dplyr::tibble())
   }
 
