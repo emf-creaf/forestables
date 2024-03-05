@@ -2,8 +2,7 @@
 % Please edit documentation in R/ifn.R
 \name{ifn_to_tibble}
 \alias{ifn_to_tibble}
-\alias{ifn_tables_process}
-\title{Raw ifn data to tibble}
+\title{Raw IFN data to tibble}
 \usage{
 ifn_to_tibble(
   provinces,
@@ -14,21 +13,12 @@ ifn_to_tibble(
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
 )
-
-ifn_tables_process(
-  provinces,
-  version,
-  filter_list,
-  folder,
-  .parallel_options,
-  .verbose,
-  ...
-)
 }
 \arguments{
-\item{provinces}{A character vector with the code for the departments.}
+\item{provinces}{A character vector with the two-number codes for the provinces.}
 
-\item{versions}{A character vector with the ifn versions.}
+\item{versions}{A character vector with the ifn versions. Valid versions are \code{"ifn2"},
+\code{"ifn3"} and \code{"ifn4"}.}
 
 \item{filter_list}{A list of provinces and plots to extract the data from.}
 
@@ -47,37 +37,26 @@ metadata included, as well as columns containing tibbles with tree, shrub, herbs
 information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
 }
 \description{
-Transform raw IFN plot data into tidy data for use in models
-
-Processing all tables for one year
+Transform raw IFN plot data into tidy data for easier use
 }
 \details{
 This function will take every year indicated and retrieve and transform the plot data for the
-departments and plots provided. For that, csv files from IFN must reside in the folder indicated
-in the \code{folder} argument.
-
-This function is intended to be called internally by \code{\link{ifn_to_tibble}} for each
-year. This is implemented with furrr to allow parallelization of the plots data retrieval.
+provinces, versions and plots provided. For that, IFN db files must reside in the folder
+indicated in the \code{folder} argument.
 }
-\section{Functions}{
-\itemize{
-\item \code{ifn_tables_process()}: 
-
-}}
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{ifn_to_tibble} will attempt to process all
-plots for the provinces and ifn versions provided. This will result in sometimes hundred of
-thousands plots to be extracted, processed and returned, will in turn will cause a big use of
-memory and long times of calculation (specially when parallelising). Is better to provide a
-list of departments with the counties and plots to look after to narrow the process.
-This \code{filter_list} should have the following structure:
+plots for the provinces and ifn versions provided. This will result in sometimes
+thousands plots to be extracted, processed and returned, which in turn will cause a big use of
+memory (specially when running in parallel processes) and long times of calculation.
+Is better to provide a list of departments with the provinces and plots to look for to
+narrow the process. This \code{filter_list} should have the following structure:
 \preformatted{
    list(
-   "01" = 1404119,
-   "10" = 900863,
-   "11" = c(1436508, 1410492))
-
+   "01" = c("01_0644_NN_A1_A1"),
+   "08" = c("08_1256_NN_A1_xx", "08_0056_xx_A4_xx"),
+   "24" = c("24_0270_xx_A4_xx")
   )
   }
 \code{esus} package offers workflows to create this automatically, see
@@ -86,10 +65,10 @@ This \code{filter_list} should have the following structure:
 
 \section{Parallel}{
 
-Processing the plots from within a year can be done in parallel (\code{esus} uses internally
-the \code{\link[furrr]{furrr}} package for this). This means that, if parallelization is
-active, several processes are launched to retrieve the plots data for that year. This is
-repeated for all years provided.
+Processing the plots from within an IFN version can be done in parallel (\code{esus} uses
+internally the \code{\link[furrr]{furrr}} package for this). This means that, if
+parallelization is active, several processes are launched to retrieve the plots data for that
+IFN version. This is repeated for all versions provided.
 
 \code{.parallel_options} controls the finer details of how parallelization is performed (see
 \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first

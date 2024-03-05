@@ -1,13 +1,14 @@
-#' Raw ifn data to tibble
+#' Raw IFN data to tibble
 #'
-#' Transform raw IFN plot data into tidy data for use in models
+#' Transform raw IFN plot data into tidy data for easier use
 #'
 #' This function will take every year indicated and retrieve and transform the plot data for the
-#' departments and plots provided. For that, csv files from IFN must reside in the folder indicated
-#' in the \code{folder} argument.
+#' provinces, versions and plots provided. For that, IFN db files must reside in the folder
+#' indicated in the \code{folder} argument.
 #'
-#' @param provinces A character vector with the code for the departments.
-#' @param versions A character vector with the ifn versions.
+#' @param provinces A character vector with the two-number codes for the provinces.
+#' @param versions A character vector with the ifn versions. Valid versions are \code{"ifn2"},
+#'   \code{"ifn3"} and \code{"ifn4"}.
 #' @param filter_list A list of provinces and plots to extract the data from.
 #' @param folder The path to the folder containing the IFN db files, as character.
 #' @param ... Not used at the moment
@@ -17,27 +18,26 @@
 #'
 #' @section Filter list:
 #'   If no \code{filter_list} argument is provided, \code{ifn_to_tibble} will attempt to process all
-#'   plots for the provinces and ifn versions provided. This will result in sometimes hundred of
-#'   thousands plots to be extracted, processed and returned, will in turn will cause a big use of
-#'   memory and long times of calculation (specially when parallelising). Is better to provide a
-#'   list of departments with the counties and plots to look after to narrow the process.
-#'   This \code{filter_list} should have the following structure:
+#'   plots for the provinces and ifn versions provided. This will result in sometimes
+#'   thousands plots to be extracted, processed and returned, which in turn will cause a big use of
+#'   memory (specially when running in parallel processes) and long times of calculation.
+#'   Is better to provide a list of departments with the provinces and plots to look for to
+#'   narrow the process. This \code{filter_list} should have the following structure:
 #'   \preformatted{
 #'    list(
-#'    "01" = 1404119,
-#'    "10" = 900863,
-#'    "11" = c(1436508, 1410492))
-#'
+#'    "01" = c("01_0644_NN_A1_A1"),
+#'    "08" = c("08_1256_NN_A1_xx", "08_0056_xx_A4_xx"),
+#'    "24" = c("24_0270_xx_A4_xx")
 #'   )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
 #'   \code{vignette("filtering_plots", pkg = "esus")} for more details.
 #'
 #' @section Parallel:
-#'   Processing the plots from within a year can be done in parallel (\code{esus} uses internally
-#'   the \code{\link[furrr]{furrr}} package for this). This means that, if parallelization is
-#'   active, several processes are launched to retrieve the plots data for that year. This is
-#'   repeated for all years provided.
+#'   Processing the plots from within an IFN version can be done in parallel (\code{esus} uses
+#'   internally the \code{\link[furrr]{furrr}} package for this). This means that, if
+#'   parallelization is active, several processes are launched to retrieve the plots data for that
+#'   IFN version. This is repeated for all versions provided.
 #'
 #'   \code{.parallel_options} controls the finer details of how parallelization is performed (see
 #'   \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first
@@ -72,8 +72,6 @@ ifn_to_tibble <- function(
   )
   ## TODO
   # check all provinces are valid
-
-
 
   # versions
   assertthat::assert_that(
@@ -126,8 +124,6 @@ ifn_to_tibble <- function(
     msg = cli::cli_abort(".verbose must be logical (TRUE/FALSE)")
   )
 
-
-
   ## inform the user
   verbose_msg(
     cli::cli_inform(
@@ -136,11 +132,15 @@ ifn_to_tibble <- function(
     .verbose
   )
 
-  ## send the versions in loop to process table function
+  # get the caller environment to propagate errors
+  .call <- rlang::caller_env(0)
+  # send the versions in loop to process table function
   purrr::map(
     versions,
     .f = \(version) {
-      ifn_tables_process(provinces, version, filter_list, folder, .parallel_options, .verbose, ...)
+      ifn_tables_process(
+        provinces, version, filter_list, folder, .parallel_options, .verbose, .call, ...
+      )
     },
     .progress = FALSE
   ) |>
@@ -148,25 +148,28 @@ ifn_to_tibble <- function(
 }
 
 
-#' Inner function to process all tables for one year
+#' Inner function to process all tables for one version
 #'
-#' Processing all tables for one year
+#' Processing all tables for one version
 #'
 #' This function is intended to be called internally by \code{\link{ifn_to_tibble}} for each
-#' year. This is implemented with furrr to allow parallelization of the plots data retrieval.
+#' version. This is implemented with furrr to allow parallelization of the plots data retrieval.
 #'
-#' @describeIn ifn_to_tibble
+#' @inherit ifn_to_tibble
 #'
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
+#'
+#' @noRd
 ifn_tables_process <- function(
   provinces, version, filter_list, folder,
-  .parallel_options, .verbose, ...
+  .parallel_options, .verbose, .call = rlang::caller_env(), ...
 ) {
 
   # Create input df for year
-  input_df <- .build_ifn_input_with(version, provinces, filter_list, folder, .verbose)
+  input_df <- .build_ifn_input_with(version, provinces, filter_list, folder, .verbose, .call)
 
-  # temp_res <- furrr::future_pmap(
-  temp_res <- purrr::pmap(
+  # purrr::pmap(
+  temp_res <- furrr::future_pmap(
     .progress = .verbose,
     .l = input_df,
     .f = \(
@@ -174,11 +177,17 @@ ifn_tables_process <- function(
     ) {
 
       plot_info <- ifn_plot_table_process(
-        plot_table, coord_table, version, plots, province, ifn_provinces_dictionary
+          plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
+        )
+      tree <- ifn_tree_table_process(
+        tree_table, version, plots, province, species_ifn_internal, .call
       )
-      tree <- ifn_tree_table_process(tree_table, version, plots, province, species_ifn_internal)
-      shrub <- ifn_shrub_table_process(shrub_table, version, plots, province, species_ifn_internal)
-      regen <- ifn_regen_table_process(regen_table, version, plots, province, species_ifn_internal)
+      shrub <- ifn_shrub_table_process(
+        shrub_table, version, plots, province, species_ifn_internal, .call
+      )
+      regen <- ifn_regen_table_process(
+        regen_table, version, plots, province, species_ifn_internal, .call
+      )
       if (nrow(plot_info) < 1) {
         return(tibble::tibble())
       }
@@ -197,30 +206,10 @@ ifn_tables_process <- function(
         ) |>
         dplyr::select(
           dplyr::any_of(c(
-            "ID_UNIQUE_PLOT",
-            "COUNTRY",
-            "YEAR",
-            "ca_name_original",
-            "province_name_original",
-            "province_code",
-            "PLOT",
-            "Cla",
-            "Subclase",
-            "version",
-            "Tipo",
-            "HOJA",
-            "Huso",
-            "COORD_SYS",
-            "COORD1",
-            "COORD2",
-            "crs",
-            "PENDIEN2",
-            "SLOPE",
-            "ELEV",
-            "ASPECT",
-            "tree",
-            "understory",
-            "regen"
+            "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_name_original",
+            "province_code", "PLOT", "Cla", "Subclase", "version", "Tipo", "HOJA", "Huso",
+            "COORD_SYS", "COORD1", "COORD2", "crs", "PENDIEN2", "SLOPE", "ELEV", "ASPECT", "tree",
+            "understory", "regen"
           ))
         )
     }
@@ -229,7 +218,7 @@ ifn_tables_process <- function(
 
   # something went wrong (bad counties and plots, wrong filter list...)
   if (nrow(temp_res) < 1) {
-    cli::cli_abort("Ooops! Something went wrong, exiting...")
+    cli::cli_abort("Ooops! Something went wrong, exiting...", call = .call)
   }
 
   # filtering the missing plots. This is done based on the fact plot table functions returns NAs
@@ -239,24 +228,33 @@ ifn_tables_process <- function(
 
 }
 
-
-
-
-#' IFN 2 tree table process
+#' FIA data tables process
 #'
-#' Processing tree table for IFN
+#' Process to gather needed data from FIA csv tables
 #'
-#' This function  ifn_tree_table_process reads and process the tree table for one plot and one IFN
+#' These functions retrieve the data for a plot in one year.
 #'
-#' @param tree_data file that contains the tree table for that plot
-#' @param plot plot_id code
-#' @param province province code
-#' @param ref_tree_ifn data frame containing the species code reference table
+#' @param tree_data,shrub_data,regen_data,plot_data,coord_data Paths to the files with the corresponding data
+#' @param version IFN version
+#' @param plot Plot unique ID code
+#' @param province Province two-number code
+#' @param species_ifn_internal,ifn_provinces_dictionary species and provinces dictionary tables.
+#'   These tables are included as internal data in the package
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
+#' @return A tibble with one or more rows (depending on the data retrieved) for each plot for that
+#'  IFN version.
+#'
+#' @name ifn_tables_processing
 #' @noRd
-#'
+NULL
 
-ifn_tree_table_process <- function(tree_data, version, plot, province, species_ifn_internal) {
+#' IFN data tables process
+#' @describeIn ifn_tables_processing Process to gather needed data from tree table
+#' @noRd
+ifn_tree_table_process <- function(
+  tree_data, version, plot, province, species_ifn_internal, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(tree_data))))
@@ -266,7 +264,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping tree data for plot {.var {plot}} "
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -277,14 +275,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
     tree_filtered_data <- .read_inventory_data(
       tree_data,
       colnames = c(
-        "PROVINCIA",
-        "ESTADILLO",
-        "ESPECIE",
-        "NUMORDEN",
-        "ARBOL",
-        "DIAMETRO1",
-        "DIAMETRO2",
-        "ALTURA"
+        "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1", "DIAMETRO2", "ALTURA"
       ),
       version = version,
       province = province,
@@ -303,20 +294,15 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       cli::cli_warn(c(
         "Tree data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}} "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
     tree <- tree_filtered_data |>
       # transformations and filters
       dplyr::rename(
-        province_code = "PROVINCIA",
-        PLOT = "ESTADILLO",
-        SP_CODE = "ESPECIE",
-        TREE = "ARBOL",
-        Dn1 = "DIAMETRO1",
-        Dn2 = "DIAMETRO2",
-        HT = "ALTURA"
+        province_code = "PROVINCIA", PLOT = "ESTADILLO", SP_CODE = "ESPECIE",
+        TREE = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", HT = "ALTURA"
       ) |>
       dplyr::mutate(
         PLOT = as.character(.data$PLOT),
@@ -342,11 +328,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::select(
-        "ID_UNIQUE_PLOT",
-        "province_code",
-        "PLOT",
-        "SP_CODE",
-        "SP_NAME",
+        "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE", "SP_NAME",
         "DIA", # diameter in cm
         "HT", # height in m
         "DENSITY"
@@ -360,20 +342,8 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
     tree_filtered_data <-  .read_inventory_data(
       tree_data,
       colnames = c(
-        "Provincia",
-        "Estadillo",
-        "Cla",
-        "Subclase",
-        "Especie",
-        "nArbol",
-        "OrdenIf3",
-        "OrdenIf2",
-        "OrdenIf4",
-        "Dn1",
-        "Dn2",
-        "Ht",
-        "Calidad",
-        "Forma"
+        "Provincia", "Estadillo", "Cla", "Subclase", "Especie", "nArbol", "OrdenIf3",
+        "OrdenIf2", "OrdenIf4", "Dn1", "Dn2", "Ht", "Calidad", "Forma"
       ),
       version = version,
       province = province,
@@ -394,7 +364,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       cli::cli_warn(c(
         "Tree data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}} "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -426,18 +396,11 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::select(
         dplyr::any_of(c(
-          "ID_UNIQUE_PLOT",
-          "province_code",
-          "Clase",
-          "Subclase",
-          "PLOT",
-          "SP_CODE",
-          "SP_NAME",
+          "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME",
           #tree number id in ifn4
           "nArbol",
           #CUALIDAD 6 = dead but providing functions
-          "Calidad",
-          "Forma",
+          "Calidad", "Forma",
           #check codes to understand origin and trace of individuals
           "OrdenIf2",
           "OrdenIf3",
@@ -445,8 +408,7 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
           #diameter in cm
           "DIA",
           #height in cm
-          "HT",
-          "DENSITY"
+          "HT", "DENSITY"
         ))
       )
 
@@ -455,10 +417,11 @@ ifn_tree_table_process <- function(tree_data, version, plot, province, species_i
   }
 }
 
-
-
-
-ifn_shrub_table_process <- function(shrub_data, version, plot, province, species_ifn_internal) {
+#' @describeIn ifn_tables_processing Process to gather needed data from shrub table
+#' @noRd
+ifn_shrub_table_process <- function(
+  shrub_data, version, plot, province, species_ifn_internal, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(shrub_data))))
@@ -468,7 +431,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping shrub data for plot {.var {plot}} "
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -476,13 +439,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
   if (version == "ifn2") {
     shrub_filtered_data <- .read_inventory_data(
       shrub_data,
-      colnames = c(
-        "PROVINCIA",
-        "ESTADILLO",
-        "ESPECIE",
-        "FRACCAB",
-        "ALTUMED"
-      ),
+      colnames = c("PROVINCIA", "ESTADILLO", "ESPECIE", "FRACCAB", "ALTUMED"),
       version = version,
       province = province,
       .ifn = TRUE
@@ -496,7 +453,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
       cli::cli_warn(c(
         "Shrub data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -558,7 +515,7 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
       cli::cli_warn(c(
         "Shrub data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -591,8 +548,11 @@ ifn_shrub_table_process <- function(shrub_data, version, plot, province, species
   }
 }
 
-
-ifn_regen_table_process <- function(regen_data, version, plot, province, species_ifn_internal) {
+#' @describeIn ifn_tables_processing Process to gather needed data from regen table
+#' @noRd
+ifn_regen_table_process <- function(
+  regen_data, version, plot, province, species_ifn_internal, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(regen_data))))
@@ -602,7 +562,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping regen data for plot {.var {plot}} "
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -610,14 +570,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
   if (version == "ifn2") {
     regen_filtered_data <- .read_inventory_data(
       regen_data,
-      colnames = c(
-        "PROVINCIA",
-        "ESTADILLO",
-        "ESPECIE",
-        "NUMERO",
-        "ALTUMED",
-        "REGENA"
-      ),
+      colnames = c("PROVINCIA", "ESTADILLO", "ESPECIE", "NUMERO", "ALTUMED", "REGENA"),
       version = version,
       province = province,
       .ifn = TRUE
@@ -633,7 +586,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
       cli::cli_warn(c(
         "Regeneration data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -688,16 +641,8 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
     regen_filtered_data <- .read_inventory_data(
       regen_data,
       colnames = c(
-        "Provincia",
-        "Estadillo",
-        "Cla",
-        "Subclase",
-        "Especie",
-        "CatDes",
-        "Tipo",
-        "Densidad",
-        "NumPies",
-        "Hm"
+        "Provincia", "Estadillo", "Cla", "Subclase", "Especie", "CatDes",
+        "Tipo", "Densidad", "NumPies", "Hm"
       ),
       version = version,
       province = province,
@@ -721,7 +666,7 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
       cli::cli_warn(c(
         "Regeneration data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -774,9 +719,11 @@ ifn_regen_table_process <- function(regen_data, version, plot, province, species
   }
 }
 
+#' @describeIn ifn_tables_processing Process to gather needed data from plot and coords tables
+#' @noRd
 ifn_plot_table_process <- function(
   plot_data, coord_data, version,
-  plot, province, ifn_provinces_dictionary
+  plot, province, ifn_provinces_dictionary, .call = rlang::caller_env()
 ) {
 
   # in some cases (get plots from provinces) we pass a quosure to the plot argument.
@@ -798,7 +745,7 @@ ifn_plot_table_process <- function(
     cli::cli_warn(c(
       "Some files can't be found",
       "i" = "Skipping regen data for plot {.var {plot}} "
-    ))
+    ), call = .call)
 
     return(dplyr::tibble())
   }
@@ -809,26 +756,9 @@ ifn_plot_table_process <- function(
     plot_filtered_data <- .read_inventory_data(
       plot_data,
       colnames = c(
-        "PROVINCIA",
-        "ESTADILLO",
-        "HOJA",
-        "ANO",
-        "COORDEX",
-        "COORDEY",
-        "ALTITUD1",
-        "ALTITUD2",
-        "PENDIEN1",
-        "PENDIEN2",
-        "FRACCION1",
-        "FRACCION2",
-        "CLASUELO",
-        "ESPESOR",
-        "CLACOBER",
-        "CUBIERTA",
-        "ORIENTA1",
-        "ORIENTA2",
-        "MAXPEND1",
-        "MAXPEND2"
+        "PROVINCIA", "ESTADILLO", "HOJA", "ANO", "COORDEX", "COORDEY", "ALTITUD1", "ALTITUD2",
+        "PENDIEN1", "PENDIEN2", "FRACCION1", "FRACCION2", "CLASUELO", "ESPESOR", "CLACOBER",
+        "CUBIERTA", "ORIENTA1", "ORIENTA2", "MAXPEND1", "MAXPEND2"
       ),
       version = version,
       province = province,
@@ -846,7 +776,7 @@ ifn_plot_table_process <- function(
       cli::cli_warn(c(
         "Plot data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -855,7 +785,7 @@ ifn_plot_table_process <- function(
         "File {.file {plot_data}} has some errors in the coordinates
         (missing coordinates, bad format...).",
         "i" = "These records will be removed from the results"
-      ))
+      ), call = .call)
     }
 
     # fix bad formatted coords and filter missing coordinates
@@ -945,25 +875,9 @@ ifn_plot_table_process <- function(
         by = "province_code"
       ) |>
       dplyr::select(dplyr::any_of(c(
-        "ID_UNIQUE_PLOT",
-        "COUNTRY",
-        "ca_name_original",
-        "province_name_original",
-        "province_code",
-        "PLOT",
-        "YEAR",
-        "version",
-        "HOJA",
-        "Huso",
-        "COORDEX",
-        "COORDEY",
-        "COORD_SYS",
-        "crs",
-        "PENDIEN2",
-        "SLOPE",
-        "ELEV",
-        "ASPECT"
-        # "soils"
+        "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_name_original", "province_code",
+        "PLOT", "YEAR", "version", "HOJA", "Huso", "COORDEX", "COORDEY", "COORD_SYS", "crs",
+        "PENDIEN2", "SLOPE", "ELEV", "ASPECT" # "soils"
       )))
 
     return(info_plot)
@@ -973,22 +887,8 @@ ifn_plot_table_process <- function(
     plot_filtered_data <- .read_inventory_data(
       plot_data,
       colnames = c(
-        "Provincia",
-        "Estadillo",
-        "Cla",
-        "Subclase",
-        "Tipo",
-        "Ano",
-        "Rocosid",
-        "MatOrg",
-        "TipSuelo1",
-        "TipSuelo2",
-        "TipSuelo3",
-        "Orienta1",
-        "Orienta2",
-        "MaxPend1",
-        "MaxPend2"
-
+        "Provincia", "Estadillo", "Cla", "Subclase", "Tipo", "Ano", "Rocosid", "MatOrg",
+        "TipSuelo1", "TipSuelo2", "TipSuelo3", "Orienta1", "Orienta2", "MaxPend1", "MaxPend2"
       ),
       version = version,
       province = province,
@@ -1000,15 +900,13 @@ ifn_plot_table_process <- function(
       ) |>
       tibble::as_tibble()
 
-
-
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(plot_filtered_data) < 1) {
       # warn the user
       cli::cli_warn(c(
         "Plot data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -1062,20 +960,8 @@ ifn_plot_table_process <- function(
       ) |>
       # selection of final variables
       dplyr::select(
-        "ID_UNIQUE_PLOT",
-        "COUNTRY",
-        "ca_name_original",
-        "province_code",
-        "province_name_original",
-        "PLOT",
-        "Cla",
-        "Subclase",
-        "COORD_SYS",
-        "YEAR",
-        "version",
-        "Tipo",
-        "ASPECT",
-        "SLOPE"
+        "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_code", "province_name_original",
+        "PLOT", "Cla", "Subclase", "COORD_SYS", "YEAR", "version", "Tipo", "ASPECT", "SLOPE"
       )
 
     files_validation <- assertthat::validate_that(!any(is.na(c(coord_data))))
@@ -1083,14 +969,7 @@ ifn_plot_table_process <- function(
     coords_filtered_data <- .read_inventory_data(
       coord_data,
       colnames = c(
-        "Provincia",
-        "Estadillo",
-        "Clase", "Cla",
-        "Subclase",
-        "Hoja50",
-        "CoorX",
-        "CoorY",
-        "Huso"
+        "Provincia", "Estadillo", "Clase", "Cla", "Subclase", "Hoja50", "CoorX", "CoorY", "Huso"
       ),
       version = version,
       province = province,
@@ -1109,7 +988,7 @@ ifn_plot_table_process <- function(
       cli::cli_warn(c(
         "Coordinates data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ))
+      ), call = .call)
       return(dplyr::tibble())
     }
 
@@ -1119,7 +998,7 @@ ifn_plot_table_process <- function(
         "File {.file {plot_data}} has some errors in the coordinates
         (missing coordinates, bad format...).",
         "i" = "These records will be removed from the results"
-      ))
+      ), call = .call)
     }
 
     # remove bad formatted or missing coordinates
@@ -1148,14 +1027,7 @@ ifn_plot_table_process <- function(
       dplyr::left_join(
         y = coords_data |>
           dplyr::select(
-            dplyr::any_of(c(
-              "PLOT",
-              "province_code",
-              "COORDEX",
-              "COORDEY",
-              "HOJA",
-              "Huso"
-            ))
+            dplyr::any_of(c("PLOT", "province_code", "COORDEX", "COORDEY", "HOJA", "Huso"))
           ) |>
           dplyr::distinct(),
         by = c("province_code", "PLOT")
@@ -1179,25 +1051,9 @@ ifn_plot_table_process <- function(
       ) |>
       dplyr::select(
         dplyr::any_of(c(
-          "ID_UNIQUE_PLOT",
-          "COUNTRY",
-          "YEAR",
-          "ca_name_original",
-          "province_code",
-          "province_name_original",
-          "PLOT",
-          "Cla",
-          "Subclase",
-          "version",
-          "Tipo",
-          "ASPECT",
-          "SLOPE",
-          "crs",
-          "COORD_SYS",
-          "COORDEX",
-          "COORDEY",
-          "HOJA",
-          "Huso"
+          "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_code",
+          "province_name_original", "PLOT", "Cla", "Subclase", "version", "Tipo", "ASPECT", "SLOPE",
+          "crs", "COORD_SYS", "COORDEX", "COORDEY", "HOJA", "Huso"
         ))
       )
 

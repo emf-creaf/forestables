@@ -184,7 +184,6 @@ fia_to_tibble <- function(
 #' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
 #' @noRd
-#'
 fia_tables_process <- function(
   year, states, filter_list, folder, .parallel_options, .verbose, .call = rlang::caller_env(), ...
 ) {
