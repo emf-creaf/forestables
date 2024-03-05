@@ -358,14 +358,27 @@ fia_plot_table_process <- function(
     dplyr::mutate(PLOT  = plot, INVYR  = year, COUNTYCD = county)
 
   # plot table
-  data_plot <- .read_inventory_data(
+  data_plot_raw <- .read_inventory_data(
     plot_data,
     select = c(
       "INVYR", "STATECD", "UNITCD", "COUNTYCD", "PLOT", "LAT", "LON",
       "ELEV", "PLOT_STATUS_CD", "SAMP_METHOD_CD", "SUBP_EXAMINE_CD",
       "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD", "DESIGNCD"
     )
-  ) |>
+  )
+
+  ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
+  if (nrow(data_plot_raw) < 1) {
+    # warn the user
+    cli::cli_warn(c(
+      "There is no plot data for that combination of plot, county and year",
+      "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
+      {.var {county}}"
+    ), call = .call)
+    return(dplyr::tibble())
+  }
+
+  data_plot <- data_plot_raw |>
     # we arrange by year to catch last record lately
     dplyr::arrange(desc(.data$INVYR)) |>
     dplyr::mutate(

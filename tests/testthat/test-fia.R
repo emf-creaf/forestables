@@ -138,25 +138,19 @@ test_that("fia_plot_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_s3_class(
-    test_no_plot_error <- suppressWarnings(fia_plot_table_process(
+  expect_warning(
+    test_no_plot_error <- fia_plot_table_process(
       test_input$plot_table[30],
       test_input$survey_table[30],
       test_input$cond_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year
-    )),
-    "tbl"
+    ),
+    "There is no plot data"
   )
-  # expect_s3_class(test_no_plot_error, "tbl")
-  expect_true(nrow(test_no_plot_error) == 1L)
-  expect_true(all(
-    is.na(test_no_plot_error[["LON"]]),
-    is.na(test_no_plot_error[["LON_ORIGINAL"]]),
-    is.na(test_no_plot_error[["LAT"]]),
-    is.na(test_no_plot_error[["LAT_ORIGINAL"]])
-  ))
+  expect_s3_class(test_no_plot_error, "tbl")
+  expect_true(nrow(test_no_plot_error) < 1L)
 })
 
 test_that("fia_tree_table_process works as intended", {
