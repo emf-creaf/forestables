@@ -20,9 +20,9 @@ fia_to_tibble(
 \item{states}{A character vector with the two letters code for the states to extract the data
 from.}
 
-\item{filter_list}{A list of counties and plots to extract the data from. If \code{NULL} all
-plots for the state for all years will be extracted, which can use a big amount of memory. See
-details.}
+\item{filter_list}{A nested list of states, counties and plots to extract the data from.
+If left \code{NULL} all plots for the state for all years will be extracted, which can use a
+big amount of memory. See details.}
 
 \item{folder}{The path to the folder containing the FIA csv files, as character.}
 
@@ -39,21 +39,21 @@ metadata included, as well as columns containing tibbles with tree, shrub, herbs
 information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
 }
 \description{
-Transform raw FIA plot data into tidy data for use in models
+Transform raw FIA plot data into tidy data for easier use
 }
 \details{
-This function will take every year indicated and retrieve and transform the plot data for the
-states and plots provided. For that, csv files from FIA must reside in the folder indicated in
-the \code{folder} argument.
+This function will take every year specified and will retrieve and transform the plot data
+for the states and plots provided. For that, csv files from FIA must reside in the folder
+indicated in the \code{folder} argument.
 }
 \section{Filter list}{
 
 If no \code{filter_list} argument is provided, \code{fia_to_tibble} will attempt to process all
 plots for the states and years provided. This will result in sometimes hundred of thousands
-plots to be extracted, processed and returned, will in turn will cause a big use of memory and
-long times of calculation (specially when parallelising). Is better to provide a list of states
-with the counties and plots to look after to narrow the process. This \code{filter_list} should
-have the following structure:
+plots to be extracted, processed and returned, which in turn will cause a big use of
+memory (specially when running in parallel processes) and long times of calculation.
+Is better to provide a list of states with the counties and plots to look for to narrow
+the process. This \code{filter_list} should have the following structure:
 \preformatted{
   list(
     "MN" = list("137" = c(29396, 25064), "71" = c(20210)),

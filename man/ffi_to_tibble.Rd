@@ -20,7 +20,7 @@ or \code{c("01", "10")}. See examples for details.}
 
 \item{years}{A numeric vector with the years to extract de data from.}
 
-\item{filter_list}{A list of counties and plots to extract the data from. If \code{NULL} all
+\item{filter_list}{A list of departments and plots to extract the data from. If \code{NULL} all
 plots for the department for all years will be extracted, which can use a big amount of memory.
 See details.}
 
@@ -50,9 +50,9 @@ indicated in the \code{folder} argument.
 
 If no \code{filter_list} argument is provided, \code{ffi_to_tibble} will attempt to process all
 plots for the departments and years provided. This will result in sometimes hundred of
-thousands plots to be extracted, processed and returned, will in turn will cause a big use of
+thousands plots to be extracted, processed and returned, which in turn will cause a big use of
 memory (specially when running in parallel processes) and long times of calculation.
-Is better to provide a list of departments with the counties and plots to look after to narrow
+Is better to provide a list of departments with the counties and plots to look for to narrow
 the process. This \code{filter_list} should have the following structure:
 \preformatted{
    list(

@@ -1,17 +1,17 @@
 #' Raw FIA data to tibble
 #'
-#' Transform raw FIA plot data into tidy data for use in models
+#' Transform raw FIA plot data into tidy data for easier use
 #'
-#' This function will take every year indicated and retrieve and transform the plot data for the
-#' states and plots provided. For that, csv files from FIA must reside in the folder indicated in
-#' the \code{folder} argument.
+#' This function will take every year specified and will retrieve and transform the plot data
+#' for the states and plots provided. For that, csv files from FIA must reside in the folder
+#' indicated in the \code{folder} argument.
 #'
 #' @param years A numeric vector with the years to extract de data from.
 #' @param states A character vector with the two letters code for the states to extract the data
 #'   from.
-#' @param filter_list A list of counties and plots to extract the data from. If \code{NULL} all
-#'   plots for the state for all years will be extracted, which can use a big amount of memory. See
-#'   details.
+#' @param filter_list A nested list of states, counties and plots to extract the data from.
+#'   If left \code{NULL} all plots for the state for all years will be extracted, which can use a
+#'   big amount of memory. See details.
 #' @param folder The path to the folder containing the FIA csv files, as character.
 #' @param ... Not used at the moment
 #' @param .parallel_options An object of class \code{furrr_options}. See
@@ -21,10 +21,10 @@
 #' @section Filter list:
 #'   If no \code{filter_list} argument is provided, \code{fia_to_tibble} will attempt to process all
 #'   plots for the states and years provided. This will result in sometimes hundred of thousands
-#'   plots to be extracted, processed and returned, will in turn will cause a big use of memory and
-#'   long times of calculation (specially when parallelising). Is better to provide a list of states
-#'   with the counties and plots to look after to narrow the process. This \code{filter_list} should
-#'   have the following structure:
+#'   plots to be extracted, processed and returned, which in turn will cause a big use of
+#'   memory (specially when running in parallel processes) and long times of calculation.
+#'   Is better to provide a list of states with the counties and plots to look for to narrow
+#'   the process. This \code{filter_list} should have the following structure:
 #'   \preformatted{
 #'   list(
 #'     "MN" = list("137" = c(29396, 25064), "71" = c(20210)),
@@ -179,18 +179,18 @@ fia_to_tibble <- function(
 #' This function is intended to be called internally by \code{\link{fia_to_tibble}} for each
 #' year. This is implemented with furrr to allow parallelization of the plots data retrieval.
 #'
-#' @describeIn fia_to_tibble Process one year
+#' @inherit fia_to_tibble
 #'
-#' @param .call caller environment (\code{\link[rlang]{caller_env}}) to propagate errors
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
 #' @noRd
 #'
 fia_tables_process <- function(
-  year, states, filter_list, folder, .parallel_options, .verbose, .call, ...
+  year, states, filter_list, folder, .parallel_options, .verbose, .call = rlang::caller_env(), ...
 ) {
 
   # Create input df for year. We need to remove the NAs due to missing files
-  input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose) |>
+  input_df <- .build_fia_input_with(year, states, filter_list, folder, .verbose, .call) |>
     # filter file name NAs due to missing files (bad states or bad paths)
     # (missing plots are filtered at the end of the process, not ideal but ok)
     dplyr::filter(!is.na(.data$plot_table))
@@ -221,7 +221,7 @@ fia_tables_process <- function(
 
       # plot info
       plot_info <- fia_plot_table_process(
-        plot_table_file, survey_table_file, cond_table_file, plots, county, year
+        plot_table_file, survey_table_file, cond_table_file, plots, county, year, .call
       )
 
       # if there is no info for the plot (missing files) there is no need to continue,
@@ -234,27 +234,31 @@ fia_tables_process <- function(
       state <- plot_info[["STATECD"]]
 
       # tree data
-      tree <- fia_tree_table_process(tree_table_file, plots, county, year, ref_species)
+      tree <- fia_tree_table_process(tree_table_file, plots, county, year, ref_species, .call)
 
       # understory
       shrub <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
         growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
-        ref_plant_dictionary
+        ref_plant_dictionary,
+        .call
       )
       herbs <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
         growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
-        ref_plant_dictionary
+        ref_plant_dictionary,
+        .call
       )
 
       # seedlings
-      regen <- fia_seedling_table_process(seedling_table_file, plots, county, year, ref_species)
+      regen <-
+        fia_seedling_table_process(seedling_table_file, plots, county, year, ref_species, .call)
 
       # subplot
-      subplot <- fia_subplot_table_process(subplot_table_file, plots, county, year)
+      subplot <-
+        fia_subplot_table_process(subplot_table_file, plots, county, year, .call)
 
       # we group in a data frame understory info
       understory <- dplyr::tibble(
@@ -295,7 +299,7 @@ fia_tables_process <- function(
     ))
 }
 
-#' Data tables process
+#' FIA data tables process
 #'
 #' Process to gather needed data from FIA csv tables
 #'
@@ -308,19 +312,22 @@ fia_tables_process <- function(
 #' @param ref_species,ref_plant_dictionary ref species and ref plant dictionary tables. These tables
 #'   are automatically read in \code{\link{fia_tables_process}} based on the folder provided.
 #' @param growth_habit Character, growth habit value to filter data (to distinguish between herbs
-#'   and shrubs)
+#'   and shrubs).
+#' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
 #' @return A tibble with one or more rows (depending on the data retrieved) for each plot for that
 #'   year.
 #'
-#' @importFrom dplyr desc
-#' @noRd
 #' @name fia_tables_processing
+#' @noRd
 NULL
 
+#' FIA data tables process
 #' @describeIn fia_tables_processing Process to gather needed data from plot, survey and cond tables
 #' @noRd
-fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, county, year) {
+fia_plot_table_process <- function(
+  plot_data, survey_data, cond_data, plot, county, year, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(plot_data, survey_data, cond_data))))
@@ -445,7 +452,9 @@ fia_plot_table_process <- function(plot_data, survey_data, cond_data, plot, coun
 
 #' @describeIn fia_tables_processing Process to gather needed data from tree table
 #' @noRd
-fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
+fia_tree_table_process <- function(
+  tree_data, plot, county, year, ref_species, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(tree_data))))
@@ -513,13 +522,13 @@ fia_tree_table_process <- function(tree_data, plot, county, year, ref_species) {
   return(tree)
 }
 
-#' General understory workflow
-#' @describeIn fia_tables_processing Process to guess which understory data is available and launch the
-#'   corresponding function.
+#' @describeIn fia_tables_processing Process to guess which understory data is available and launch
+#'   the corresponding function.
 #' @noRd
 fia_understory_table_process <- function(
   understory_data, understory_p2,
-  plot, county, year, growth_habit_p3, growth_habit_p2, ref_plant_dictionary
+  plot, county, year, growth_habit_p3, growth_habit_p2, ref_plant_dictionary,
+  .call = rlang::caller_env()
 ) {
 
   # Final logic to decide between p3 and p2
@@ -567,7 +576,8 @@ fia_understory_table_process <- function(
 #' @describeIn fia_tables_processing Process to gather needed data from veg subplot spp table
 #' @noRd
 fia_p3_understory_table_process <- function(
-  understory_data, plot, county, year, growth_habit, ref_plant_dictionary
+  understory_data, plot, county, year, growth_habit, ref_plant_dictionary,
+  .call = rlang::caller_env()
 ) {
 
   # Assertions  and checks/validations
@@ -701,7 +711,7 @@ fia_p3_understory_table_process <- function(
 #' @describeIn fia_tables_processing Process to gather needed data from p2 veg subplot spp table
 #' @noRd
 fia_p2_understory_table_process <- function(
-  understory_p2, plot, county, year, growth_habit, ref_plant_dictionary
+  understory_p2, plot, county, year, growth_habit, ref_plant_dictionary, .call = rlang::caller_env()
 ) {
 
   # Assertions  and checks/validations
@@ -832,7 +842,9 @@ fia_p2_understory_table_process <- function(
 
 #' @describeIn fia_tables_processing Process to gather needed data from seedling table
 #' @noRd
-fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_species) {
+fia_seedling_table_process <- function(
+  seedling_data, plot, county, year, ref_species, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(seedling_data))))
@@ -925,7 +937,9 @@ fia_seedling_table_process <- function(seedling_data, plot, county, year, ref_sp
 
 #' @describeIn fia_tables_processing Process to gather needed data from subplot table
 #' @noRd
-fia_subplot_table_process <- function(subplot_data, plot, county, year) {
+fia_subplot_table_process <- function(
+  subplot_data, plot, county, year, .call = rlang::caller_env()
+) {
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(subplot_data))))
