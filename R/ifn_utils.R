@@ -211,13 +211,13 @@
 #'
 #' @param folder Path to IFN db files
 #' @param provinces Character vector with two-number province codes
-#' @param version IFN version
+#' @param versions IFN versions vector
 #'
 #' @return An \code{\link[sf]{sf}} object with all plots available in \code{provinces} for the
 #'   provided IFN version
 #'
 #' @noRd
-show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::caller_env()) {
+show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::caller_env()) {
   # safe version
   get_plots_safe <- purrr::safely(
     .get_plots_from_province,
@@ -227,9 +227,18 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   res <- purrr::map(
     provinces,
     .f = \(prov) {
-      get_plots_safe(prov, folder, version, .call = .call)$result
+      purrr::map(
+        versions,
+        .f = \(version) {
+          get_plots_safe(prov, folder, version, .call = .call)$result
+        }
+      ) |>
+        purrr::list_rbind()
     }
   ) |>
+    purrr::keep(.p = \(i) {
+      nrow(i) > 0
+    }) |>
     purrr::list_rbind()
 
   if (nrow(res) < 1) {
@@ -568,6 +577,60 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
   return(res)
 }
+
+#' Create a filter list from the plots info
+#'
+#' User workflow for creating the filter list from the plots info
+#'
+#' @param plots_info \code{\link[sf]{sf}}, data frame or tibble with the plots info, as obtained
+#'   from \code{\link{show_plots_from_ifn}}
+#'
+#' @return  A valid \code{filter_list} with the needed structure for \code{ifn_to_tibble}
+#'
+#' @noRd
+create_filter_list_ifn <- function(plots_info) {
+  ## assertions
+  # this process is independent from ifn_to_tibble, and the user can modify plots_info to
+  # filter plots and provinces. So we can not assume plots_info is going to have the str we
+  # need. So, we assert and inform the user if something is wrong
+
+  # assert class
+  assertthat::assert_that(
+    inherits(plots_info, c("tbl", "sf", "data.frame")),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must be a data.frame or something coercible to one,
+      as the result of {.code show_plots_from()}"
+    ))
+  )
+  # assert col names
+  assertthat::assert_that(
+    all(names(plots_info) %in% c(
+      "crs", "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "geometry"
+    )),
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} provided don't have the expected names",
+      "i" = "Expected names are {.value {c('crs', 'ID_UNIQUE_PLOT', 'version', 'province_code', 'province_name_original', 'PLOT', 'geometry')}}"
+    ))
+  )
+  # assert there is data
+  assertthat::assert_that(
+    nrow(plots_info) > 0,
+    msg = cli::cli_abort(c(
+      "{.arg plots_info} must have at least one row"
+    ))
+  )
+
+  # loop around states
+  plots_versions <- plots_info[["version"]] |>
+    unique()
+  province_codes <- plots_info[["province_code"]] |>
+    unique()
+
+  plots_info |>
+    .transform_plot_summary_ifn(plots_versions, province_codes)
+}
+
 
 ## #' obtaining crs for different coordinate systems IFN
 ## #'
