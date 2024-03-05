@@ -490,11 +490,10 @@ fia_tree_table_process <- function(
       "SPCD", "SPGRPCD", "DIA", "DIAHTCD", "HT", "TPA_UNADJ"
     )
   ) |>
-    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
-    dplyr::as_tibble()
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no tree data for that combination of plot, county and year",
@@ -627,11 +626,10 @@ fia_p3_understory_table_process <- function(
     dplyr::rename(
       "SPECIES_SYMBOL" = "VEG_SPCD",
     ) |>
-    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
-    data.table::as.data.table()
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no p3 understory data for that combination of plot, county and year",
@@ -642,10 +640,7 @@ fia_p3_understory_table_process <- function(
   }
 
   # we add the id code
-  understory_filtered_data <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_")
-    ) |>
+  understory_filtered_data <- filtered_data |>
     # we group by species to calculate means (height, cover)
     dplyr::group_by(.data$SPECIES_SYMBOL) |>
     # here we calculate an averaged height by species, for that we select the height that has
@@ -653,6 +648,7 @@ fia_p3_understory_table_process <- function(
     # that layer in meters layer 1-2  = 0- 1,8288meters, layer 3 from 1,8288meters to 4,8768
     # and layer 4 more than  4,8768m
     dplyr::mutate(
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       COVER_PCT = .data$SP_CANOPY_COVER_TOTAL,
       # HT in cm
       HT = dplyr::case_when(
@@ -691,11 +687,10 @@ fia_p3_understory_table_process <- function(
         ),
       by = "SPECIES_SYMBOL"
     ) |>
-    dplyr::filter(.data$GROWTH_HABIT %in% growth_habit) |>
-    data.table::as.data.table()
+    dplyr::filter(.data$GROWTH_HABIT %in% growth_habit)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(understory_filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(understory_filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no p3 understory data for that combination of plot, county and year",
@@ -706,7 +701,7 @@ fia_p3_understory_table_process <- function(
   }
 
   # we add latin name and select variables
-  understory <- dtplyr::lazy_dt(understory_filtered_data, immutable = TRUE) |>
+  understory <- understory_filtered_data |>
     dplyr::mutate(SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " ")) |>
     dplyr::arrange(.data$SPECIES_SYMBOL, .data$SUBP) |>
     dplyr::select(
@@ -764,11 +759,10 @@ fia_p2_understory_table_process <- function(
     dplyr::rename(
       "SPECIES_SYMBOL" = "VEG_SPCD",
     ) |>
-    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
-    data.table::as.data.table()
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
 
   # We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no p2 understory data for that combination of plot, county and year",
@@ -779,16 +773,13 @@ fia_p2_understory_table_process <- function(
   }
 
   # we add the id code
-  understory_p2_filtered_data <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
-    dplyr::mutate(
-      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_")
-    ) |>
+  understory_p2_filtered_data <- filtered_data |>
     # we group by species to calculate means (height, cover)
     dplyr::group_by(.data$SPECIES_SYMBOL) |>
     dplyr::filter(.data$GROWTH_HABIT_CD %in% growth_habit) |>
     # we calculate mean cover an height from layer
     dplyr::mutate(
-      # COVER_PCT,
+      ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       # HT in cm
       HT = dplyr::case_when(
         .data$LAYER == 1 ~  30.48,
@@ -815,11 +806,10 @@ fia_p2_understory_table_process <- function(
           ))
         ),
       by = "SPECIES_SYMBOL"
-    ) |>
-    data.table::as.data.table()
+    )
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(understory_p2_filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(understory_p2_filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no p2 understory data for that combination of plot, county and year",
@@ -830,8 +820,7 @@ fia_p2_understory_table_process <- function(
   }
 
   # we add latin name and select variables
-  understory_p2 <- dtplyr::lazy_dt(understory_p2_filtered_data, immutable = TRUE) |>
-
+  understory_p2 <- understory_p2_filtered_data |>
     # we add latin name
     dplyr::mutate(
       SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " ")
@@ -877,25 +866,14 @@ fia_seedling_table_process <- function(
   filtered_data <- .read_inventory_data(
     seedling_data,
     select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      "SUBP",
-      "CONDID",
-      "SPCD",
-      "SPGRPCD",
-      "TREECOUNT",
-      "TREECOUNT_CALC",
-      "TPA_UNADJ",
-      "TOTAGE"
+      "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "CONDID", "SPCD",
+      "SPGRPCD", "TREECOUNT", "TREECOUNT_CALC", "TPA_UNADJ", "TOTAGE"
     )
   ) |>
-    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
-    data.table::as.data.table()
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no seedling data for that combination of plot, county and year",
@@ -906,7 +884,7 @@ fia_seedling_table_process <- function(
   }
 
   # we add the id code
-  seedling <- dtplyr::lazy_dt(filtered_data, immutable = TRUE) |>
+  seedling <- filtered_data |>
     # we filter by species to calculate means (height, cover)
     dplyr::mutate(
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
@@ -924,14 +902,11 @@ fia_seedling_table_process <- function(
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
       Height = 15.24,
       #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
-      DBH = 2.54
-    ) |>
-    # we arrange by species and tpa
-    dplyr::arrange(.data$SPCD, .data$TPA_UNADJ) |>
-    dplyr::mutate(
+      DBH = 2.54,
       #calculate density represented by tree
       N = .data$TPA_UNADJ * .data$TREECOUNT_CALC
     ) |>
+    # we arrange by species and tpa
     dplyr::arrange(.data$SPCD, .data$SUBP) |>
     #selection of final variables
     dplyr::select(
@@ -986,11 +961,10 @@ fia_subplot_table_process <- function(
       "P2VEG_SUBP_STATUS_CD"
     )
   ) |>
-    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county) |>
-    dplyr::as_tibble()
+    dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "There is no subplot data for that combination of plot, county and year",

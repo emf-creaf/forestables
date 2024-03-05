@@ -535,12 +535,11 @@ ffi_tree_table_process <- function(
     dplyr::filter(
       .data$IDP == plot,
       .data$CAMPAGNE == year
-    ) |>
-    tibble::as_tibble()
+    )
 
 
   # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(tree_filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(tree_filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
@@ -636,12 +635,10 @@ ffi_shrub_table_process <- function(
     dplyr::filter(
       .data$IDP == plot,
       .data$CAMPAGNE == year
-    ) |>
-    dplyr::as_tibble()
-
+    )
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(shrub_filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(shrub_filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
@@ -698,19 +695,6 @@ ffi_shrub_table_process <- function(
     ) |>
     dplyr::as_tibble()
 
-  # to eliminate herbs i do a join with a database from try
-  # growth_form_lignified_france <- growth_form_lignified_france |>
-  #   dplyr::select("AccSpeciesName", "GrowthForm") |>
-  #   dplyr::mutate(SP_NAME = .data$AccSpeciesName)
-  #
-  # understory_no_herbs <- shrub |>
-  #   dplyr::left_join(growth_form_lignified_france, by = "SP_NAME") |>
-  #   dplyr::select(
-  #     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
-  #   ) |>
-  #   dplyr::as_tibble()
-
-  # return(understory_no_herbs)
   return(shrub)
 }
 
@@ -744,11 +728,10 @@ ffi_regen_table_process <- function(
     colClasses = list(character = c("IDP", "ESPAR_C"))
   ) |>
     # we  filtering the data for plot/year and status (alive)
-    dplyr::filter(.data$IDP == plot, .data$CAMPAGNE == year) |>
-    dplyr::as_tibble()
+    dplyr::filter(.data$IDP == plot, .data$CAMPAGNE == year)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
-  if (nrow(regen_filtered_data) < 1) {
+  if (nrow(data.table::as.data.table(regen_filtered_data)) < 1) {
     # warn the user
     cli::cli_warn(c(
       "Data missing for that combination of plot and year",
