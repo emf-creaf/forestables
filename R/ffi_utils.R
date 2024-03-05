@@ -7,8 +7,8 @@ utils::globalVariables(".data")
 #'
 #' This function takes the user input (departments, year, plots and folder) and build the input to
 #' be able to iterate by plots in a year. If no filter list is provided, this function uses
-#' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary}} to create a
-#' \code{filter_list} with all plots for each state for that year.
+#' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary_ffi}} to create
+#' a \code{filter_list} with all plots for each department for that year.
 #'
 #' @inheritParams ffi_tables_process
 #' @param .call caller environment for correct error workflow
@@ -157,12 +157,12 @@ show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()
   .get_plots_from_department(departments, folder, .call = .call)
 }
 
-#' Transform plots sf objects in a filter list
+#' Transform plots sf objects into a filter list
 #'
-#' Plots to filter list
+#' Plots into filter list
 #'
 #' This function gets plots returned from \code{\link{.get_plots_from_department}} and transform
-#' then in a valid \code{filter_list} for using in \code{\link{ffi_to_tibble}}.
+#' them in a valid \code{filter_list} for using in \code{\link{ffi_to_tibble}}.
 #'
 #' @param plot_summary \code{\link[sf]{sf}} object from \code{\link{show_plots_from_ffi}}
 #' @param years Numeric vector with the years to filter by
@@ -198,7 +198,7 @@ show_plots_from_ffi <- function(folder, departments, .call = rlang::caller_env()
 
 #' Create a filter list from the plots info
 #'
-#' User workflow for creating the filter list fromthe plots info
+#' User workflow for creating the filter list from the plots info
 #'
 #' @param plots_info \code{\link[sf]{sf}}, data frame or tibble with the plots info, as obtained
 #'   from \code{\link{show_plots_from_ffi}}
@@ -260,19 +260,19 @@ create_filter_list_ffi <- function(plots_info) {
   return(res)
 }
 
-#' Create the path and system call for reading FFI csv's
+#' Create the path and system call for reading FFI csv files
 #'
 #' Create FFI csv file path with extra sugar
 #'
 #' This function builds the path to FFI table csv files based on the type of table.
-#' Also, using the type, we add the system call to \code{grep} in those tables which it can
+#' Also, using the type, we add the system call to \code{grep} in those tables where it can
 #' be used to avoid loading the whole table.
 #'
 #' @section \code{grep} system call:
 #' \code{grep} system library allows to find patterns in text files. This can be used prior
 #' to read the file to feed \code{fread} only with the rows we need. For this we build a
-#' regular expression that matches the county and plot code, as well as year in the case of
-#' some tables. This way we avoid loading the whole table and only the rows we need.
+#' regular expression that matches the department and plot code.
+#' This way we avoid loading the whole table and only the rows we need.
 #' For \code{"tree"}, \code{"shrub"}, \code{"soils"} and \code{"regen"} tables, the expression used
 #' is:
 #' \preformatted{

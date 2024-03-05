@@ -192,7 +192,7 @@ test_that("show_plots_from_fia works as intended", {
   )
 })
 
-test_that(".transform_plot_summary works as intended", {
+test_that(".transform_plot_summary_fia works as intended", {
   test_folder <- Sys.getenv("fia_path")
   test_states <- c("OR", "WA", "CA")
   test_summary <- show_plots_from_fia(test_folder, test_states)
@@ -201,7 +201,7 @@ test_that(".transform_plot_summary works as intended", {
   # One state, one year
   # correct object
   expect_type(
-    test_res_2005_or <- .transform_plot_summary(test_summary, test_years[1], test_states[1]),
+    test_res_2005_or <- .transform_plot_summary_fia(test_summary, test_years[1], test_states[1]),
     "list"
   )
   # correct names
@@ -222,7 +222,7 @@ test_that(".transform_plot_summary works as intended", {
 
   ## all states all years
   expect_type(
-    test_res <- .transform_plot_summary(test_summary, test_years, test_states),
+    test_res <- .transform_plot_summary_fia(test_summary, test_years, test_states),
     "list"
   )
   # correct names
@@ -255,7 +255,7 @@ test_that(".transform_plot_summary works as intended", {
 
   ## error
   expect_error(
-    .transform_plot_summary(
+    .transform_plot_summary_fia(
       tibble::tibble(
         "INVYR" = vector(),
         "STATECD" = vector(),

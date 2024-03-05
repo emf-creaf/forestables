@@ -1,10 +1,10 @@
-#' Build the input dataframe to iterate by plots for the year
+#' Build the FIA input data frame to iterate by plots for the specified year
 #'
-#' Build the input dataframe
+#' FIA input table creator
 #'
 #' This function takes the user input (year, states, plots and folder) and build the input to be
 #' able to iterate by plots in a year. If no plots filter list is provided, this function uses
-#' \code{\link{.get_plots_from_state}} and \code{\link{.trasnsform_plot_summary}} to create a
+#' \code{\link{.get_plots_from_state}} and \code{\link{.transform_plot_summary_fia}} to create a
 #' \code{filter_list} with all plots for each state for that year.
 #'
 #' @inheritParams fia_tables_process
@@ -19,7 +19,7 @@
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
 
-    # create safe versions of .get_plots_from_state and .transform_plot_summary
+    # create safe versions of .get_plots_from_state and .transform_plot_summary_fia
     get_plots_safe <- purrr::safely(
       .get_plots_from_state,
       otherwise = tibble::tibble(
@@ -32,7 +32,7 @@
       )
     )
     transform_safe <- purrr::safely(
-      .transform_plot_summary,
+      .transform_plot_summary_fia,
       otherwise = list()
     )
 
@@ -108,7 +108,18 @@
     )
 }
 
-#' Helper to read the PLOT.csv file from an state to retrieve the list of plots for that state
+#' Get plots from one state
+#'
+#' Get plots from one state
+#'
+#' This function takes one state and return an \code{\link[sf]{sf}} objects with all plots on it.
+#' Only works for one state as in the FIA each state have its own file.
+#'
+#' @param state State two letter code
+#' @param folder The path to the folder containing the FIA csv files, as character.
+#'
+#' @return An \code{\link[sf]{sf}} object with the state plots
+#'
 #' @noRd
 .get_plots_from_state <- function(state, folder, .call = rlang::caller_env()) {
 
@@ -159,12 +170,17 @@
   return(res)
 }
 
-#' show plots from fia helper
+#' Get available plots from states
 #'
-#' Iterate for states and retrieve all the plots
+#' Obtain an sf of available plots in the specified states
 #'
-#' @param folder Character, path to folder containing FIA csv files
-#' @param states Character vector with two-letter code for states
+#' This function retrieves all plots for the states in \code{states} argument and return an sf
+#' object.
+#'
+#' @inheritParams fia_tables_process
+#'
+#' @return An \code{\link[sf]{sf}} object with all plots available in \code{states}
+#'
 #' @noRd
 show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   # safe version
@@ -194,10 +210,21 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   return(res)
 }
 
-#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_state}} in a
-#' filter_list object
+#' Transform plots sf objects into a filter list
+#'
+#' Plots into filter list
+#'
+#' This function gets plots returned from \code{\link{.get_plots_from_state}} and transform
+#' them in a valid \code{filter_list} for using in \code{\link{fia_to_tibble}}.
+#'
+#' @param plot_summary \code{\link[sf]{sf}} object from \code{\link{show_plots_from_fia}}
+#' @param years Numeric vector with the years to filter by
+#' @param states Character vector with the states two-letter codes to filter by
+#'
+#' @return A valid \code{filter_list} with the needed structure for \code{fia_to_tibble}
+#'
 #' @noRd
-.transform_plot_summary <- function(plot_summary, years, states) {
+.transform_plot_summary_fia <- function(plot_summary, years, states) {
 
   filter_list <- plot_summary |>
     dplyr::as_tibble() |>
@@ -216,7 +243,20 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   return(filter_list)
 }
 
-#' helper for translating numeric state codes to names
+#' Translate between numeric and letter state codes
+#'
+#' Helper for translating numeric state codes to names and viceversa
+#'
+#' This function translates the states codes between formats.
+#'
+#' @param states_numeric Vector of numeric state codes to translate. Left NULL if we want to
+#'  translate from letter to numeric.
+#' @param states_abbr Vector of two-letter state codes to translate. Left NULL if we want to
+#'  translate from numeric to letter.
+#'
+#' @return A vector of the same length as the one provided in states_numerico or states_abbr with
+#'  the corresponding translation
+#'
 #' @noRd
 .translate_fia_states <- function(states_numeric = NULL, states_abbr = NULL) {
 
@@ -239,8 +279,16 @@ show_plots_from_fia <- function(folder, states, .call = rlang::caller_env()) {
   return(res)
 }
 
-#' Create the \code{filter_list} for FIA inventory
+#' Create a filter list from the plots info
 #'
+#' User workflow for creating the filter list from the plots info
+#'
+#' @param plots_info \code{\link[sf]{sf}}, data frame or tibble with the plots info, as obtained
+#'   from \code{\link{show_plots_from_fia}}
+#'
+#' @return  A valid \code{filter_list} with the needed structure for \code{fia_to_tibble}
+#'
+#' @noRd
 create_filter_list_fia <- function(plots_info) {
 
   ## assertions
@@ -286,7 +334,7 @@ create_filter_list_fia <- function(plots_info) {
     purrr::set_names(states_names) |>
     purrr::imap(
       .f = \(state_data, state_name) {
-        .transform_plot_summary(state_data, plots_years, state_name)
+        .transform_plot_summary_fia(state_data, plots_years, state_name)
       }
     ) |>
     purrr::flatten()
@@ -294,12 +342,12 @@ create_filter_list_fia <- function(plots_info) {
   return(res)
 }
 
-#' Create the path and system call for reading FIA csv's
+#' Create the path and system call for reading FIA csv files
 #'
 #' Create FIA csv file path with extra sugar
 #'
 #' This function builds the path to FIA table csv files based on the state and type of table.
-#' Also, using the type, we add the system call to \code{grep} in those tables which it can
+#' Also, using the type, we add the system call to \code{grep} in those tables where it can
 #' be used to avoid loading the whole table.
 #'
 #' @section \code{grep} system call:
@@ -307,9 +355,10 @@ create_filter_list_fia <- function(plots_info) {
 #' to read the file to feed \code{fread} only with the rows we need. For this we build a
 #' regular expression that matches the county and plot code, as well as year in the case of
 #' some tables. This way we avoid loading the whole table and only the rows we need.
-#' In this case, the regular expression used is:
+#' For \code{"tree"}, \code{"p3_understory"}, \code{"veg_subplot"}, \code{"p2_veg_subplot"},
+#' \code{"seedling"}, \code{"subplot"} tables, the expression used is:
 #' \preformatted{
-#' ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),'
+#' ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0),"
 #' }
 #' \code{",INVYR,"} matches the first row in all tables, because all tables have the Inventory
 #' year variable.
@@ -321,16 +370,23 @@ create_filter_list_fia <- function(plots_info) {
 #' commas and separated by a comma.
 #' \code{({plot}|{plot}.0)} indicates to match both plot code or plot code with a 0 decimal
 #' because some states have this variable as a double value.
+#' For \code{"soils_lab"}, \code{"soils_loc"}, \code{"veg_subplot"}, \code{"plot"}, \code{"survey"},
+#' \code{"cond"} tables, the expression used is:
+#' \preformatted{
+#' ",INVYR,|,{county},({plot}|{plot}.0),"
+#' }
+#' which translates to a very similar way as before, but without the year, as in this tables we
+#' need all data at some point. Tables not included here are read without any \code{grep} code.
 #'
 #' @param state Character vector with two-letter code for states.
 #' @param type Character, table type. One of "tree", "plot", "survey", "cond", "subplot",
 #'   "p3_understory",  "seedling", "soils_loc", "soils_lab", "veg_subplot", "p2_veg_subplot".
 #' @param folder Character, path to the folder with the FIA csv files.
-#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
 #' @param .county,.plot, Vectors of the same length as \code{state}, with county and plot codes
 #'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
 #' @param .year Numeric value (length one) with the year to build the \code{grep} command
 #'   if \code{.custom} is \code{TRUE}.
+#' @param .custom Logical indicating that a custom path, with \code{grep} must be created
 #'
 #' @return Character vector with the paths (or custom command with path) to use with
 #'   \code{\link{.read_inventory_data}}.
@@ -419,7 +475,6 @@ create_filter_list_fia <- function(plots_info) {
 #' @return A data frame with variables in \code{var} values for the desired year and for the
 #'   most recent year with value.
 #'
-#' @importFrom rlang `:=`
 #' @noRd
 .extract_fia_metadata <- function(data_processed, vars, county, plot, year, .soil_mode = TRUE) {
 

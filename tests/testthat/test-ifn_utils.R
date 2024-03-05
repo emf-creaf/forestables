@@ -520,21 +520,6 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
   for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
-
-  ## error TODO: how to test errors
-  # expect_error(
-  #   .transform_plot_summary(
-  #     tibble::tibble(
-  #       "INVYR" = vector(),
-  #       "STATECD" = vector(),
-  #       "COUNTYCD" = vector(),
-  #       "PLOT" = vector(),
-  #       "STATEAB" = vector(),
-  #       "geometry" = vector()
-  #     ),
-  #     test_years[1], test_provinces[1]
-  #   )
-  # )
 })
 
 test_that(".get_plots_from_province works as intended for ifn3", {
@@ -716,21 +701,6 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
   for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
-
-  ## error TODO: how to test errors
-  # expect_error(
-  #   .transform_plot_summary(
-  #     tibble::tibble(
-  #       "INVYR" = vector(),
-  #       "STATECD" = vector(),
-  #       "COUNTYCD" = vector(),
-  #       "PLOT" = vector(),
-  #       "STATEAB" = vector(),
-  #       "geometry" = vector()
-  #     ),
-  #     test_years[1], test_provinces[1]
-  #   )
-  # )
 })
 
 test_that(".get_plots_from_province works as intended for ifn4", {
@@ -912,19 +882,4 @@ test_that(".transform_plot_summary_ifn works as intended for ifn4", {
   for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
-
-  ## error TODO: how to test errors
-  # expect_error(
-  #   .transform_plot_summary(
-  #     tibble::tibble(
-  #       "INVYR" = vector(),
-  #       "STATECD" = vector(),
-  #       "COUNTYCD" = vector(),
-  #       "PLOT" = vector(),
-  #       "STATEAB" = vector(),
-  #       "geometry" = vector()
-  #     ),
-  #     test_years[1], test_provinces[1]
-  #   )
-  # )
 })
