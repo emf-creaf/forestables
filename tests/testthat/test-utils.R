@@ -2,8 +2,8 @@ skip_if(
   any(c(Sys.getenv("fia_path"), Sys.getenv("ffi_path"), Sys.getenv("ifn_path")) == ""),
   "No testing data found skipping tests"
 )
-# Verbose messaging ---------------------------------------------------------------------------
 
+# Verbose messaging ---------------------------------------------------------------------------
 test_that("verbose_msg works as intended", {
 
   # .verbose with message works
@@ -31,6 +31,8 @@ test_that("verbose_msg works as intended", {
   )
 })
 
+
+# .read_inventory_data ------------------------------------------------------------------------
 test_that(".read_inventory_data returns lazy_dt for fia", {
   test_file <- fs::path(Sys.getenv("fia_path"), "OR_PLOT.csv")
   test_cmd <- glue::glue('grep -E ",INVYR,|,25,(84167|84167.0)," {test_file}')
@@ -153,4 +155,89 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "dtplyr_step_first"
   )
   expect_true(nrow(test_res_ifn4) > 0)
+})
+
+# show_plots_from -----------------------------------------------------------------------------
+test_that("show_plots_from works as intended", {
+  test_departments <- c("01", "10")
+  test_provinces <- c("08", "24")
+  test_states <- c("OR", "CA")
+  test_versions <- c("ifn2", "ifn3", "ifn4")
+
+  expect_s3_class(
+    test_ffi <- show_plots_from("FFI", Sys.getenv("ffi_path"), test_departments), "sf"
+  )
+  expect_s3_class(
+    test_fia <- show_plots_from("FIA", Sys.getenv("fia_path"), test_states), "sf"
+  )
+  expect_s3_class(
+    test_ifn <- show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions), "sf"
+  )
+
+  # rows
+  expect_true(nrow(test_ffi) > 0)
+  expect_true(nrow(test_fia) > 0)
+  expect_true(nrow(test_ifn) > 0)
+
+  # crs
+  expect_identical(sf::st_crs(test_ffi), sf::st_crs(4326))
+  expect_identical(sf::st_crs(test_fia), sf::st_crs(4326))
+  expect_identical(sf::st_crs(test_ifn), sf::st_crs(4326))
+
+  # names
+  expect_named(
+    test_ffi, c("CAMPAGNE", "IDP", "DEP", "geometry"),
+    ignore.order = TRUE
+  )
+  expect_named(
+    test_fia, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry"),
+    ignore.order = TRUE
+  )
+  expect_named(
+    test_ifn,
+    c(
+      "ID_UNIQUE_PLOT", "version", "province_code",
+      "province_name_original", "PLOT", "crs", "geometry"
+    ),
+    ignore.order = TRUE
+  )
+
+  # versions
+  expect_true(all(test_versions %in% unique(test_ifn$version)))
+
+  # admin
+  expect_identical(test_ffi$DEP |> unique() |> sort(), test_departments |> sort())
+  expect_identical(test_fia$STATEAB |> unique() |> sort(), test_states |> sort())
+  expect_identical(test_ifn$province_code |> unique() |> sort(), test_provinces |> sort())
+})
+
+
+# create_filter_list --------------------------------------------------------------------------
+test_that("show_plots_from works as intended", {
+  test_departments <- c("01", "10")
+  test_provinces <- c("08", "24")
+  test_states <- c("OR", "CA")
+  test_versions <- c("ifn2", "ifn3", "ifn4")
+
+  test_ffi <- show_plots_from("FFI", Sys.getenv("ffi_path"), test_departments)
+  test_fia <- show_plots_from("FIA", Sys.getenv("fia_path"), test_states)
+  test_ifn <- show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions)
+
+  # list
+  expect_type(test_ffi_res <- create_filter_list(test_ffi), "list")
+  expect_type(test_fia_res <- create_filter_list(test_fia), "list")
+  expect_type(test_ifn_res <- create_filter_list(test_ifn), "list")
+
+  # elements
+  expect_named(test_ffi_res, test_departments, ignore.order = TRUE)
+  expect_named(test_fia_res, test_states, ignore.order = TRUE)
+  expect_named(test_ifn_res, test_provinces, ignore.order = TRUE)
+
+  # length of elments
+  expect_true(length(test_ffi_res[[1]]) > 0)
+  expect_true(length(test_fia_res[[1]]) > 0)
+  expect_true(length(test_ifn_res[[1]]) > 0)
+  expect_true(length(test_ffi_res[[2]]) > 0)
+  expect_true(length(test_fia_res[[2]]) > 0)
+  expect_true(length(test_ifn_res[[2]]) > 0)
 })

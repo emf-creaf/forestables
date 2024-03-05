@@ -42,8 +42,8 @@ verbose_msg <- function(msg, .verbose) {
 #'
 #' @section IFN:
 #' IFN needs two extra arguments, \code{provinces}, a character vector with the numeric codes for
-#' the provinces and \code{version}, a character with the IFN version to look at (\code{"ifn2"},
-#' \code{"ifn3"} or \code{"ifn4"}).
+#' the provinces and \code{versions}, a character vector with the IFN versions to look at
+#' (\code{"ifn2"}, \code{"ifn3"} or/and \code{"ifn4"}).
 #'
 #' @return A \code{\link[sf]{sf}} spatial object in which each row is a plot,. The metadata provided
 #'   varies depending on the inventory, but usually includes the state (FIA) / department (FFI)/
@@ -57,7 +57,7 @@ verbose_msg <- function(msg, .verbose) {
 #' # FFI
 #' show_plots_from("FFI", folder = ".", departments = "21")
 #' # IFN
-#' show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4")
+#' show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
 #'
 #' @export
 show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ...) {
@@ -86,8 +86,54 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   )
 
   return(res)
+}
 
-  # show_plots_function(folder, ..., .call = rlang::caller_env())
+#' Create a compatible filter_list object
+#'
+#' Create a compatible filter_list object from the result of \code{link{show_plots_from}}
+#'
+#' This function takes the result of \code{link{show_plots_from}}, or a compatible object and
+#' creates a \code{filter_list} object ready to be use with \code{\link{ffi_to_tibble}},
+#' \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}. Internal heuristics determine the
+#' inventory from the data supplied.
+#'
+#' @param plots_info Object resulted from \code{link{show_plots_from}}, or a compatible one
+#'   (\emph{i.e.} the same object after some plot filtering).
+#'
+#' @return A list object compatible with the \code{filter_list} argument of
+#'   \code{\link{ffi_to_tibble}}, \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}
+#'
+#' @examples
+#'
+#' library(esus)
+#'
+#' # FIA
+#' show_plots_from("FIA", folder = ".", states = "OR") |>
+#'   create_filter_list()
+#' # FFI
+#' show_plots_from("FFI", folder = ".", departments = "21") |>
+#'   create_filter_list()
+#' # IFN
+#' show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4") |>
+#'   create_filter_list()
+#'
+#' @export
+create_filter_list <- function(plots_info) {
+
+  inventory_function <- NULL
+  if ("COUNTYCD" %in% names(plots_info)) {
+    inventory_function <- create_filter_list_fia
+  }
+  if ("DEP" %in% names(plots_info)) {
+    inventory_function <- create_filter_list_ffi
+  }
+  if ("province_code" %in% names(plots_info)) {
+    inventory_function <- create_filter_list_ifn
+  }
+
+  res <- plots_info |>
+    inventory_function()
+
 }
 
 #' Function to read inventory files

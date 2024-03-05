@@ -43,8 +43,8 @@ department codes.
 \section{IFN}{
 
 IFN needs two extra arguments, \code{provinces}, a character vector with the numeric codes for
-the provinces and \code{version}, a character with the IFN version to look at (\code{"ifn2"},
-\code{"ifn3"} or \code{"ifn4"}).
+the provinces and \code{versions}, a character vector with the IFN versions to look at
+(\code{"ifn2"}, \code{"ifn3"} or/and \code{"ifn4"}).
 }
 
 \examples{
@@ -55,6 +55,6 @@ show_plots_from("FIA", folder = ".", states = "OR")
 # FFI
 show_plots_from("FFI", folder = ".", departments = "21")
 # IFN
-show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4")
+show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
 
 }
