@@ -1,3 +1,17 @@
+#' Build the IFN input data frame to iterate by plots for the specified version
+#'
+#' IFN input table creator
+#'
+#' This function takes the user input (version, provinces, plots and folder) and build the input to
+#' be able to iterate by plots in a year. If no plots filter list is provided, this function uses
+#' \code{\link{.get_plots_from_province}} and \code{\link{.transform_plot_summary_ifn}} to create a
+#' \code{filter_list} with all plots for each province for that year.
+#'
+#' @inheritParams ifn_tables_process
+#'
+#' @return A data frame with state, county, plot and table file names
+#'
+#' @noRd
 .build_ifn_input_with <- function(
   version, provinces, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
@@ -38,7 +52,7 @@
       "Getting ready to retrieve
       {.strong {filter_list |> purrr::flatten() |> as.character() |> length()}}
       plots for {.val {version}}"
-    )), .verbose
+    ), call = .call), .verbose
   )
 
   input_df <- filter_list |>
@@ -95,12 +109,21 @@
   return(input_df)
 }
 
+#' Get plots from one province
+#'
+#' Get plots from one province
+#'
+#' This function takes one province and return an \code{\link[sf]{sf}} objects with all plots on it
+#' for the version provided. Only works for one province as in the IFN each province have its own
+#' file.
+#'
+#' @param province province two numbers code
+#' @param folder The path to the folder containing the IFN db files, as character.
+#'
+#' @return An \code{\link[sf]{sf}} object with the province plots
+#'
+#' @noRd
 .get_plots_from_province <- function(province, folder, version, .call = rlang::caller_env()) {
-
-  ## TODO Assertion to ensure province files exists, because .build_ifn_file_path is fail
-  ## resistant, returning always a result (NA_character) to allow its use in loops.
-  ## .get_plots_from_province is only called from .build_ifn_input_with or show_plots_from_ifn,
-  ## that can not check for file existence (this is done in the individual plot functions)
 
   plot_path <- .build_ifn_file_path(province, "plot", version, folder, .call = .call)
 
@@ -146,8 +169,19 @@
   return(res)
 }
 
-#' Helper to transform the plot summary returned by \code{\link{.get_plots_from_province}} in a
-#' filter_list object
+#' Transform plots sf objects into a filter list
+#'
+#' Plots into filter list
+#'
+#' This function gets plots returned from \code{\link{.get_plots_from_province}} and transform
+#' them in a valid \code{filter_list} for using in \code{\link{ifn_to_tibble}}.
+#'
+#' @param plot_summary \code{\link[sf]{sf}} object from \code{\link{show_plots_from_ifn}}
+#' @param versions IFN versions to filter by
+#' @param provinces Character vector with the province two-number codes to filter by
+#'
+#' @return A valid \code{filter_list} with the needed structure for \code{ifn_to_tibble}
+#'
 #' @noRd
 .transform_plot_summary_ifn <- function(plot_summary, versions, provinces) {
 
@@ -168,12 +202,20 @@
   return(filter_list)
 }
 
-#' show plots from ifn helper
+#' Get available plots from provinces
 #'
-#' Iterate for states and retrieve all the plots
+#' Obtain an sf of available plots in the specified provinces
 #'
-#' @param folder Character, path to folder containing IFN csv files
-#' @param provinces Character vector with two-number code for provinces
+#' This function retrieves all plots for the provinces in \code{provinces} argument and return an sf
+#' object.
+#'
+#' @param folder Path to IFN db files
+#' @param provinces Character vector with two-number province codes
+#' @param version IFN version
+#'
+#' @return An \code{\link[sf]{sf}} object with all plots available in \code{provinces} for the
+#'   provided IFN version
+#'
 #' @noRd
 show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::caller_env()) {
   # safe version
@@ -209,9 +251,10 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 #'
 #' This functions checks the IFN file format (by checking the file extension) and
 #' dispatch the corresponding function: \code{\link[foreign]{read.dbf}} for IFN2 and
-#' \code{\link[Hmisc]{mdb.get}} for IFN3 and 4
+#' \code{\link{.read_accdb_data}} for IFN3 and 4
 #'
 #' @param input file to read as it appears in the input data frame
+#' @param colnames character vector with column names to select when reading
 #' @param ... extra arguments for the reading function
 #'
 #' @return A data.frame with the inventory table
@@ -255,6 +298,20 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   return(res)
 }
 
+#' Read IFN accdb data
+#'
+#' Read the IFN db data from IFN 3 and 4
+#'
+#' This functions calls the corresponding reading function based on the OS of the user. In Windows
+#' \code{\link[RODBC]{odbcConnectAccess2007}} and \code{\link[RODBC]{sqlFetch}} are used, while
+#' in unix \code{\link[Hmisc]{mdb.get}} is used.
+#'
+#' @param input file to read as it appears in the input data frame.
+#' @param table_name character with the table name to read from the accdb file.
+#'
+#' @return A data.frame with the inventory table
+#'
+#' @noRd
 .read_accdb_data <- function(input, table_name) {
 
   # first thing check the SO
@@ -289,9 +346,22 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
 
 }
 
-.ifn4_prov_code_translator <- function(province) {
+#' Helper to translate province code to IFN 4 province/autnomous community name
+#'
+#' Province code to IFN 4 name
+#'
+#' IFN4 data doesn't follow the one province one file convention. Some ACs have all provinces in one
+#' file. This function translates the province code to the corresponding IFN4 name when creating
+#' inputs or doing other operations.
+#'
+#' @param provinces Character vector with two-number province codes
+#'
+#' @return a vector of the same length as \code{provinces} with the corresponding IFN4 names
+#'
+#' @noRd
+.ifn4_prov_code_translator <- function(provinces) {
   res <- ifn_provinces_dictionary |>
-    dplyr::filter(.data$province_code %in% province) |>
+    dplyr::filter(.data$province_code %in% provinces) |>
     dplyr::pull(.data$ifn4_files_labels)
 
   # In case province provided is not in the dictionary (because error, tururu tests)
@@ -303,6 +373,22 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   return(res)
 }
 
+#' Create the path and system call for reading IFN db files
+#'
+#' Create IFN db file path with extra sugar
+#'
+#' This functions builds the path to IFN db files based on the province and the version of the IFN.
+#' Also, usign the \code{type} argument, we add the corresponding table name to read from the db
+#' files to avoid reading all tables.
+#'
+#' @param province Character vector with two-number code for provinces.
+#' @param type Character, table type. One of "tree", "plot", "shrub", "regen", "coord".
+#' @param folder Character, path to the folder with the FIA csv files.
+#'
+#' @return Character vector with the paths (and table name when necessary) to use with
+#'   \code{\link{.read_inventory_data}}.
+#'
+#' @noRd
 .build_ifn_file_path <- function(
   province, type, version, folder = ".", .call = rlang::caller_env()
 ) {
@@ -377,6 +463,18 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   return(res)
 }
 
+#' Fixing subclasses format on the fly
+#'
+#' Fix common errors in subclasses codes on the fly
+#'
+#' This function takes a vector of subclasses codes and fix the common errors found. (i) trimming
+#' white spaces on both sides, (ii) substitute wrong designations in IFN3.
+#'
+#' @param subclasses Character vector of subclasses codes
+#'
+#' @return A vector of the same length as \code{subclasses} with the codes fixed
+#'
+#' @noRd
 .ifn_subclass_fixer <- function(subclasses) {
   # This helper fix errors with subclasses format
   subclasses |>
@@ -389,6 +487,28 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
     stringr::str_replace("^5$", "4")
 }
 
+#' Unique ID creator for IFN plots
+#'
+#' Unique ID creator for IFN plots
+#'
+#' Codes in IFN versions are not unique and follow a complicated and prone to error subclasses
+#' system that makes complicated to follow the plots in time. This function takes all the
+#' information needed to identify the plot, checks with the internal dictionary
+#' \code{ifn_plots_thesaurus} and returns an unique plot id that can be used to identify the plot
+#' in all IFN versions it's present.
+#'
+#' @param data IFN table as obtained by the individual table processing functions
+#' @param version IFN version
+#' @param province Two-number province code. Needed in IFN 4 to filter multiprovince db
+#' @param .dry Return data as is, no unique id created, but if \code{.padding} is TRUE, Estadillo
+#'   var is padded.
+#' @param .padding Logical indicating if the estadillo var (name differs in versions) must be
+#'   padded to 4 length. Default to TRUE as this is necessary for most cases.
+#'
+#' @return The same \code{data} object, with a new column, \code{ID_UNIQUE_PLOT}, in case
+#'   \code{.dry} is \code{FALSE}. If \code{.dry = TRUE}, \code{data} as is.
+#'
+#' @noRd
 .ifn_unique_id_creator <- function(data, version, province, .dry = FALSE, .padding = TRUE) {
 
   if (isTRUE(.dry)) {
@@ -449,18 +569,16 @@ show_plots_from_ifn <- function(folder, provinces, version, .call = rlang::calle
   return(res)
 }
 
-
-
-#' obtaining crs for different coordinate systems IFN
-#'
-#' This function  get_crs reads var huso and coordinate system of plot table process the tree table
-#' for one plot and one IFN
-#'
-#' @param tree_data file that contains the tree table for that plot
-#' @param plot plot_id code
-#' @param province province code
-#' @param ref_tree_ifn data frame containing the species code reference table
-#'
-#' @noRd
-#
-#
+## #' obtaining crs for different coordinate systems IFN
+## #'
+## #' This function  get_crs reads var huso and coordinate system of plot table process the tree table
+## #' for one plot and one IFN
+## #'
+## #' @param tree_data file that contains the tree table for that plot
+## #' @param plot plot_id code
+## #' @param province province code
+## #' @param ref_tree_ifn data frame containing the species code reference table
+## #'
+## #' @noRd
+##
+##

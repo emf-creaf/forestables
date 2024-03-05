@@ -32,7 +32,7 @@ ifn_tables_process(
 
 \item{filter_list}{A list of provinces and plots to extract the data from.}
 
-\item{folder}{The path to the folder containing the IFN csv files, as character.}
+\item{folder}{The path to the folder containing the IFN db files, as character.}
 
 \item{...}{Not used at the moment}
 

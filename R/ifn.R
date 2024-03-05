@@ -9,7 +9,7 @@
 #' @param provinces A character vector with the code for the departments.
 #' @param versions A character vector with the ifn versions.
 #' @param filter_list A list of provinces and plots to extract the data from.
-#' @param folder The path to the folder containing the IFN csv files, as character.
+#' @param folder The path to the folder containing the IFN db files, as character.
 #' @param ... Not used at the moment
 #' @param .parallel_options An object of class \code{furrr_options}. See
 #'   \code{\link[furrr]{furrr_options}}.
@@ -896,7 +896,7 @@ ifn_plot_table_process <- function(
         province_code = .data$PROVINCIA,
         ELEV = as.numeric(.data$ELEV) * 100,
         SLOPE = as.numeric(stringr::str_replace(.data$SLOPE, ",", ".")),
-        SLOPE = dplyr::case_when( 
+        SLOPE = dplyr::case_when(
           .data$SLOPE == 1 ~ 1.5,
           .data$SLOPE == 2 ~ 7.5,
           .data$SLOPE == 3 ~ 16,
@@ -1031,10 +1031,10 @@ ifn_plot_table_process <- function(
         SLOPE = as.numeric(.data$SLOPE),
         SLOPE = dplyr::case_when(
           SLOPE <= 0.6 ~ 1.5,
-          SLOPE < 0.6 & SLOPE >= 2.4 ~ 7.5 ,
-          SLOPE <2.4 & SLOPE >= 4 ~ 16 ,
-          SLOPE <4 & SLOPE >= 7 ~ 27 ,
-          SLOPE <7 ~ 40,
+          SLOPE > 0.6 & SLOPE <= 2.4 ~ 7.5 ,
+          SLOPE > 2.4 & SLOPE <= 4 ~ 16 ,
+          SLOPE > 4 & SLOPE <= 7 ~ 27 ,
+          SLOPE > 7 ~ 40,
         ),
         COORD_SYS = dplyr::case_when(
           .data$version == "ifn4" & .data$province_code %in% c(
