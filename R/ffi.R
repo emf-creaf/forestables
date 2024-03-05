@@ -622,12 +622,7 @@ ffi_shrub_table_process <- function(
 
   shrub_filtered_data <- .read_inventory_data(
     shrub_data,
-    select = c(
-      "CAMPAGNE",
-      "IDP",
-      "CD_REF",
-      "ABOND"
-    ),
+    select = c("CAMPAGNE","IDP", "CD_REF", "ABOND"),
     header = TRUE,
     colClasses = list(character = c("IDP", "CD_REF"))
   ) |>

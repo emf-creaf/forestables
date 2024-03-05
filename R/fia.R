@@ -742,15 +742,8 @@ fia_p2_understory_table_process <- function(
   filtered_data <- .read_inventory_data(
     understory_p2,
     select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      "SUBP",
-      "CONDID",
-      "VEG_FLDSPCD",
-      "VEG_SPCD",
-      "GROWTH_HABIT_CD",
+      "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "CONDID",
+      "VEG_FLDSPCD", "VEG_SPCD", "GROWTH_HABIT_CD",
       # VERTICAL LAYER 1, 2, 3 OR 4
       "LAYER",
       "COVER_PCT"
@@ -947,18 +940,8 @@ fia_subplot_table_process <- function(
   filtered_data <- .read_inventory_data(
     subplot_data,
     select = c(
-      "INVYR",
-      "STATECD",
-      "COUNTYCD",
-      "PLOT",
-      "SUBP",
-      "SUBP_STATUS_CD",
-      "MACRCOND",
-      "SUBPCOND",
-      "MICRCOND",
-      "SLOPE",
-      "ASPECT",
-      "P2VEG_SUBP_STATUS_CD"
+      "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SUBP_STATUS_CD", "MACRCOND",
+      "SUBPCOND", "MICRCOND", "SLOPE", "ASPECT", "P2VEG_SUBP_STATUS_CD"
     )
   ) |>
     dplyr::filter(.data$PLOT == plot, .data$INVYR == year, .data$COUNTYCD == county)
