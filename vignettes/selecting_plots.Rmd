@@ -33,6 +33,9 @@ fia_folder <- Sys.getenv("fia_path")
 ifn_folder <- Sys.getenv("ifn_path")
 ```
 
+
+## FFI example
+
 ```{r ffi_selection}
 # choose the departments, those in the mediterranean area
 mediterranean_deps <- c("66", "11", "34", "30", "13", "84", "04", "83", "06")
@@ -61,9 +64,7 @@ ggplot(france_map) +
   geom_sf() +
   geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
-```
 
-```{r filter_list}
 filter_list_2012 <-
   show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) |>
   filter(CAMPAGNE == 2012) |>
@@ -72,9 +73,9 @@ filter_list_2012 <-
 
 plan("multisession")
 data_2012 <- ffi_to_tibble(
-  departments = mediterranean_deps,
+  departments = mediterranean_deps[1:2],
   years = 2012,
-  filter_list = filter_list_2012,
+  filter_list = filter_list_2012[1:2],
   folder = ffi_folder,
   .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
 )
@@ -87,8 +88,13 @@ data_2012 |>
   geom_sf(data = france_map) +
   geom_sf(aes(color = ASPECT)) +
   scale_color_gradientn(colors = hcl.colors(360, "Lisbon"))
+```
 
 
+# FFI Tree diagnostics
+
+```{r tree_diagnostics}
+# understory
 data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
@@ -100,6 +106,100 @@ data_2012 |>
   geom_sf(aes(color = understory_herbs_HERB)) +
   scale_color_gradientn(colors = hcl.colors(20, "SunsetDark"))
 
-  
+
+data_clean_2012 <- data_2012 |>
+  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
+  sf::st_transform(crs= 4326)
+
+na_in_diameter_index <- purrr::map_lgl(
+  seq_len(nrow(data_clean_2012)),
+  .f = \(i) {
+    data_clean_2012 |>
+      dplyr::pull(tree) |>
+      magrittr::extract2(i) |>
+      dplyr::pull(DIA) |>
+      is.na() |>
+      all()
+  }
+)
+
+na_in_density_index <- purrr::map_lgl(
+  seq_len(nrow(data_clean_2012)),
+  .f = \(i) {
+    data_clean_2012 |>
+      dplyr::pull(tree) |>
+      magrittr::extract2(i) |>
+      dplyr::pull(DENSITY) |>
+      is.na() |>
+      all()
+  }
+)
+
+na_in_ht_index <- purrr::map_lgl(
+  seq_len(nrow(data_clean_2012)),
+  .f = \(i) {
+    data_clean_2012 |>
+      dplyr::pull(tree) |>
+      magrittr::extract2(i) |>
+      dplyr::pull(HT) |>
+      is.na() |>
+      all()
+  }
+)
+
+na_in_sp_name_index <-  purrr::map_lgl(
+  seq_len(nrow(data_clean_2012)),
+  .f = \(i) {
+    data_clean_2012 |>
+      dplyr::pull(tree) |>
+      magrittr::extract2(i) |>
+      dplyr::pull(SP_NAME) |>
+      is.na() |>
+      all()
+  }
+)
+
+identical(na_in_diameter_index, na_in_ht_index)
+sum(na_in_diameter_index); sum(na_in_ht_index)
+sum(na_in_sp_name_index)
+
+
+data_clean_2012 |>
+  tidyr::unnest(tree, names_sep = "_")
 ```
 
+## FFI benchmarking
+
+Something is weird here
+
+```{r ffi_bench}
+tictoc::tic()
+plan("multisession")
+data_2012 <- ffi_to_tibble(
+  departments = mediterranean_deps[1],
+  years = 2012,
+  filter_list = filter_list_2012[1],
+  folder = ffi_folder,
+  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+)
+tictoc::toc()
+
+tictoc::tic()
+plan("sequential")
+data_2012 <- ffi_to_tibble(
+  departments = mediterranean_deps[1],
+  years = 2012,
+  filter_list = filter_list_2012[1],
+  folder = ffi_folder,
+  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+)
+tictoc::toc()
+
+
+```
+
+Ok, i know what happens, in FFI, .read_inventory_data never gets cached correctly, as each row
+has a different table input with the grep code :(
+
+Thinking on how to fix this to increase speed and efficiency.

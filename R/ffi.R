@@ -556,7 +556,10 @@ ffi_tree_table_process <- function(
       DENSITY = .data$W,
       C13 = as.numeric(.data$C13),
       DIA = (.data$C13 / pi) * 100, # transformation to diameter
-      YEAR = .data$CAMPAGNE
+      YEAR = .data$CAMPAGNE,
+      # ensure VEGET and VEGET5 are integers
+      VEGET = as.integer(VEGET),
+      VEGET5 = as.integer(VEGET5)
     ) |>
     # join with espar_cdref
     dplyr::left_join(
