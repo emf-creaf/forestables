@@ -285,14 +285,31 @@ ffi_tables_process <- function(
     .l = input_df,
     .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table, regen_table) {
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees, .call)
-      tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref, .call)
+      tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref, .call) |>
+        dplyr::select(!dplyr::any_of(c(
+          "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+          "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "EXPO", "EXPO_ORIGINAL",
+          "PENT2", "PENT2_ORIGINAL", "COORD_SYS"
+        )))
       shrub_regen <- ffi_shrub_table_process(
         shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref, .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(c(
+          "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+          "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "EXPO", "EXPO_ORIGINAL",
+          "PENT2", "PENT2_ORIGINAL", "COORD_SYS"
+        )))
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
       if (year < 2015) {
-        regen <- ffi_regen_table_process(regen_table, plots, year, espar_cdref, idp_dep_ref, .call)
+        regen <- ffi_regen_table_process(
+          regen_table, plots, year, espar_cdref, idp_dep_ref, .call
+        ) |>
+          dplyr::select(!dplyr::any_of(c(
+            "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+            "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "EXPO", "EXPO_ORIGINAL",
+            "PENT2", "PENT2_ORIGINAL", "COORD_SYS"
+          )))
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
@@ -316,10 +333,10 @@ ffi_tables_process <- function(
 
       # we select herbs
       herbs <- plot_info |>
-        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "VISITE", "YEAR", "HERB")
+        dplyr::select("HERB")
       # we create understory with herbs and shrub
       understory <- plot_info |>
-        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "VISITE", "LIGN1", "LIGN2", "YEAR") |>
+        dplyr::select("LIGN1", "LIGN2") |>
         dplyr::mutate(shrub = list(shrub), herbs = list(herbs))
       # we put together all tables in a data frame
       plot_info <- plot_info |>
