@@ -73,9 +73,9 @@ filter_list_2012 <-
 
 plan("multisession")
 data_2012 <- ffi_to_tibble(
-  departments = mediterranean_deps[1:2],
+  departments = mediterranean_deps,
   years = 2012,
-  filter_list = filter_list_2012[1:2],
+  filter_list = filter_list_2012,
   folder = ffi_folder,
   .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
 )
@@ -84,10 +84,19 @@ data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
   sf::st_transform(crs= 4326) |>
+  tidyr::unnest("tree") |>
+  dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
+  dplyr::summarise(HT = mean(HT, na.rm = TRUE), n = n()) |>
+  dplyr::filter(!is.nan(HT)) |>
+  dplyr::group_by(SP_NAME) |>
+  dplyr::mutate(n = n()) |>
+  dplyr::filter(n > 25) |> 
   ggplot() +
-  geom_sf(data = france_map) +
-  geom_sf(aes(color = ASPECT)) +
-  scale_color_gradientn(colors = hcl.colors(360, "Lisbon"))
+  geom_sf(data = france_map, alpha = 0, linewidth = 0.8) +
+  geom_sf(aes(color = HT), size = 2.2, alpha = 0.8) +
+  scale_color_gradientn(colors = hcl.colors(360, "Dark Mint", rev = TRUE)) +
+  facet_wrap(~ SP_NAME) +
+  theme_minimal()
 ```
 
 
