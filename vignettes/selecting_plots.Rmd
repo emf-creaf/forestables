@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Setup
+
 ```{r setup}
 # libraries
 library(esus)
@@ -266,6 +268,10 @@ fia_filter_list_2012 <-
   filter(INVYR == 2012) |>
   create_filter_list()
 
+# fia_filter_list_2012 <- fia_filter_list_2012 |>
+#     purrr::map_depth(.depth = 2, .f = \(x) {
+#       sample(x, 5, replace = TRUE) |> unique()
+#     })
 
 plan("multisession")
 fia_data_2012 <- fia_to_tibble(
@@ -278,15 +284,36 @@ fia_data_2012 <- fia_to_tibble(
 fia_data_2012 |>
   dplyr::filter(!purrr::map_lgl(fia_data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
-  # sf::st_transform(crs = 4326) |>
+  sf::st_transform(crs = 4326) |>
+  as_tibble() |>
   tidyr::unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
-  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), DEP = unique(DEP), n = n()) |>
+  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
   dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 25, DENSITY < 300) |>
-  dplyr::left_join(as_tibble(west_coast_map), by = c("DEP" = "dep_code")) |>
+  dplyr::filter(n > 200, DENSITY < 300) |>
+  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
+  ggplot() +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
+  facet_wrap(~ SP_NAME) +
+  theme_minimal()
+
+fia_data_2012 |>
+  dplyr::filter(!purrr::map_lgl(fia_data_2012$regen, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
+  sf::st_transform(crs = 4326) |>
+  as_tibble() |>
+  tidyr::unnest("regen") |>
+  dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
+  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
+  dplyr::filter(!is.nan(DENSITY)) |>
+  dplyr::group_by(SP_NAME) |>
+  dplyr::mutate(n = n()) |>
+  dplyr::filter(n > 100, DENSITY < 300) |>
+  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
   ggplot() +
   geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +

@@ -223,6 +223,13 @@ fia_tables_process <- function(
         plot_table_file, survey_table_file, cond_table_file, plots, county, year, .call
       )
 
+      redundant_vars <- c(
+        "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM",
+        "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+        "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL",
+        "COORD_SYS", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
+      )
+
       # if there is no info for the plot (missing files) there is no need to continue,
       # so we check and return an empty tibble which is ignored after the loop when rbinding
       # the results
@@ -233,7 +240,8 @@ fia_tables_process <- function(
       state <- plot_info[["STATECD"]]
 
       # tree data
-      tree <- fia_tree_table_process(tree_table_file, plots, county, year, ref_species, .call)
+      tree <- fia_tree_table_process(tree_table_file, plots, county, year, ref_species, .call) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
 
       # understory
       shrub <- fia_understory_table_process(
@@ -242,34 +250,38 @@ fia_tables_process <- function(
         growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
         ref_plant_dictionary,
         .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
       herbs <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
         growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
         ref_plant_dictionary,
         .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
 
       # seedlings
       regen <-
-        fia_seedling_table_process(seedling_table_file, plots, county, year, ref_species, .call)
+        fia_seedling_table_process(seedling_table_file, plots, county, year, ref_species, .call) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
 
       # subplot
       subplot <-
-        fia_subplot_table_process(subplot_table_file, plots, county, year, .call)
+        fia_subplot_table_process(subplot_table_file, plots, county, year, .call) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
 
       # we group in a data frame understory info
       understory <- dplyr::tibble(
-        PLOT = plots,
-        COUNTYCD = county,
-        YEAR = year,
-        STATECD = state,
-        ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
+        # PLOT = plots,
+        # COUNTYCD = county,
+        # YEAR = year,
+        # STATECD = state,
+        # ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
         shrub = list(shrub),
         herbs = list(herbs)
       ) |>
-        dplyr::select("ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "YEAR", "STATECD", "shrub", "herbs")
+        dplyr::select("shrub", "herbs")
 
       # finally we put together all tables in a data frame and return it
       plot_info |>
