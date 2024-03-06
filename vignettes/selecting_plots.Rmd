@@ -76,31 +76,31 @@ data_2012 <- ffi_to_tibble(
   departments = mediterranean_deps,
   years = 2012,
   filter_list = filter_list_2012,
-  folder = ffi_folder,
-  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+  folder = ffi_folder
 )
 
 data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs= 4326) |>
+  sf::st_transform(crs = 4326) |>
   tidyr::unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
-  dplyr::summarise(HT = mean(HT, na.rm = TRUE), n = n()) |>
-  dplyr::filter(!is.nan(HT)) |>
+  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), DEP = unique(DEP), n = n()) |>
+  dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 25) |> 
+  dplyr::filter(n > 25, DENSITY < 300) |>
+  dplyr::left_join(as_tibble(france_map), by = c("DEP" = "dep_code")) |>
   ggplot() +
-  geom_sf(data = france_map, alpha = 0, linewidth = 0.8) +
-  geom_sf(aes(color = HT), size = 2.2, alpha = 0.8) +
-  scale_color_gradientn(colors = hcl.colors(360, "Dark Mint", rev = TRUE)) +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~ SP_NAME) +
   theme_minimal()
 ```
 
 
-# FFI Tree diagnostics
+### FFI Tree diagnostics
 
 ```{r tree_diagnostics}
 # understory
@@ -178,37 +178,119 @@ data_clean_2012 |>
   tidyr::unnest(tree, names_sep = "_")
 ```
 
-## FFI benchmarking
+### FFI benchmarking
 
-Something is weird here
+From previous benchmarks, grep still is the better option, even if there is no cache for files
+read.
 
-```{r ffi_bench}
-tictoc::tic()
+This bechmark finds the better configuration of paralellization for the example data set
+
+```{r ffi_bench, eval=FALSE}
 plan("multisession")
-data_2012 <- ffi_to_tibble(
-  departments = mediterranean_deps[1],
-  years = 2012,
-  filter_list = filter_list_2012[1],
-  folder = ffi_folder,
-  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+ffi_to_tibble_benchmark <- bench::mark(
+  sche_2 = ffi_to_tibble(
+    departments = mediterranean_deps,
+    years = 2012,
+    filter_list = filter_list_2012,
+    folder = ffi_folder,
+    .parallel_options = furrr_options(scheduling = 2L), .verbose = TRUE
+  ),
+  sche_1 = ffi_to_tibble(
+    departments = mediterranean_deps,
+    years = 2012,
+    filter_list = filter_list_2012,
+    folder = ffi_folder,
+    .parallel_options = furrr_options(scheduling = 1L), .verbose = TRUE
+  ),
+  chunk_300 = ffi_to_tibble(
+    departments = mediterranean_deps,
+    years = 2012,
+    filter_list = filter_list_2012,
+    folder = ffi_folder,
+    .parallel_options = furrr_options(chunk_size = 300L), .verbose = TRUE
+  ),
+  chunk_100 = ffi_to_tibble(
+    departments = mediterranean_deps,
+    years = 2012,
+    filter_list = filter_list_2012,
+    folder = ffi_folder,
+    .parallel_options = furrr_options(chunk_size = 100L), .verbose = TRUE
+  ),
+  min_time = Inf, iterations = 3
 )
-tictoc::toc()
-
-tictoc::tic()
-plan("sequential")
-data_2012 <- ffi_to_tibble(
-  departments = mediterranean_deps[1],
-  years = 2012,
-  filter_list = filter_list_2012[1],
-  folder = ffi_folder,
-  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+saveRDS(
+  ffi_to_tibble_benchmark,
+  file = paste0("data-raw/benchmarking/ffi_to_tibble_", Sys.Date(), ".rds")
 )
-tictoc::toc()
 
-
+ffi_to_tibble_benchmark
 ```
 
-Ok, i know what happens, in FFI, .read_inventory_data never gets cached correctly, as each row
-has a different table input with the grep code :(
+Seems like the best is around chunk 100, but the standard, scheduling 1 is also good. No big
+differences between parallelization strategies.
 
-Thinking on how to fix this to increase speed and efficiency.
+
+## FIA
+
+```{r ffi_selection}
+# choose the departments, those in the mediterranean area
+west_coast_states <- c("WA", "CA", "OR")
+# get the plots for those departments
+west_coast_plots <- show_plots_from("FIA", folder = fia_folder, states = west_coast_states) 
+west_coast_plots
+```
+
+
+```{r plots_visualization}
+# france map for plotting
+west_coast_map <- ne_states(geounit = "United States of America") |>
+  select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
+  mutate(dep_code = str_remove(dep_code, "US-")) |>
+  filter(dep_code %in% west_coast_states)
+
+ggplot(west_coast_map) +
+  geom_sf() +
+  geom_sf(aes(color = STATEAB, alpha = 0.1), data = west_coast_plots) +
+  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+
+west_coast_plots_2012 <- west_coast_plots |>
+  filter(INVYR == 2012)
+
+ggplot(west_coast_map) +
+  geom_sf() +
+  geom_sf(aes(color = STATEAB, alpha = 0.1), data = west_coast_plots_2012) +
+  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+
+fia_filter_list_2012 <-
+  show_plots_from("FIA", folder = fia_folder, states = west_coast_states) |>
+  filter(INVYR == 2012) |>
+  create_filter_list()
+
+
+plan("multisession")
+fia_data_2012 <- fia_to_tibble(
+  states = west_coast_states,
+  years = 2012,
+  filter_list = fia_filter_list_2012,
+  folder = fia_folder
+)
+
+fia_data_2012 |>
+  dplyr::filter(!purrr::map_lgl(fia_data_2012$tree, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
+  # sf::st_transform(crs = 4326) |>
+  tidyr::unnest("tree") |>
+  dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
+  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), DEP = unique(DEP), n = n()) |>
+  dplyr::filter(!is.nan(DENSITY)) |>
+  dplyr::group_by(SP_NAME) |>
+  dplyr::mutate(n = n()) |>
+  dplyr::filter(n > 25, DENSITY < 300) |>
+  dplyr::left_join(as_tibble(west_coast_map), by = c("DEP" = "dep_code")) |>
+  ggplot() +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
+  facet_wrap(~ SP_NAME) +
+  theme_minimal()
+```
