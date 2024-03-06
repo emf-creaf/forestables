@@ -162,6 +162,7 @@ source("data-raw/IFN_plots_thesaurus.R") # this creates ifn_plots_thesaurus obje
 
 usethis::use_data(
   fia_states_dictionary,
+  fr_species_cdref,
   growth_form_lignified_france,
   ifn_provinces_dictionary,
   species_ifn_internal,

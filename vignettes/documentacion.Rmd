@@ -20,26 +20,25 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(esus)
+load("D:/esus/R/sysdata.rda")
 ```
 
 # Introduction
 
 \
-Introduction
-
 This vignette documents the most important processes in handling official data sources from the national forest inventories of France, the United States, and Spain.
 
-# IFN : data processing
+# IFN (SPAIN): data processing
 
 The **Second National Forest Inventory (IFN2) was conducted by the Forest Inventory Service between 1986 and 1996.** It consisted of fixed plots located using a metal grid buried at the center of each plot, allowing for the periodic measurement of each tree and the comparison of their physical characteristics and condition.
 
-The Third cycle of the Na**tional Forest Inventory (IFN3) was carried out between 1997 and 2007**. While it followed the methodology established in IFN2, with a focus on continuous monitoring of the same plots, it introduced changes by considering forest ecosystems for the first time. IFN3 aimed to provide insights into the state and evolution of forests at the provincial level through over 100 indicators.
+The Third cycle of the **National Forest Inventory (IFN3) was carried out between 1997 and 2007**. While it followed the methodology established in IFN2, with a focus on continuous monitoring of the same plots, it introduced changes by considering forest ecosystems for the first time. IFN3 aimed to provide insights into the state and evolution of forests at the provincial level through over 100 indicators.
 
 The **National Forest Inventory (IFN)** is a project that provides national-level information on forests and their evolution from both a taxonomic and ecological perspective. With a periodicity of at least ten years, it has been ongoing for over fifty years and is currently in **its fourth cycle (IFN4)** **since 2008.** While IFN4 continues the methodology of its predecessors, it incorporates changes and innovations.Among the main novelties of this fourth cycle (IFN4) is the use of the Forest Map of Spain at a scale of 1:25,000 (MFE) as the cartographic base.
 
 **Data acquisition:**
 
-IFN2 : FICHEROS DE PARCELAS Y PROCESOS DE DATOS: <https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_descargas.html>
+IFN2 : Ficheros de parcelas y procesos de datos: <https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_descargas.html>
 
 IFN 3: Bases de datos (Access 2007 \*.accdb <https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_bbdd_descargas_htm.html>
 
@@ -47,22 +46,50 @@ IFN4 : Bases de datos de campo. <https://www.miteco.gob.es/es/biodiversidad/tema
 
 ## Individual functions for IFN tables
 
+Variables that appear in multiple tables
+
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+| Harmonized name | Original name IFN2              | Original name IFN3/ 4  | Description                                                                 |
++=================+=================================+========================+=============================================================================+
+| ID_UNIQUE_PLOT  | ES_ESTADILLO\_ PROVINCIA        | ES_Estadillo_Provincia | Built code to identify plot                                                 |
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+| province_code   | PROVINCIA                       | Provincia              | Territorial division                                                        |
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+| PLOT            | ESTADILLO                       | Estadillo              | Plot ID                                                                     |
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+| Clase           | *CLA* <!--# INCLUDE IN CODE --> | Cla                    | Code related to when the plot was surveyed.                                 |
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+| Subclase        | *SubcLase*                      | Subclase               | Code that determines the type of plot based on the location of the "rejon". |
++-----------------+---------------------------------+------------------------+-----------------------------------------------------------------------------+
+
 ### **IFN TREE TABLE PROCESS**
 
-Comes from *PCMAYORES* table of IFN3-4 and *PIESMA* of IFN2\
-\
+Information is obtained from *PCMAYORES* table of IFN3-4 and *PIESMA* of IFN2\
+
+Individuals considered tree in this table are those with a diameter above 7.5 cm of diameter.\
 This function performs a set of operations to obtain the final table.
 
-| Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
-|-----------------|--------------------|-----------------------|
-| PLOT            | ESTADILLO          | Estadillo             |
-| HT(m)           | ALTURA             | HT                    |
-| SP_CODE         | ESPECIE            | Especie               |
-| province_code   | PROVINCIA          | Provincia             |
-| TREE            | ARBOL              | nArbol                |
-| Dn1 (cm)        | DIAMETRO1 (mm)     | Dn1 (mm)              |
-| Dn2 (cm)        | DIAMETRO2 (mm)     | Dn2 (mm)              |
-| HT (m)          | ALTURA (m ?)       | Ht (m)                |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| Harmonized name            | Original name IFN2 | Original name IFN3/ 4      | Description                                                      |
++============================+====================+============================+==================================================================+
+| HT(m)                      | ALTURA (m?)        | HT (m)                     | Height of tree                                                   |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| SP_CODE                    | ESPECIE            | Especie                    | Code of species at IFN                                           |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| OrdenIf2/OrdenIf3/OrdenIf4 | OrdenIf2/OrdenIf3  | OrdenIf2/OrdenIf3/OrdenIf4 | Order number (ID) to trace individuals between inventories       |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| TREE                       | ARBOL              | nArbol                     | number of trees, id                                              |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| DIA(cm)                    | DIAMETRO1 (mm)     | Dn1 (mm)                   | diameter in one direction                                        |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| DIA (cm)                   | DIAMETRO2 (mm)     | Dn2 (mm)                   | diameter in perpendicular direction                              |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| Forma                      | ?                  | Forma                      | Measurement method of the measured foot (see ifn3 documentation) |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
+| Calidad                    | ?                  | Calidad                    | Quality of the measured foot ( 6 = DEATH)                        |
+|                            |                    |                            |                                                                  |
+|                            |                    |                            | (see ifn3 documentation)                                         |
++----------------------------+--------------------+----------------------------+------------------------------------------------------------------+
 
 \
 The mean of diameters is calculated to obtain the variable DIA (diameter/DBH), and it is converted to cm.
@@ -71,38 +98,40 @@ The mean of diameters is calculated to obtain the variable DIA (diameter/DBH), a
   DIA = ((Dn1 + Dn2) / 2) * 0.1, # From mm to cm
 ```
 
-The density variable is similar to the FAC variable in the inventory, which corresponds to the Expansion Factor per hectare of the unit values of different dendrometric parameters of the measured foot. Smaller trees are measured at smaller radii of the plot, while larger trees are measured within a 25m radius, which is why the density value changes.
+We add a variable called DENSITY : The density variable is similar to the FAC variable in the inventory, which corresponds to the Expansion Factor per hectare of the unit values of different dendrometric parameters of the measured foot. IF follows a methods called variable-radius plot sampling. Smaller trees are measured at smaller radii of the plot, while larger trees are measured within the larger radii as follows.
 
-+--------------+---------------+
-| DIA interval | DENSITY VALUE |
-+==============+===============+
-| [0, 12.5)    | 127.3239546   |
-+--------------+---------------+
-| [12.5, 22.5) | 31.83098865   |
-+--------------+---------------+
-| [22.5, 42.5) | 14.14710607   |
-+--------------+---------------+
-| [42.5, 999)  | 5.092958185   |
-+--------------+---------------+
+![](images/clipboard-3909002882.png){width="529"}
 
-# ![](images/clipboard-2643372046.png){width="311"}
++---------------+---------------------+
+| DIA interval  | DENSITY VALUE       |
++===============+=====================+
+| [0, 12.5)     | 127.3239546         |
++---------------+---------------------+
+| [12.5, 22.5)  | 31.83098865         |
++---------------+---------------------+
+| [22.5, 42.5)  | 14.14710607         |
++---------------+---------------------+
+| [42.5, 999)   | 5.092958185         |
++---------------+---------------------+
 
-The final variables pprovided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "nArbol", "Calidad", "Forma", "OrdenIf2", "OrdenIf3", "OrdenIf4", "DIA", "HT", "DENSITY"
-
-### 
+We also add variable SP_NAME, that is the Latin name of the species that corresponds to the SP_CODE.\
+\
+The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "nArbol", "Calidad", "Forma", "OrdenIf2", "OrdenIf3", "OrdenIf4", "DIA", "HT", "DENSITY"
 
 ### **IFN SHRUB TABLE PROCESS**
 
-Information comes from the table *PCMatorral* of the IFN3-4 and *MATORR* of IFN2\
+Information is obtained from the table *PCMatorral* of the IFN3-4 and *MATORR* of IFN2\
 Firstly, names are harmonized.
 
-| Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
-|-----------------|--------------------|-----------------------|
-| PLOT            | ESTADILLO          | Estadillo             |
-| Height (cm)     | ALTUMED (dm)       | Hm (dm)               |
-| SP_CODE         | ESPECIE            | Especie               |
-| province_code   | PROVINCIA          | Provincia             |
-| COVER           | FRACCAB            | Fcc (%)               |
++-----------------+--------------------+-----------------------+-------------------------------------+
+| Harmonized name | Original name IFN2 | Original name IFN3/ 4 | Description                         |
++=================+====================+=======================+=====================================+
+| Height (cm)     | ALTUMED (dm)       | Hm (dm)               | Mean height                         |
++-----------------+--------------------+-----------------------+-------------------------------------+
+| SP_CODE         | ESPECIE            | Especie               | Species code IFN                    |
++-----------------+--------------------+-----------------------+-------------------------------------+
+| COVER           | FRACCAB            | Fcc (%)               | cover in % of a species in the plot |
++-----------------+--------------------+-----------------------+-------------------------------------+
 
 The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
 
@@ -112,12 +141,13 @@ Information comes from the table *PCRegenera* of IFN 3-4 or *PIESME* del IFN2
 
 Firstly, names are harmonized.
 
-| Harmonized name | Original name IFN2 | Original name IFN3/ 4 |
-|-----------------|--------------------|-----------------------|
-| PLOT            | ESTADILLO          | Estadillo             |
-| Height (cm)     | ALTUMED (dm?)      | Hm (dm?)              |
-| SP_CODE         | ESPECIE            | Especie               |
-| province_code   | PROVINCIA          | Provincia             |
++-----------------+--------------------+-----------------------+------------------+
+| Harmonized name | Original name IFN2 | Original name IFN3/ 4 | Descriptor       |
++=================+====================+=======================+==================+
+| Height (cm)     | ALTUMED (dm?)      | Hm (dm?)              | Mean height      |
++-----------------+--------------------+-----------------------+------------------+
+| SP_CODE         | ESPECIE            | Especie               | Species code IFN |
++-----------------+--------------------+-----------------------+------------------+
 
 The data regeneration is approached differently in the IFN3-4 compared to the IFN2, thus the processing is different
 
@@ -125,29 +155,41 @@ The data regeneration is approached differently in the IFN3-4 compared to the IF
 
 **Original variables**
 
-"Numero": number of trees of a given species with a diameter between 25 and 75 mm in the 5m radius\
-"Regena" : averaged number of trees of a given species with a diameter below 25 mm in the 5m radius\
-![](images/clipboard-3757804920.png){width="154"}\
-"ALTUMED": mean height for trees above 25mm of diameter
++-----------------+--------------------+------------------------------------------------------------------------------------------+
+| Harmonized name | Original name IFN2 | Descriptor                                                                               |
++=================+====================+==========================================================================================+
+| \-              | Numero             | Number of trees of a given species with a diameter between 25 and 75 mm in the 5m radius |
++-----------------+--------------------+------------------------------------------------------------------------------------------+
+| \-              | Regena             | averaged number of trees of a given species with a diameter below 25 mm in the 5m radius |
++-----------------+--------------------+------------------------------------------------------------------------------------------+
+| Height (cm?)    | ALTUMED            | Mean height                                                                              |
++-----------------+--------------------+------------------------------------------------------------------------------------------+
+
+| Regena | Descriptor  |
+|--------|-------------|
+| 0      | n = 0       |
+| 1      | 0\<n\<5     |
+| 2      | 5\<= n\<=15 |
+| 3      | n\>15       |
 
 To uniform all information and separate each record in a different file there are some assumptions/ default values. Additionally, new variables are generated (DBH, DENSITY, N)
 
 -   N ( actual density in trees/ ha ) is calculated by multiplying *Numero* \* *DENSITY.*\
     For those records with REGENA codes, the mid point of the interval is assumed to be the actual number of species .
 
-+-----------------+----------+----------+-------------+----------------+------------------------+
-| CATEGORY        | Height   | DBH      | DENSITY     | Numero         | N                      |
-+=================+==========+==========+=============+================+========================+
-| DBH below 25 mm | 100cm    | 1 cm     | 127.3239546 | Regena 0 = 0   | *Numero* \* *DENSITY.* |
-|                 |          |          |             |                |                        |
-|                 |          |          |             | Regena 1 = 2.5 |                        |
-|                 |          |          |             |                |                        |
-|                 |          |          |             | Regena 2 = 10  |                        |
-|                 |          |          |             |                |                        |
-|                 |          |          |             | Regena 3 = 20  |                        |
-+-----------------+----------+----------+-------------+----------------+------------------------+
-| DBH above 25 mm | ALTUMED  | 5 cm     | 127.3239546 | Numero         | *Numero* \* *DENSITY.* |
-+-----------------+----------+----------+-------------+----------------+------------------------+
++-----------------+----------------+-------------+-------------+----------------+------------------------+
+| CATEGORY        | Height default | DBH default | DENSITY     | Numero default | N                      |
++=================+================+=============+=============+================+========================+
+| DBH below 25 mm | 100cm          | 1 cm        | 127.3239546 | Regena 0 = 0   | *Numero* \* *DENSITY.* |
+|                 |                |             |             |                |                        |
+|                 |                |             |             | Regena 1 = 2.5 |                        |
+|                 |                |             |             |                |                        |
+|                 |                |             |             | Regena 2 = 10  |                        |
+|                 |                |             |             |                |                        |
+|                 |                |             |             | Regena 3 = 20  |                        |
++-----------------+----------------+-------------+-------------+----------------+------------------------+
+| DBH above 25 mm | ALTUMED        | 5 cm        | 127.3239546 | Numero         | *Numero* \* *DENSITY.* |
++-----------------+----------------+-------------+-------------+----------------+------------------------+
 
 **For IFN3 - 4**
 
@@ -157,6 +199,18 @@ To uniform all information and separate each record in a different file there ar
 "NumPies"= number of trees for category 4\
 "Densidad" = interval of number of trees for category 1,2 and 3\
 "Hm" = mean height for category 4 in dm
+
++-----------------+--------------------+----------------------------------------------------+
+| Harmonized name | Original name IFN2 | Descriptor                                         |
++=================+====================+====================================================+
+| CatDes          |                    | development category of regeneration               |
++-----------------+--------------------+----------------------------------------------------+
+| \-              | NumPies            | number of trees for category 4                     |
++-----------------+--------------------+----------------------------------------------------+
+| \-              | Densidad           | interval of number of trees for category 1,2 and 3 |
++-----------------+--------------------+----------------------------------------------------+
+| Height (cm?)    | Hm                 | mean height for category 4 in dm                   |
++-----------------+--------------------+----------------------------------------------------+
 
 Depending on the development category (*CatDes*), the regeneration densities will be quantified differently:
 
@@ -174,7 +228,7 @@ For development categories 1, 2, and 3, counting the trees in the circular plot 
 
 For development category 4, by species, count those present in the 5 m radius subplot and record in the corresponding box ("NumPies") and the average total height of each group is also calculated ( Hm ) , approximately.
 
-Additionally new variables are generated and some assumption are made to uniform the information:
+Additionally new variables are generated and some assumptions are made to uniform the information:
 
 Density = FAC Expansion Factor per hectare which is always 127.3239546
 
@@ -204,17 +258,23 @@ Information comes from tables DATEST of IFN2 and *PCDatosMap*, *PCParcelas* of I
 
 Note that coordinates are approximate\
 
-| Harmonized name | Original name IFN2     | Original name IFN3/ 4 |
-|-----------------|------------------------|-----------------------|
-| PLOT            | ESTADILLO              | Estadillo             |
-| province_code   | PROVINCIA              | Provincia             |
-| COORD1          | COORDEX                | CoorX                 |
-| COORD2          | COORDEY                | CoorY                 |
-| SLOPE           | MAXPEND                | MaxPend1              |
-| ELEV            | ALTITUD2               | \-                    |
-| YEAR            | ANO                    | Ano                   |
-| ASPECT          | ORIENTA2               | Orienta1              |
-| HUSO            | Huso \* default values | Huso                  |
++-------------------------------+------------------------+-----------------------+----------------------+
+| Harmonized name               | Original name IFN2     | Original name IFN3/ 4 | Descriptor           |
++===============================+========================+=======================+======================+
+| COORD1                        | COORDEX                | CoorX                 | Coordinate longitude |
++-------------------------------+------------------------+-----------------------+----------------------+
+| COORD2                        | COORDEY                | CoorY                 | Coordinate latitude  |
++-------------------------------+------------------------+-----------------------+----------------------+
+| SLOPE (%)                     | MAXPEND                | MaxPend1              | Maximum slope (%)    |
++-------------------------------+------------------------+-----------------------+----------------------+
+| ELEV (m)                      | ALTITUD2               | \-                    | elevation above sea  |
++-------------------------------+------------------------+-----------------------+----------------------+
+| YEAR                          | ANO                    | Ano                   | year                 |
++-------------------------------+------------------------+-----------------------+----------------------+
+| ASPECT ( sexagesimal degrees) | ORIENTA2               | Orienta1              | Aspect               |
++-------------------------------+------------------------+-----------------------+----------------------+
+| HUSO                          | Huso \* default values | Huso                  | UTM HUSO             |
++-------------------------------+------------------------+-----------------------+----------------------+
 
 Additionally, a new variable to indicate coordinate system and project coordinates is generated and it is called COORD_SYS.\
 **\
@@ -234,9 +294,9 @@ SLOPE is assigned following IFN categories and approximated:\
 
 The ELEVATION is indicated as the lower limit of the range of 100 in which the actual altitude is found. For example, if it's between 0 and 100 meters, it's indicated as 100; if it's between 100 and 200, it's indicated as 100, and so on.
 
-"Huso" (UTM zone) is not recorded in IFN2. Therefore, a default value of 28 is assigned for the Canary Islands, and for the rest of the peninsula, the default value is 30. Similarly , variable COORD_SYSTEM , which is new , have default values " WGS84" for Canary Islan and "ED50" for the rest.
+"Huso" (UTM zone) is not recorded in IFN2. Therefore, a default value of 28 is assigned for the Canary Islands, and for the rest of the peninsula, the default value is 30. Similarly , variable COORD_SYSTEM , which is newly generated , have default values " WGS84" for Canary Islands and "ED50" for the rest of peninsula.
 
-CRS = Coordinate reference system ESPG code
+CRS = Coordinate reference system ESPG code.
 
 **IFN3 -4**
 
@@ -255,7 +315,7 @@ COORD_SYS and Huso values are assigned following the technical documents of IFN.
 \
 Final variables are "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_code", "province_name_original", "PLOT", "Cla", "Subclase", "COORD_SYS", "YEAR", "version", "Tipo", "ASPECT", "SLOPE"\
 
-# FFI: data processing
+# FFI (FRANCE): data processing
 
 Since 2005, an adaptable statistical sampling method has been used annually across metropolitan territories In France. This method combines data from five yearly campaigns to generate precise national and regional results. Sampling is optimized by revisiting points every five years, creating a grid system that enhances logistical efficiency.
 
@@ -288,6 +348,17 @@ These files are provided with an associated documentation file in PDF format. Ot
 
 -   IGN_DB_documentation_generale_20xx.doc
 
+## Individual functions for FFI tables
+
+Variables that appear in multiple tables
+
+| Harmonized name | Original name FFI | Descriptor           |
+|-----------------|-------------------|----------------------|
+| ID_UNIQUE_PLOT  | FR_DEP_IDP        |                      |
+| PLOT            | IDP               | Plot ID              |
+| YEAR            | CAMPAGNE          | Year                 |
+| DEPARTMENT      | DEP               | Territorial division |
+
 ### FFI TREE TABLES PROCESS
 
 Information comes from a table (*ARBRE.CSV*)
@@ -296,17 +367,21 @@ In general, only trees deemed "measurable" ("*RECENSABLE*") are considered in th
 
 ![](images/clipboard-821718553.png){width="285"}
 
-| Harmonized name | Original name FFI |
-|-----------------|-------------------|
-| PLOT            | IDP               |
-| YEAR            | CAMPAGNE          |
-| DEPARTMENT      | DEP               |
-| SP_CODE         | ESPAR/cd_ref      |
-| TREE            | A                 |
-| DIA (cm)        | C13(m)            |
-| HT (m)          | HTOT ()           |
-| DENSITY         | W                 |
-| STATUS/VEGET5   | VEGET/VEGET5      |
++-----------------+-------------------+--------------------------------------------------------------------+
+| Harmonized name | Original name FFI | Descriptor                                                         |
++=================+===================+====================================================================+
+| SP_CODE         | ESPAR/cd_ref      | Species code                                                       |
++-----------------+-------------------+--------------------------------------------------------------------+
+| TREE            | A                 | Tree id                                                            |
++-----------------+-------------------+--------------------------------------------------------------------+
+| DIA (cm)        | C13(m)            | Circomference at 130cm height (DBH)                                |
++-----------------+-------------------+--------------------------------------------------------------------+
+| HT (m)          | HTOT (m?)         | Total height                                                       |
++-----------------+-------------------+--------------------------------------------------------------------+
+| DENSITY         | W                 | Weight/ Expansion Factor per hectare                               |
++-----------------+-------------------+--------------------------------------------------------------------+
+| STATUS/VEGET5   | VEGET/VEGET5      | Status of the tree in first visit (VEGET) or second visit (VEGET5) |
++-----------------+-------------------+--------------------------------------------------------------------+
 
 To transform C13 in m to DIA in cm:
 
@@ -316,33 +391,33 @@ DIA = (C13 / pi) * 100
 
 Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR", "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "HT", "DENSITY"
 
-Note that VEGET5 is status in 2nd visit (after 5 year).
+Note that VEGET5 is status in 2nd visit (after 5 year). <!--# change to status? -->
 
 ### FFI SHRUB TABLES PROCESS
 
-Information comes from a table (*FLORE.CSV*) that contains info for all kind of species, trees shrub and herbs but he exclusively give information about shrubs. For that we have used R pachage GIFT (<https://cran.r-project.org/web/packages/GIFT/index.html>) (See appendix 1) .\
-Therefore, in the table a variable called *GrowthForm* is used toinform about whether it is a tree, a shrub or herbs.
+Information is obtained from a table (*FLORE.CSV*) that contains information for all kind of species, trees shrub and herbs but he exclusively give information about shrubs. For that we have used R pachage GIFT (<https://cran.r-project.org/web/packages/GIFT/index.html>) (See appendix 1) .\
+Therefore, in the table a variable called *GrowthForm* is used to inform about whether it is a tree, a shrub or herbs.
 
-| Harmonized name | Original name FFI |
-|-----------------|-------------------|
-| PLOT            | IDP               |
-| YEAR            | CAMPAGNE          |
-| DEPARTMENT      | DEP               |
-| SP_CODE         | CD_REF            |
-| COVER           | ABOND             |
++-----------------+------------------------------+----------------------------------------+
+| Harmonized name | Original name FFI            | Descriptor                             |
++:===============:+:============================:+========================================+
+| SP_CODE         | CD_REF                       | Species code (metadata)                |
++-----------------+------------------------------+----------------------------------------+
+| COVER           | ABOND                        | \% of cover of a species within a plot |
++-----------------+------------------------------+----------------------------------------+
 
 +----------------+-----------------------------------------------------+---------------+
 | ABOND ORIGINAL | ABOND DESCRIPTOR                                    | Default value |
 +================+=====================================================+===============+
-| 1              | doubtful presence. species coverage rate below 5%". | 5 %           |
+| 1              | Doubtful presence. Species coverage rate below 5%". | 5 %           |
 +----------------+-----------------------------------------------------+---------------+
-| 2              | assured presence. species coverage rate below 25%   | 12.5%         |
+| 2              | Assured presence. Species coverage rate below 25%   | 12.5%         |
 +----------------+-----------------------------------------------------+---------------+
-| 3              | species coverage rate between 25% and 50%           | 37.5%         |
+| 3              | Species coverage rate between 25% and 50%           | 37.5%         |
 +----------------+-----------------------------------------------------+---------------+
-| 4              | species coverage rate between 50% and 75%           | 62.5%         |
+| 4              | Species coverage rate between 50% and 75%           | 62.5%         |
 +----------------+-----------------------------------------------------+---------------+
-| 5              | species coverage rate above 75%".                   | 87.5 %        |
+| 5              | Species coverage rate above 75%".                   | 87.5 %        |
 +----------------+-----------------------------------------------------+---------------+
 
 Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
@@ -355,34 +430,91 @@ Table for regeneration is obtained via two ways depending on the year. We do so 
 
 Here we first explain process for *COUVERT.CSV.*
 
-+--------------------------+---------------------------------------+
-| Harmonized name          | Original name FFI                     |
-+==========================+=======================================+
-| PLOT                     | IDP                                   |
-+--------------------------+---------------------------------------+
-| YEAR                     | CAMPAGNE                              |
-+--------------------------+---------------------------------------+
-| DEPARTMENT               | DEP                                   |
-+--------------------------+---------------------------------------+
-| SP_CODE                  | ESPAR_C/ CD_REF                       |
-+--------------------------+---------------------------------------+
-| COVER                    | TCA                                   |
-+--------------------------+---------------------------------------+
-| STRATE                   | STRATE                                |
-+--------------------------+---------------------------------------+
++-----------------+-------------------+----------------------------------------------------------------+
+| Harmonized name | Original name FFI | Descriptor                                                     |
++=================+===================+================================================================+
+| SP_CODE         | ESPAR_C/ CD_REF   | Species code                                                   |
++-----------------+-------------------+----------------------------------------------------------------+
+| COVER           | TCA               | \% cover of a species within a plot                            |
++-----------------+-------------------+----------------------------------------------------------------+
+| STRATE          | STRATE            | Variable that determines if the species recorded is recensable |
++-----------------+-------------------+----------------------------------------------------------------+
 
 We select the records with STRATE = "NR" , meaning non-measurable as TREE, (i.e., DBH \< 7,5 cm).
 
-We add a variable with a default value : DBH = 7.5 \# in cm which corresponds to the maximum DBH that can be present.
+We add a variable with a default value : DBH = 7.5 in cm, which corresponds to the maximum DBH that can be present. <!--# revise code , should be a bit less  -->
 
 Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH"
 
-Process for *FLORE.CSV. (AFTER 2015)\
-*Here same process of SHURB table process is performed but in the end only those with a *GrowthForm* of "*tree*" are selected. Note that this data does not have DBH information but could be added.
+Process for *FLORE.CSV. (AFTER 2015)*
+
+Here same process of SHURB table process is performed but in the end only those with a *GrowthForm* of "*tree*" are selected. Note that this data does not have DBH information but could be added.<!--# revise code ,add?  -->
 
 ### FFI PLOT TABLES PROCESS
 
-Herbs
+Information is obtained from a tables *PLACETTE.csv* that contains basic information about the plot (VIST, COORDINATES), and *ECOLOGIE.CSV* that contains ecological information. Ecological information is extracted at plot level from the last year with available information since not every year the variables are recorded. Variables with the termination "\_ORIGINAL" refer to the data available for the specific year of search.
+
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| Harmonized name | Original name FFI       | Descriptor                                                                                                                 |
++=================+=========================+============================================================================================================================+
+| VISITE          | VISITE                  | indicates whether the point is from the first or second visit to the field                                                 |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| COORD1          | XL                      | Coordinate longitude                                                                                                       |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| COORD2          | YL                      | Coordinate latitude                                                                                                        |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| ASPECT (º)      | EXPO                    | Aspect                                                                                                                     |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| SLOPE           | PENT2                   | Slope in percentage                                                                                                        |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| LIGN1           | LIGN1                   | Represents the ratio of the area covered by low woody vegetation (less than 2 meters tall) to the total area of the plot.  |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| LIGN2           | LIGN2                   | Represents the ratio of the area covered by tall woody vegetation (over 2 meters tall) to the total area of the plot.      |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+| HERBS?          | HERB                    | Represents the ratio of the area covered by herbaceous and mossy plants to the total area of the description plot.         |
++-----------------+-------------------------+----------------------------------------------------------------------------------------------------------------------------+
+
+EXPO is transformed from centesimal degrees to sexagesimal degrees (multiplying by 0.9) .\
+Additionally, we add variable COORD_SYS with the coordinate system employed (LAMBERT) and its CRS .
+
+Variables regarding to herb or woody vegetation (LIGN ) are collected in an individual data frame \
+\
+
+# FIA (US): data processing
+
+The **Forest Inventory and Analysis (FIA)** program, managed by the United States Forest Service, is a systematic effort to collect, analyze, and disseminate information about the nation's forests. It provides comprehensive data on forest resources, including tree species, forest structure, composition, health, and dynamics.
+
+FIA employs a cyclical approach to data collection, with periodic inventories conducted across different regions of the United States. These inventories typically occur on **a 5 to 10-year cycle**, although frequency may vary depending on the specific objectives and resource availability.
+
+Data collection involves **field measurements,** remote sensing technologies, and statistical sampling methods to gather information on forested lands. Field crews collect data on tree species, size, density, growth, mortality, and other ecological attributes. Remote sensing data, such as aerial photography and satellite imagery, are also utilized to supplement ground-based observations.
+
+**Permanent plots** in the FIA program are established using a systematic sampling approach, where sample locations are randomly selected within defined strata to ensure representative coverage of different forest types and ownerships.
+
+The Forest Inventory and Analysis (FIA) program, employs a phased approach to systematically monitor and assess forest resources across the nation.
+
+**Phase 1** involves the initial setup of the sampling framework, including stratification of the landscape, random selection of sample plots, and establishment of permanent plot locations.
+
+**Phase 2** consists of intensive field data collection on a subset of sample plots, focusing on detailed measurements of tree and vegetation characteristics. This phase provides comprehensive information on forest composition, structure, and health.
+
+**Phase 3** encompasses specialized studies and additional data collection efforts beyond the standard inventory, addressing specific research questions or management objectives. This phase allows for targeted investigations into ecological processes, biodiversity, and environmental change.
+
+In the Forest Inventory and Analysis (FIA) program, there **are several core variables** that are commonly collected across all sample plots. These variables provide fundamental information about forest resources and are essential for monitoring and assessing forest conditions. Some of the core variables include: tree attributes, stand attributes, forest health, vegetation composition and site characteristics.
+
+### IFN TREE TABLES PROCESS
+
+| Harmonized name | Original name FFI    | Descriptor                         |
+|-----------------|----------------------|------------------------------------|
+| ID_UNIQUE_PLOT  | US_STATE_COUNTY_PLOT |                                    |
+| PLOT            | PLOT                 | Plot ID                            |
+| SUBPLOT         | SUBP                 | Subplot number (up to 4)           |
+| YEAR            | INVYR                | Year                               |
+| COUNTY          | COUNTYCD             | Territorial division within states |
+| STATE           | STATECD              | Territorial division               |
+| TREE            | TREE                 | Tree id                            |
+| DIA (cm)        | DIA                  | Diameter                           |
+| HT (m)          | HT                   | Total height                       |
+| DENSITY (1/ha)  | TPA_UNADJ (1/acres)  | Expansion factor                   |
+| SP_CODE         | SPCD                 | Species code                       |
 
 ### **Appendix 1**
 
@@ -427,9 +559,13 @@ head(growth_form_lignified_france)
 
 ICONA (1990) Segundo inventario forestal nacional: Explicaciones y metodos. 1986-1995. Retrieved from: <https://www.miteco.gob.es/content/dam/miteco/es/biodiversidad/servicios/banco-datos-naturaleza/explicacionesymetodos_tcm30-281101.pdf>\
 
-IGN. 2018. UN INVENTAIRE FORESTIER ANNUEL sur l’ensemble de la France métropolitaine. Retrieved from <https://inventaire-forestier.ign.fr/IMG/pdf/180920_plaquette-methode_fr.pdf>
+IGN. (2014). Les données de l’inventaire forestier : état des lieux et évolution. Retrieved from: <https://inventaire-forestier.ign.fr/IMG/pdf/LP_1.pdf>
 
-IGN. 2022. MÉTHODOLOGIE Pour bien comprendre les résultats publiés 2017-2021. Retrieved from: <https://inventaire-forestier.ign.fr/IMG/pdf/methodologie-2022.pdf>
+IGN. (2018). UN INVENTAIRE FORESTIER ANNUEL sur l’ensemble de la France métropolitaine. Retrieved from <https://inventaire-forestier.ign.fr/IMG/pdf/180920_plaquette-methode_fr.pdf>
+
+IGN. (2022). MÉTHODOLOGIE Pour bien comprendre les résultats publiés 2017-2021. Retrieved from: <https://inventaire-forestier.ign.fr/IMG/pdf/methodologie-2022.pdf>
+
+Forest Service USDA. (2023) The Forest Inventory and Analysis Database: Database Description and User Guide for Phase 2 (version 9.1) Retrieved from: <https://www.fs.usda.gov/research/understory/forest-inventory-and-analysis-database-user-guide-phase-2>
 
 MINISTERIO DE TRANSICIÓN ECOLÓGICA Y RETO DEMOGRÁFICO. (n.d.). Cuarto Inventario Forestal Nacional (IFN4): Descripción de los códigos de la base de datos de campo. Retrieved from <https://www.miteco.gob.es/content/dam/miteco/es/biodiversidad/temas/inventarios-nacionales/documentador_sig_tcm30-536622.pdf>
 
