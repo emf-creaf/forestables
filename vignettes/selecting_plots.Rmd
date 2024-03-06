@@ -1,0 +1,105 @@
+---
+title: "Selecting plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Selecting plots}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+# libraries
+library(esus)
+library(sf)
+library(dplyr)
+library(rnaturalearth)
+library(ggplot2)
+library(stringr)
+library(furrr)
+library(future)
+
+# paths
+ffi_folder <- Sys.getenv("ffi_path")
+fia_folder <- Sys.getenv("fia_path")
+ifn_folder <- Sys.getenv("ifn_path")
+```
+
+```{r ffi_selection}
+# choose the departments, those in the mediterranean area
+mediterranean_deps <- c("66", "11", "34", "30", "13", "84", "04", "83", "06")
+# get the plots for those departments
+mediterranean_plots <- show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) 
+mediterranean_plots
+```
+
+
+```{r plots_visualization}
+# france map for plotting
+france_map <- ne_states(geounit = "france") |>
+  select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
+  mutate(dep_code = str_remove(dep_code, "FR-")) |>
+  filter(dep_code %in% mediterranean_deps)
+
+ggplot(france_map) +
+  geom_sf() +
+  geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots) +
+  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+
+mediterranean_plots_2012 <- mediterranean_plots |>
+  filter(CAMPAGNE == 2012)
+
+ggplot(france_map) +
+  geom_sf() +
+  geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
+  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+```
+
+```{r filter_list}
+filter_list_2012 <-
+  show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) |>
+  filter(CAMPAGNE == 2012) |>
+  create_filter_list()
+
+
+plan("multisession")
+data_2012 <- ffi_to_tibble(
+  departments = mediterranean_deps,
+  years = 2012,
+  filter_list = filter_list_2012,
+  folder = ffi_folder,
+  .parallel_options = furrr_options(scheduling = 3L), .verbose = TRUE
+)
+
+data_2012 |>
+  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
+  sf::st_transform(crs= 4326) |>
+  ggplot() +
+  geom_sf(data = france_map) +
+  geom_sf(aes(color = ASPECT)) +
+  scale_color_gradientn(colors = hcl.colors(360, "Lisbon"))
+
+
+data_2012 |>
+  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
+  sf::st_transform(crs= 4326) |>
+  tidyr::unnest(understory, names_sep = "_") |>
+  tidyr::unnest(understory_herbs, names_sep = "_") |>
+  ggplot() +
+  geom_sf(data = france_map) +
+  geom_sf(aes(color = understory_herbs_HERB)) +
+  scale_color_gradientn(colors = hcl.colors(20, "SunsetDark"))
+
+  
+```
+

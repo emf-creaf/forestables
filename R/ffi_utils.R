@@ -31,7 +31,9 @@ utils::globalVariables(".data")
   # inform the user about the amount of plots for this year
   verbose_msg(
     cli::cli_inform(c(
-      "Getting ready to retrieve {.strong {filter_list |>  length()}} plots for {.val {year}}"
+      "Getting ready to retrieve
+      {.strong {filter_list |> purrr::flatten_chr() |> length()}}
+      plots for {.val {year}}"
     )), .verbose
   )
 
