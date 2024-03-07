@@ -1039,9 +1039,15 @@ ifn_plot_table_process <- function(
         Subclase = .ifn_subclass_fixer(.data$Subclase), # Subclass fixes
         province_code = province,
         province_code = as.character(.data$province_code),
-        version = version,
-        Huso = ifelse("Huso" %in% names(coords_fixed_data), coords_fixed_data$Huso, NA)
+        version = version
       )
+
+    # Check for existing Huso var and create it if doesn't exists. We do this outside
+    # the mutate because the code is wrong when there is more than 1 Huso when coords_data
+    # has more than one plot (show_plots_from workflow)
+    if (!"Huso" %in% names(coords_data)) {
+      coords_data[["Huso"]] <- NA
+    }
 
     ## BUG_: coord data now doesn't have unique id, as it has no subclass in table. We need to
     ## join these two tables and we use plot and province code. There is only one

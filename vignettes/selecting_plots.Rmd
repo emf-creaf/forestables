@@ -332,7 +332,7 @@ north_spain_provinces <- c("24", "33", "15", "27", "39", "48", "20")
 north_spain_plots <- show_plots_from(
   "IFN", folder = ifn_folder,
   provinces = north_spain_provinces, versions = "ifn4"
-) 
+)
 north_spain_plots
 ```
 
@@ -351,17 +351,11 @@ ggplot(north_spain_map) +
   geom_sf(aes(color = province_name_original, alpha = 0.1), data = north_spain_plots) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 
-north_spain_plots_2012 <- north_spain_plots |>
-  filter(INVYR == 2012)
-
-ggplot(west_coast_map) +
-  geom_sf() +
-  geom_sf(aes(color = STATEAB, alpha = 0.1), data = north_spain_plots_2012) +
-  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
-
-fia_filter_list_2012 <-
-  show_plots_from("FIA", folder = fia_folder, states = north_spain_provinces) |>
-  filter(INVYR == 2012) |>
+ifn_filter_list <-
+  show_plots_from(
+    "IFN", folder = ifn_folder,
+    provinces = north_spain_provinces, versions = "ifn4"
+  ) |>
   create_filter_list()
 
 # fia_filter_list_2012 <- fia_filter_list_2012 |>
@@ -370,36 +364,48 @@ fia_filter_list_2012 <-
 #     })
 
 plan("multisession")
-fia_data_2012 <- fia_to_tibble(
-  states = north_spain_provinces,
-  years = 2012,
-  filter_list = fia_filter_list_2012,
-  folder = fia_folder
+ifn_data <- ifn_to_tibble(
+  provinces = north_spain_provinces[1],
+  versions = "ifn4",
+  filter_list = ifn_filter_list[3],
+  folder = ifn_folder
 )
 
-fia_data_2012 |>
-  dplyr::filter(!purrr::map_lgl(fia_data_2012$tree, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
-  sf::st_transform(crs = 4326) |>
+ifn_data |>
+  dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
+  dplyr::group_by(crs) |>
+  dplyr::group_map(
+    .f = \(crs_subset, crs) {
+      sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
+        sf::st_transform(crs = 4326) |>
+        dplyr::mutate(crs_orig = crs$crs)
+    }
+  ) |>
+  # dplyr::bind_rows() |>
+  magrittr::extract2(2) |>
   as_tibble() |>
   tidyr::unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
-  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
+  dplyr::summarise(
+    DENSITY = mean(DENSITY, na.rm = TRUE),
+    province_name_original = unique(province_name_original),
+    n = n(), geometry = first(geometry)
+  ) |>
   dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 200, DENSITY < 300) |>
-  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
+  dplyr::filter(n > 150, DENSITY < 300) |>
+  # dplyr::left_join(as_tibble(north_spain_map), by = c("STATEAB" = "dep_code")) |>
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~ SP_NAME) +
   theme_minimal()
 
-fia_data_2012 |>
-  dplyr::filter(!purrr::map_lgl(fia_data_2012$regen, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
+ifn_data |>
+  dplyr::filter(!purrr::map_lgl(ifn_data$regen, rlang::is_empty)) |>
+  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(ifn_data$COORD_SYS)) |>
   sf::st_transform(crs = 4326) |>
   as_tibble() |>
   tidyr::unnest("regen") |>
