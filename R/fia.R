@@ -786,9 +786,9 @@ fia_p2_understory_table_process <- function(
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       # HT in cm
       HT = dplyr::case_when(
-        .data$LAYER == 1 ~  30.48,
-        .data$LAYER == 2 ~ 121.92,
-        .data$LAYER == 3 ~ 335.28,
+        .data$LAYER == 1 ~  30,
+        .data$LAYER == 2 ~ 122,
+        .data$LAYER == 3 ~ 335,
         # for 4TH layer this is the minimum height not the averaged  !
         .data$LAYER == 4 ~ 500
       )
