@@ -193,23 +193,33 @@ ifn_tables_process <- function(
       plot_info <- ifn_plot_table_process(
           plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
         )
+
+      redundant_vars <- c(
+        "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_name_original",
+        "province_code", "PLOT", "Cla", "Subclase", "version", "Tipo", "HOJA", "Huso",
+        "COORD_SYS", "COORD1", "COORD2", "crs", "PENDIEN2", "SLOPE", "ELEV", "ASPECT"
+      )
+
       tree <- ifn_tree_table_process(
         tree_table, version, plots, province, species_ifn_internal, .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
       shrub <- ifn_shrub_table_process(
         shrub_table, version, plots, province, species_ifn_internal, .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
       regen <- ifn_regen_table_process(
         regen_table, version, plots, province, species_ifn_internal, .call
-      )
+      ) |>
+        dplyr::select(!dplyr::any_of(redundant_vars))
+
+      # check if there are rows
       if (nrow(plot_info) < 1) {
         return(tibble::tibble())
       }
 
       # we put together all tables in a data frame
-      understory <- plot_info |>
-        dplyr::select("ID_UNIQUE_PLOT", "YEAR", "province_code", "PLOT") |>
-        dplyr::mutate(shrub = list(shrub))
+      understory <- tibble::tibble(shrub = list(shrub))
 
       plot_info |>
         dplyr::rename(COORD1 = "COORDEX", COORD2 = "COORDEY") |>
