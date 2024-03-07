@@ -114,17 +114,17 @@ We add a variable called DENSITY : The density variable is similar to the FAC va
 
 ![](images/clipboard-3909002882.png){width="529"}
 
-+---------------+-----------------+
-| DIA interval  | DENSITY VALUE   |
-+===============+=================+
-| [0, 12.5)     | 127.3239546     |
-+---------------+-----------------+
-| [12.5, 22.5)  | 31.83098865     |
-+---------------+-----------------+
-| [22.5, 42.5)  | 14.14710607     |
-+---------------+-----------------+
-| [42.5, 999)   | 5.092958185     |
-+---------------+-----------------+
++---------------+---------------+
+| DIA interval  | DENSITY VALUE |
++===============+===============+
+| [0, 12.5)     | 127.3239546   |
++---------------+---------------+
+| [12.5, 22.5)  | 31.83098865   |
++---------------+---------------+
+| [22.5, 42.5)  | 14.14710607   |
++---------------+---------------+
+| [42.5, 999)   | 5.092958185   |
++---------------+---------------+
 
 We also add variable SP_NAME, that is the Latin name of the species that corresponds to the SP_CODE.\
 \
@@ -553,23 +553,35 @@ Package has a version of these file obtained in march 2023 but you can provide t
 
 ### FIA TREE TABLES PROCESS
 
+This table provides information for each tree 1 inch in diameter and larger found on a microplot, subplot, or core optional macroplot.
+
+-   Trees with diameters between 1.0- and 4.9-inches, termed **saplings**, are measured on the 6.8-foot radius microplot.
+
+-   Trees with diameters of 5.0-inches and larger are measured on the 24-foot radius subplots. Macroplot tree diameter thresholds are determined according [to regional specifications]{.underline} (see regional field guides for more information).
+
+-   <div>
+
+    ![](images/clipboard-3830948102.png){width="324"}
+
+    </div>
+
 It is obtained from table "\_*TREE.CSV* "
 
-+-----------------+---------------------+--------------------------------+
-| Harmonized name | Original name FFI   | Descriptor                     |
-+=================+=====================+================================+
-| TREE            | TREE                | Tree id                        |
-+-----------------+---------------------+--------------------------------+
-| DIA (cm)        | DIA (inches)        | Diameter                       |
-+-----------------+---------------------+--------------------------------+
-| HT (m)          | HT (feet)           | Total height                   |
-+-----------------+---------------------+--------------------------------+
-| DENSITY (1/ha)  | TPA_UNADJ (1/acres) | Expansion factor               |
-+-----------------+---------------------+--------------------------------+
-| SP_CODE         | SPCD                | Species code                   |
-+-----------------+---------------------+--------------------------------+
-| STATUS          | STATUS              | Dead or alive                  |
-+-----------------+---------------------+--------------------------------+
++-----------------+---------------------+------------------------------+
+| Harmonized name | Original name FFI   | Descriptor                   |
++=================+=====================+==============================+
+| TREE            | TREE                | Tree id                      |
++-----------------+---------------------+------------------------------+
+| DIA (cm)        | DIA (inches)        | Diameter                     |
++-----------------+---------------------+------------------------------+
+| HT (m)          | HT (feet)           | Total height                 |
++-----------------+---------------------+------------------------------+
+| DENSITY (1/ha)  | TPA_UNADJ (1/acres) | Expansion factor             |
++-----------------+---------------------+------------------------------+
+| SP_CODE         | SPCD                | Species code                 |
++-----------------+---------------------+------------------------------+
+| STATUS          | STATUS              | Dead or alive                |
++-----------------+---------------------+------------------------------+
 
 Variables are transformed:
 
@@ -611,11 +623,11 @@ Data is obtain at subplot level, but certain information ( default HT ) is aggre
 
 We use maximum cover percentage of a sepcies in different layers to calculate the averaged height at plot level. For that, mid point of the interval is employed except for layer 4 where minimum is used.
 
-| Maximum cover | Default height  |
-|---------------|-----------------|
-| Layer 1-2     | 91 cm           |
-| Layer 3       | 340 cm          |
-| Layer 4       | 500 cm          |
+| Maximum cover | Default height |
+|---------------|----------------|
+| Layer 1-2     | 91 cm          |
+| Layer 3       | 340 cm         |
+| Layer 4       | 500 cm         |
 
 Information about COVER is at subplot level ? <!--# not sure if we should change this  -->
 
@@ -658,6 +670,14 @@ HT is approximated by using the LAYER info.
 | LAYER 4 | 500 cm         |
 
 If there are data in both files, P3 data is prioritized and P2 data is added if gives additional information on certain species.
+
+### FIA REGEN TABLES PROCESS
+
+Shrub data is obtained from : "\_SEEDLING.csv" .
+
+Seedling: live trees of a species found on a microplot that are less than 1 inch in diameter but at least 6 inches in length for conifer species or at least 12 inches in length for hardwood species.\
+
+Saplings-\> diameter between 1 and 5.9 inches (TREE TABLE)
 
 ### **Appendix 1**
 
