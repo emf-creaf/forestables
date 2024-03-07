@@ -422,7 +422,7 @@ test_that("ffi_tables_process works as intended", {
   #
 
   # tests config
-  test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -545,7 +545,7 @@ test_that("ffi_tables_process works as intended", {
 test_that("ffi_to_tibble works as intended", {
 
   # tests config
-  test_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -661,7 +661,7 @@ test_that("ffi_to_tibble works as intended", {
   expect_error(
     suppressWarnings(ffi_to_tibble(
       test_departments, test_years, test_plots, test_folder,
-      .parallel_options = list(scheduling = 2L, stdout = TRUE),
+      .parallel_options = list(scheduling = 1L, stdout = TRUE),
       .verbose = FALSE
     )),
     ".parallel_options"

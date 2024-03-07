@@ -234,7 +234,7 @@ counties_map_data |>
 #     states = c("OR", "CA", "WA"),
 #     filter_list = filter_list,
 #     folder = "../international_inventories/data/fia/FIA_DATAMART_MARCH_2023/",
-#     .parallel_options = furrr::furrr_options(scheduling = 2L, stdout = TRUE),
+#     .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
 #     .verbose = TRUE
 # )
 # tictoc::toc()

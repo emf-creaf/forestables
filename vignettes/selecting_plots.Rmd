@@ -195,7 +195,7 @@ ffi_to_tibble_benchmark <- bench::mark(
     years = 2012,
     filter_list = filter_list_2012,
     folder = ffi_folder,
-    .parallel_options = furrr_options(scheduling = 2L), .verbose = TRUE
+    .parallel_options = furrr_options(scheduling = 1L), .verbose = TRUE
   ),
   sche_1 = ffi_to_tibble(
     departments = mediterranean_deps,

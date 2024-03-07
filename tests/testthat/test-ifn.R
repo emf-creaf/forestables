@@ -1229,7 +1229,7 @@ test_that("ifn_tables_process ifn2 works as intended", {
   #
 
   # tests config
-  test_ifn2_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_ifn2_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -1305,7 +1305,7 @@ test_that("ifn_tables_process ifn3 works as intended", {
   #
 
   # tests config
-  test_ifn3_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_ifn3_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -1382,7 +1382,7 @@ test_that("ifn_tables_process ifn4 works as intended", {
   #
 
   # tests config
-  test_ifn4_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_ifn4_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -1456,7 +1456,7 @@ test_that("ifn_tables_process ifn4 works as intended", {
 test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
 
   # tests config
-  test_ifn234_parallel_conf <- furrr::furrr_options(scheduling = 2L, stdout = TRUE)
+  test_ifn234_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
   future::plan(future::multisession, workers = 3)
   withr::defer(future::plan(future::sequential))
 
@@ -1582,7 +1582,7 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   expect_error(
     suppressWarnings(ifn_to_tibble(
       test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
-      .parallel_options = list(scheduling = 2L, stdout = TRUE),
+      .parallel_options = list(scheduling = 1L, stdout = TRUE),
       .verbose = FALSE
     )),
     ".parallel_options"
