@@ -904,7 +904,7 @@ fia_seedling_table_process <- function(
     dplyr::mutate(
       SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " "),
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
-      Height = 15.24,
+      Height = 15,
       #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
       DBH = 2.54,
       #calculate density represented by tree
@@ -917,7 +917,7 @@ fia_seedling_table_process <- function(
       "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SPCD",
       "SP_NAME", "TREECOUNT_CALC", "TPA_UNADJ", "N", "Height", "DBH"
     ) |>
-    dplyr::rename(YEAR = "INVYR", SP_CODE = "SPCD", DENSITY = "TREECOUNT_CALC") |>
+    dplyr::rename(YEAR = "INVYR", SP_CODE = "SPCD", DENSITY = "TPA_UNADJ") |>
     # # We have repeated rows after the selection because we summarised shrubs species.
     # We remove with distinct
     dplyr::distinct() |>

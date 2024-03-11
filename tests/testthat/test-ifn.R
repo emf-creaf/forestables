@@ -142,7 +142,9 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
     "SP_NAME",
     "DIA",
     "HT",
-    "DENSITY"
+    "DENSITY",
+    "FORMA",
+    "CALIDAD"
   )
 
   expect_s3_class(

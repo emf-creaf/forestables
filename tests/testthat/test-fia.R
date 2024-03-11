@@ -634,7 +634,7 @@ test_that("fia_seedling_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "N", "TPA_UNADJ", "DENSITY", "Height", "DBH"
+    "SP_CODE", "SP_NAME", "N", "TREECOUNT_CALC", "DENSITY", "Height", "DBH"
   )
 
   # object

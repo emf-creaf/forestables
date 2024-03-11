@@ -299,7 +299,7 @@ ifn_tree_table_process <- function(
     tree_filtered_data <- .read_inventory_data(
       tree_data,
       colnames = c(
-        "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1", "DIAMETRO2", "ALTURA"
+        "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1", "DIAMETRO2", "ALTURA", "FORMA", "CALIDAD"
       ),
       version = version,
       province = province,
@@ -355,7 +355,9 @@ ifn_tree_table_process <- function(
         "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE", "SP_NAME",
         "DIA", # diameter in cm
         "HT", # height in m
-        "DENSITY"
+        "DENSITY",
+        "FORMA",
+        "CALIDAD"
       )
 
     # Return tree

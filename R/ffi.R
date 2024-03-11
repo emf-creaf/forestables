@@ -779,7 +779,7 @@ ffi_regen_table_process <- function(
     ) |>
     dplyr::mutate(
       ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
-      DBH =  7.5 # in cm
+      DBH =  7 # in cm
     ) |>
     dplyr::rename(PLOT = "IDP", SP_NAME = "lib_cdref", SP_CODE = "CD_REF") |>
     # selection of final variables
