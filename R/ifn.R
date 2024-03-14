@@ -651,7 +651,7 @@ ifn_regen_table_process <- function(
           .data$Regena == 1 ~ 2.5 * DENSITY,
           .data$Regena == 2 ~ 10 * DENSITY,
           .data$Regena == 3 ~ 20 * DENSITY,
-          .data$N > 0 ~ .data$Numero * DENSITY,
+          .data$Numero > 0 ~ .data$Numero * DENSITY,
           TRUE ~ NA
         ),
         # we give a default value for individual below 25 cm of diameter
