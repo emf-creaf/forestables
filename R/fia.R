@@ -526,7 +526,7 @@ fia_tree_table_process <- function(
       # unique inner code
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       DIA = .data$DIA * 2.54, # INCHES TO CM
-      HT = .data$HT * 0.3048, # FEET TO M
+      Height = .data$HT * 0.3048, # FEET TO M
       DENSITY = .data$TPA_UNADJ / 0.4046856422 # acre to ha
     ) |>
     # add species info
@@ -539,7 +539,7 @@ fia_tree_table_process <- function(
     dplyr::arrange(.data$SP_NAME) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT",
-      "TREE", "STATUSCD", "DIA", "HT", "SP_NAME", "SPCD", "DENSITY"
+      "TREE", "STATUSCD", "DIA", "Height", "SP_NAME", "SPCD", "DENSITY"
     ) |>
     dplyr::rename(YEAR = "INVYR", STATUS = "STATUSCD", SP_CODE = "SPCD") |>
     dplyr::as_tibble()
@@ -664,8 +664,8 @@ fia_p3_understory_table_process <- function(
     dplyr::mutate(
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       COVER_PCT = .data$SP_CANOPY_COVER_TOTAL,
-      # HT in cm
-      HT = dplyr::case_when(
+      # Height in cm
+      Height = dplyr::case_when(
         (which.max(c(
           max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
           max(.data$SP_CANOPY_COVER_LAYER_4)
@@ -720,7 +720,7 @@ fia_p3_understory_table_process <- function(
     dplyr::arrange(.data$SPECIES_SYMBOL, .data$SUBP) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-      "SPECIES_SYMBOL", "SP_NAME", "HT", "COVER_PCT", "GROWTH_HABIT"
+      "SPECIES_SYMBOL", "SP_NAME", "Height", "COVER_PCT", "GROWTH_HABIT"
     ) |>
     dplyr::rename(YEAR = "INVYR", SP_CODE = "SPECIES_SYMBOL", COVER = "COVER_PCT") |>
     dplyr::distinct() |>
@@ -787,8 +787,8 @@ fia_p2_understory_table_process <- function(
     # we calculate mean cover an height from layer
     dplyr::mutate(
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
-      # HT in cm
-      HT = dplyr::case_when(
+      # Height in cm
+      Height = dplyr::case_when(
         .data$LAYER == 1 ~  30,
         .data$LAYER == 2 ~ 122,
         .data$LAYER == 3 ~ 335,
@@ -836,7 +836,7 @@ fia_p2_understory_table_process <- function(
     # we select final variables
     dplyr::select(
       "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-      "SPECIES_SYMBOL", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER_PCT", "GROWTH_HABIT"
+      "SPECIES_SYMBOL", "SP_NAME", "GROWTH_HABIT_CD", "Height", "COVER_PCT", "GROWTH_HABIT"
     ) |>
     dplyr::rename(YEAR = "INVYR", SP_CODE = "SPECIES_SYMBOL", COVER = "COVER_PCT") |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with

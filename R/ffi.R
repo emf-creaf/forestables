@@ -291,6 +291,8 @@ ffi_tables_process <- function(
           "XL", "XL_ORIGINAL", "YL", "YL_ORIGINAL", "crs", "EXPO", "EXPO_ORIGINAL",
           "PENT2", "PENT2_ORIGINAL", "COORD_SYS"
         )))
+      #this table has information for both regen after 2015 and shrub (origin FLORE)
+      #we apply filter to select based on growth form
       shrub_regen <- ffi_shrub_table_process(
         shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref, .call
       ) |>
@@ -302,7 +304,11 @@ ffi_tables_process <- function(
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
       
+      #shrub should be the same all time
       if (nrow(shrub_regen) > 0) {
+        # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
+        #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
+        #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
         shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
       }
       
@@ -311,6 +317,7 @@ ffi_tables_process <- function(
       }
       
       if (year < 2015) {
+        #before, info was collected in table couvert (see french documentation)
         regen <- ffi_regen_table_process(
           regen_table, plots, year, espar_cdref, idp_dep_ref, .call
         ) |>
@@ -322,7 +329,16 @@ ffi_tables_process <- function(
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
-          regen <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "tree")
+          regen <- shrub_regen |>  
+            # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
+            #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
+            #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
+            dplyr::filter(.data$GrowthForm == "tree") |>
+            dplyr::mutate(
+              #default dbh, added to be  coherent with table from regen process
+              DBH = NA
+            )
+            
           # check if both have data
           if (nrow(regen) < 1) {
             regen <- tibble::tibble()
@@ -464,8 +480,8 @@ ffi_plot_table_process <- function(
       "ID_UNIQUE_PLOT", "IDP", "DEP", "DEP_NAME", "VISITE", "CAMPAGNE", "XL", "YL", "COORD_SYS"
     ) |>
     dplyr::rename(PLOT = "IDP", YEAR = "CAMPAGNE") |>
-    # dplyr::arrange(desc(.data$CAMPAGNE)) |>
     data.table::as.data.table() |>
+    #arrange by year descending to apply extract ffi metadata: two var last record and original
     dplyr::arrange(desc(.data$YEAR)) |>
     #there might be more than 1 record
     dplyr::distinct() |>
@@ -570,6 +586,9 @@ ffi_tree_table_process <- function(
     return(dplyr::tibble())
   }
 
+  #IMPORTANT do NOT change this!!!!!!!!!!
+  # we need to get all data first to fill missing values of known var 
+  #filter per year is dione at the end
   tree <- tree_raw_data |>
     # we filter the datqa for plot
     dplyr::filter(.data$IDP == plot) |>
@@ -602,21 +621,29 @@ ffi_tree_table_process <- function(
       SP_NAME = "lib_cdref",
       SP_CODE = "cd_ref",
       TREE = "A",
-      HT = "HTOT", # ht in meters
+      Height = "HTOT", # ht in meters
       STATUS = "VEGET"
     ) |>
     #selection of final variables
     dplyr::select(
       "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
-      "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "HT", "DENSITY"
+      "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "Height", "DENSITY"
     ) |>
     # homogeneization
     # añadir condiciones en funcion de si es na o no ??
     dplyr::group_by(.data$ID_UNIQUE_PLOT) |>
+    #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR, 
+    #some variables are register only in first visit but are important to have in revisit
     dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
+    #espar var will appear empty "" in the revisited plots , we first convert to NA 
     dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
     dplyr::as_tibble() |>
+    #since we still have info of previous year because we have not filtered by year yet,
+    # we can fill missing information of espar, sp_code and sp_name
+    #as we are arranging by tree and tree  codes do not change there is not problem
+    #new individuals that are recensables have new codes in tree = no filling 
     tidyr::fill(c("ESPAR", "SP_CODE", "SP_NAME")) |>
+    #THIS MUST BE DONE AT THE END
     dplyr::filter(.data$YEAR == year)
 
   return(tree)
@@ -695,14 +722,18 @@ ffi_shrub_table_process <- function(
       y = idp_dep_ref,
       by = "IDP"
     ) |>
-    dplyr::mutate(ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")), HT = NA) |>
+    dplyr::mutate(ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")), Height = NA) |>
     dplyr::rename(
       PLOT = "IDP",
       SP_NAME = "lib_cdref",
       SP_CODE = "CD_REF",
       COVER = "ABOND"
     ) |>
-    # dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT") |>
+    # dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "Height") |>
+    # we join this table to differentiate between tree , shrub and herbs
+    # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
+    #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
+    #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
     dplyr::left_join(
       growth_form_lignified_france |>
         dplyr::select("AccSpeciesName", "GrowthForm") |>
@@ -711,7 +742,7 @@ ffi_shrub_table_process <- function(
     ) |>
     # selection of final variables
     dplyr::select(
-      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
+      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "Height", "GrowthForm"
     ) |>
     dplyr::as_tibble()
 
@@ -726,7 +757,7 @@ ffi_regen_table_process <- function(
 
   # TABLE FOR REGEN DEPEND ON YEAR , BEFORE 2015 COUVERT SHOULD BE USED, AFTER 2015 FLORE SHOULD
   # (SAME AS SHRUB PROCESS) SHALL WE INTEGRATE PART OF THIS PROCESS IN SHRUB PROCESS O "REPET"
-  # READING OF TABLE IN REGEN ?
+  # READING OF TABLE IN REGEN ?- now we do the second
 
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(regen_data)))
@@ -768,6 +799,7 @@ ffi_regen_table_process <- function(
       ESPAR = .data$ESPAR_C
     ) |>
     dplyr::filter(
+      # here we only select no recensable records
       .data$STRATE == "NR"
     ) |>
     dplyr::left_join(
@@ -784,11 +816,15 @@ ffi_regen_table_process <- function(
     ) |>
     dplyr::mutate(
       ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
-      DBH =  7 # in cm
+      #we add this to be coherent with other inventories .
+      #DBH default  value could be set to 7 but may be too high 
+      DBH = NA, # in 
+      Height = NA,
+      GrowthForm = "tree"
     ) |>
     dplyr::rename(PLOT = "IDP", SP_NAME = "lib_cdref", SP_CODE = "CD_REF") |>
     # selection of final variables
-    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH") |>
+    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH", "Height", "GrowthForm") |>
     dplyr::as_tibble()
 
   return(regen)

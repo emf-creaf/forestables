@@ -157,7 +157,7 @@ test_that("fia_tree_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "TREE",
-    "STATUS", "DIA", "HT", "SP_NAME", "SP_CODE", "DENSITY"
+    "STATUS", "DIA", "Height", "SP_NAME", "SP_CODE", "DENSITY"
   )
 
   # object
@@ -217,7 +217,7 @@ test_that("fia_p3_understory_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "HT", "COVER", "GROWTH_HABIT"
+    "SP_CODE", "SP_NAME", "Height", "COVER", "GROWTH_HABIT"
   )
 
   # shrub object
@@ -366,7 +366,7 @@ test_that("fia_p2_understory_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER", "GROWTH_HABIT"
+    "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "Height", "COVER", "GROWTH_HABIT"
   )
 
   # shrub object
@@ -512,11 +512,11 @@ test_that("fia_understory_table_process works as intended", {
     .build_fia_input_with(test_year, test_states, test_plots, test_folder, .verbose = FALSE)
   expected_names_p2 <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER", "GROWTH_HABIT"
+    "SP_CODE", "SP_NAME", "GROWTH_HABIT_CD", "Height", "COVER", "GROWTH_HABIT"
   )
   expected_names_p3 <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SP_CODE", "SP_NAME", "HT", "COVER", "GROWTH_HABIT"
+    "SP_CODE", "SP_NAME", "Height", "COVER", "GROWTH_HABIT"
   )
   # p2 shrubs
   expect_s3_class(
