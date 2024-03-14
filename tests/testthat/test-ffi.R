@@ -182,7 +182,7 @@ test_that("ffi_tree_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR", "SP_CODE",
-    "SP_NAME", "STATUS", "VEGET5", "DIA", "HT", "DENSITY"
+    "SP_NAME", "STATUS", "VEGET5", "DIA", "Height", "DENSITY"
   )
 
   # object
@@ -252,7 +252,7 @@ test_that("ffi_shrub_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE",
-    "SP_NAME", "COVER", "HT", "GrowthForm"
+    "SP_NAME", "COVER", "Height", "GrowthForm"
   )
 
   # object
@@ -343,7 +343,9 @@ test_that("ffi_regen_table_process works as intended", {
     "SP_CODE",
     "SP_NAME",
     "COVER",
-    "DBH"
+    "DBH",
+    "Height",
+    "GrowthForm"
   )
 
   # object

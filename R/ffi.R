@@ -301,6 +301,15 @@ ffi_tables_process <- function(
         )))
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
+      
+      if (nrow(shrub_regen) > 0) {
+        shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
+      }
+      
+      if (nrow(shrub) < 1) {
+        shrub <- tibble::tibble()
+      }
+      
       if (year < 2015) {
         regen <- ffi_regen_table_process(
           regen_table, plots, year, espar_cdref, idp_dep_ref, .call
@@ -313,12 +322,8 @@ ffi_tables_process <- function(
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
-          shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
           regen <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "tree")
           # check if both have data
-          if (nrow(shrub) < 1) {
-            shrub <- tibble::tibble()
-          }
           if (nrow(regen) < 1) {
             regen <- tibble::tibble()
           }

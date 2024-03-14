@@ -414,6 +414,9 @@ fia_plot_table_process <- function(
       county, plot, year, .soil_mode = FALSE
     ) |>
     dplyr::mutate(
+      crs = dplyr::case_when(
+        .data$COORD_SYS == "WGS84" ~ 4326,
+        .data$COORD_SYS == "NAD83" ~ 4269),
       PLOT  = plot,
       INVYR  = year,
       COUNTYCD   = county,
@@ -462,7 +465,7 @@ fia_plot_table_process <- function(
       "INVYR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM",
       "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
       "RSCD", "DESIGNCD", "LON", "LON_ORIGINAL", "LAT", "LAT_ORIGINAL",
-      "COORD_SYS", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
+      "COORD_SYS", "crs", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
     ) |>
     dplyr::rename(
       YEAR = "INVYR",

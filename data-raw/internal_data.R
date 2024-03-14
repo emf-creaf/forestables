@@ -104,7 +104,6 @@ growth_form_lignified_france <- growth_form |>
     AccSpeciesName = work_species
   )
 
-
 #ifn data
 
 # IFN species data and provinces ------------------------------------------------------------------

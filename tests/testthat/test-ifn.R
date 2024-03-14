@@ -141,7 +141,7 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
     "SP_CODE",
     "SP_NAME",
     "DIA",
-    "HT",
+    "Height",
     "DENSITY",
     "FORMA",
     "CALIDAD"
@@ -239,7 +239,7 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     #diameter in cm
     "DIA",
     #height in m
-    "HT",
+    "Height",
     "DENSITY"
   )
 
@@ -338,7 +338,7 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
     #diameter in cm
     "DIA",
     #height in m
-    "HT",
+    "Height",
     "DENSITY"
   )
 
@@ -424,7 +424,7 @@ test_that("ifn_shrub_table_process for ifn2 works as intended", {
     "PLOT",
     "SP_CODE",
     "SP_NAME",
-    "HT",
+    "Height",
     "COVER"
   )
 
@@ -508,7 +508,7 @@ test_that("ifn_shrub_table_process for ifn3 works as intended", {
     "PLOT",
     "SP_NAME",
     "SP_CODE",
-    "HT",
+    "Height",
     "COVER"
   )
 
@@ -592,7 +592,7 @@ test_that("ifn_shrub_table_process for ifn4 works as intended", {
     "PLOT",
     "SP_NAME",
     "SP_CODE",
-    "HT",
+    "Height",
     "COVER"
   )
 

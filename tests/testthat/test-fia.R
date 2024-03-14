@@ -64,7 +64,7 @@ test_that("fia_plot_table_process works as intended", {
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
     "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS",
+    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
   )
 
@@ -763,7 +763,7 @@ test_that("fia_table_process works as intended", {
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
     "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS",
+    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
     "tree", "understory", "regen", "subplot"
     # "soils"
@@ -888,7 +888,7 @@ test_that("fia_to_tibble works as intended", {
   expected_names <- c(
     "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
     "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS",
+    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
     "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
     "tree", "understory", "regen", "subplot"
     # "soils"

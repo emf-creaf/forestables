@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(esus)
-load("D:/esus/R/sysdata.rda")
 ```
 
 # Introduction
@@ -87,7 +86,7 @@ Firstly, names are harmonized.
 +-------------------+--------------------+-----------------------+------------------------------------------------------------+
 | Harmonized name   | Original name IFN2 | Original name IFN3/ 4 | Description                                                |
 +===================+====================+=======================+============================================================+
-| HT(m)             | ALTURA (m?)        | HT (m)                | Height of tree                                             |
+| Height(m)         | ALTURA (m?)        | HT (m)                | Height of tree                                             |
 +-------------------+--------------------+-----------------------+------------------------------------------------------------+
 | SP_CODE           | ESPECIE            | Especie               | Code of species at IFN                                     |
 +-------------------+--------------------+-----------------------+------------------------------------------------------------+
@@ -123,21 +122,16 @@ Smaller trees are measured at smaller radii of the plot, while larger trees are 
 
 ![](images/clipboard-3909002882.png){width="529"}
 
-+--------------+---------------+
 | DIA interval | DENSITY VALUE |
-+==============+===============+
+|--------------|---------------|
 | [0, 12.5)    | 127.3239546   |
-+--------------+---------------+
 | [12.5, 22.5) | 31.83098865   |
-+--------------+---------------+
 | [22.5, 42.5) | 14.14710607   |
-+--------------+---------------+
 | [42.5, 999)  | 5.092958185   |
-+--------------+---------------+
 
 We also add a new variable: SP_NAME, with the Latin name of the species that corresponds to the SP_CODE.\
 \
-The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "nArbol", "Calidad", "Forma", "OrdenIf2", "OrdenIf3", "OrdenIf4", "DIA", "HT", "DENSITY"
+The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_CODE", "SP_NAME", "nArbol", "Calidad", "Forma", "OrdenIf2", "OrdenIf3", "OrdenIf4", "DIA", "Height", "DENSITY"
 
 ### **IFN SHRUB TABLE PROCESS**
 
@@ -156,7 +150,7 @@ Firstly, names are harmonized.
 
 We also add a new variable SP_NAME, with the Latin name of the species that corresponds to the SP_CODE.
 
-The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
+The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "Height", "COVER"
 
 ### IFN REGEN TABLE PROCESS
 
@@ -295,7 +289,7 @@ Firstly, names are harmonized.
 | HUSO                          | Huso \* default values | Huso                  | UTM HUSO             |
 +-------------------------------+------------------------+-----------------------+----------------------+
 
-Additionally, two variables are added to indicate coordinate system and CRS ( ESPG code. ) . They are called COORD_SYS and CRS \
+Additionally, two variables are added to indicate coordinate system and CRS ( ESPG code. ) . They are called COORD_SYS and CRS. We also add a var indication version of IFN. \
 **\
 For IFN2:**\
 \
@@ -392,23 +386,46 @@ The radius of the measurement plot varies according to the diameter of the trees
 
 ![](images/clipboard-821718553.png){width="281"}
 
-Some variables appear in different tables\_
+**2nd visite:**
 
-+-----------------+-------------------+--------------------------------------------------------------------+
-| Harmonized name | Original name FFI | Description                                                        |
-+=================+===================+====================================================================+
-| SP_CODE         | ESPAR/cd_ref      | Species code                                                       |
-+-----------------+-------------------+--------------------------------------------------------------------+
-| TREE            | A                 | Tree id                                                            |
-+-----------------+-------------------+--------------------------------------------------------------------+
-| DIA (cm)        | C13(m)            | Circumference at 130cm height (DBH)                                |
-+-----------------+-------------------+--------------------------------------------------------------------+
-| HT (m)          | HTOT (m?)         | Total height                                                       |
-+-----------------+-------------------+--------------------------------------------------------------------+
-| DENSITY         | W                 | Weight/ Expansion Factor per hectare                               |
-+-----------------+-------------------+--------------------------------------------------------------------+
-| STATUS/VEGET5   | VEGET/VEGET5      | Status of the tree in first visit (VEGET) or second visit (VEGET5) |
-+-----------------+-------------------+--------------------------------------------------------------------+
+Case of “second visit” points Raw data is also provided on “second visit” points. The trees and plots concerned are present in the raw data files with those collected on the first visit. The VISIT data present in the placette.csv file allows you to know whether the point is subject to the first or second visit protocol.
+
+**From 2010 to 2014**, the forest inventory carried out a revisit of the points seen 5 campaigns previously. This revisit was solely intended to **quantify forest harvesting**. It was only carried out on inventory plots containing at least one censusable tree during the first visit. On these plots, the cutting (or not) of the trees present on the first visit was mainly noted.
+
+**With the 2015** campaign, information is becoming richer on this type of plot. All the trees measured during the first pass are **remeasured** (or noted as cut or dead) and the new censusable trees present on a 5 m plot are inventoried.
+
+From 2016, **all the point**s visited in the field for the first time are the **subject of a second visit**. In addition to observations and measurements made on the trees, field agents carry out new observations such as those of land cover and use, collect data relating to the evolution of the population (planting, cutting, etc.) . The data collected during the 2nd visit are therefore generally less numerous (especially before 2016) and some are not taken (ecological data in particular).
+
+IMPORTANT NOTE:
+
+Check metadonnees.csv and recapitulatif_metadonnes.csv together with the specific documentation of each source file (ARBRE, ECOLOGIE, PLACETTE, COUVERT, FLORE...) to understand if the variable is static of have changed over time, also to see if units (codes ) are the same each year or not. You may need to check on that for example for the meaning of status (veget) or veget5 (revisit) , as there have been some adding and changes in the units.
+
+Example:
+
+![](images/clipboard-875035234.png)
+
+Same happens with ESPAR. In the package we give as default last version of correspondence between ESPAR, CD_ref and LATIN NAME (espar-cdref13.csv) ( OCTOBER 2023). This is based on TAXREF V13 (<https://inpn.mnhn.fr/telechargement/referentielEspece/taxref/13.0/menu>) , as indicated in the french documentation , but could change in the future.\
+\
+
+Some variables appear in different tables:
+
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| Harmonized name | Original name FFI | Description                                                                                    |
++=================+===================+================================================================================================+
+| SP_CODE         | ESPAR/cd_ref      | Species code                                                                                   |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| TREE            | A                 | Tree id                                                                                        |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| DIA (cm)        | C13(m)            | Circumference at 130cm height (DBH)                                                            |
+|                 |                   |                                                                                                |
+|                 |                   | If the plot is being revisited it will only contain data after 2015.                           |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| Height (m)      | HTOT (m?)         | Total height Not recorded in revisited plots.                                                  |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| DENSITY         | W                 | Weight/ Expansion Factor per hectare                                                           |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
+| STATUS/VEGET    | VEGET/VEGET5      | Status of the tree in first visit (VEGET) or second visit (VEGET5) See documentation for code. |
++-----------------+-------------------+------------------------------------------------------------------------------------------------+
 
 To transform C13 in m to DIA in cm:
 
@@ -416,7 +433,7 @@ To transform C13 in m to DIA in cm:
 DIA = (C13 / pi) * 100
 ```
 
-Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR", "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "HT", "DENSITY"
+Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR", "SP_CODE", "SP_NAME", "STATUS", "VEGET5", "DIA", "Height", "DENSITY"
 
 Note that VEGET5 is status in 2nd visit (after 5 year). <!--# change to status? -->
 
@@ -424,6 +441,8 @@ Note that VEGET5 is status in 2nd visit (after 5 year). <!--# change to status? 
 
 Information is obtained from a table (*FLORE.CSV*) that contains information for all kind of species, trees shrub and herbs but he exclusively give information about shrubs. For that we have used R package GIFT (<https://cran.r-project.org/web/packages/GIFT/index.html>) (See appendix 1) .\
 Therefore, in the table a variable called *GrowthForm* is used to inform about whether it is a tree, a shrub or herbs.
+
+Note that this selection may drop species with NA in GROWTH FORM
 
 +-----------------+-------------------+----------------------------------------+
 | Harmonized name | Original name FFI | Description                            |
@@ -447,7 +466,7 @@ Therefore, in the table a variable called *GrowthForm* is used to inform about w
 | 5              | Species coverage rate above 75%".                   | 87.5 %        |
 +----------------+-----------------------------------------------------+---------------+
 
-Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
+Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "Height", "GrowthForm"
 
 ### FFI REGEN TABLES PROCESS
 
@@ -469,15 +488,17 @@ Here we first explain **process for *COUVERT.CSV.***
 
 We select the records with STRATE = "NR" , meaning non-measurable as TREE, (i.e., DBH \< 7,5 cm).
 
-We add a new variable with a default value : DBH = 7 in cm ( maximum DBH present is 7.4 cm).
+We add a new variable with a default value : DBH = NA ( BUT maximum DBH present is 7.4 cm).
 
-Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH"
+Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH", "Height, "GrowthForm"
 
 **Process for *FLORE.CSV. (AFTER 2015)***
 
-Here same process of SHURB table process is performed but in the end only those with a *GrowthForm* of "*tree*" are selected. Note that this data does not have DBH information but could be added.<!--# revise code ,add?  -->
+Here same process of SHURB table process is performed but in the end only those with a *GrowthForm* of "*tree*" are selected. Note that this data does not have DBH , therefore, DBH = NA.
 
-Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "HT", "GrowthForm"
+Note that this selection process may drop species with NA in GROWTH FORM
+
+Final variables are "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "Height", "DBH", "GrowthForm"
 
 <!--# DIFFERENT VARIABLES DEPENDING ON PROCESS .   -->
 
@@ -510,7 +531,7 @@ Additionally, we add new variables: COORD_SYS with the coordinate system employe
 
 Variables regarding to herb or woody vegetation (LIGN ) are collected separatedly in a data frame named "herbs".\
 \
-The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
+The final variables provided are: "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT", "SP_NAME", "SP_CODE", "Height", "COVER"
 
 # FIA (US): data processing
 
@@ -576,31 +597,24 @@ This table provides information for each tree 1 inch in diameter (2.54cm) and la
 
 Information is obtained from table "\_*TREE.CSV* " .
 
-+-----------------+---------------------+----------------------------+
-| Harmonized name | Original name FFI   | Description                |
-+=================+=====================+============================+
-| TREE            | TREE                | Tree id                    |
-+-----------------+---------------------+----------------------------+
-| DIA (cm)        | DIA (inches)        | Diameter                   |
-+-----------------+---------------------+----------------------------+
-| HT (m)          | HT (feet)           | Total height               |
-+-----------------+---------------------+----------------------------+
-| DENSITY (1/ha)  | TPA_UNADJ (1/acres) | Expansion factor           |
-+-----------------+---------------------+----------------------------+
-| SP_CODE         | SPCD                | Species code               |
-+-----------------+---------------------+----------------------------+
-| STATUS          | STATUS              | Dead or alive              |
-+-----------------+---------------------+----------------------------+
+| Harmonized name | Original name FFI   | Description      |
+|-----------------|---------------------|------------------|
+| TREE            | TREE                | Tree id          |
+| DIA (cm)        | DIA (inches)        | Diameter         |
+| Height (m)      | HT (feet)           | Total height     |
+| DENSITY (1/ha)  | TPA_UNADJ (1/acres) | Expansion factor |
+| SP_CODE         | SPCD                | Species code     |
+| STATUS          | STATUS              | Dead or alive    |
 
 Variables are transformed:
 
 DIA from inches to cm by multiplying by 2.54
 
-HT from feet to m by multiplying by 0.3048
+Height from feet to m by multiplying by 0.3048
 
 DENSITY from acres to hectares by multiplying by 0.4046856422
 
-Final variables provided are : "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "TREE", "STATUSCD", "DIA", "HT", "SP_NAME", "SPCD", "DENSITY".
+Final variables provided are : "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "TREE", "STATUSCD", "DIA", "Height", "SP_NAME", "SPCD", "DENSITY".
 
 ### FIA SHURB TABLES PROCESS
 
@@ -608,29 +622,29 @@ Shrub data is obtained from two different sources of information : "\_VEG_SUBPLO
 
 -   **Process for *\_VEG_SUBPLOT_SPP.csv (P3)***
 
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| Harmonized name | Original name FFI         | Description                                                             |
-+=================+===========================+=========================================================================+
-| SUBPLOT         | SUBP                      | Subplot number                                                          |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| SP_CODE         | VEG_SPCD                  | Species code                                                            |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| SP_NAME         | \-                        | Latin name from plant dictionary                                        |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| COVER           | SP_CANOPY_COVER_TOTAL     | Total cover of species in the subplot                                   |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| HT\* = 91cm     | SP_CANOPY_COVER_LAYER_1_2 | Cover of layer between 0 and 6 feet 0 (0-1.8m)                          |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| HT\* = 340 cm   | SP_CANOPY_COVER_LAYER_3   | Cover of layer between 6 and 16 feet                                    |
-|                 |                           |                                                                         |
-|                 |                           | (1.8-4.9 m)                                                             |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| HT\* = 500 cm   | SP_CANOPY_COVER_LAYER_4   | Cover of layer above 16 feet (4.9 m)                                    |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
-| *GROWTH_HABIT*  | *GROWTH_HABIT*            | Variable from Ref_plant dictionary: forbs, herb, shrub, graminoid ..... |
-+-----------------+---------------------------+-------------------------------------------------------------------------+
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| Harmonized name   | Original name FFI         | Description                                                             |
++===================+===========================+=========================================================================+
+| SUBPLOT           | SUBP                      | Subplot number                                                          |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| SP_CODE           | VEG_SPCD                  | Species code                                                            |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| SP_NAME           | \-                        | Latin name from plant dictionary                                        |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| COVER             | SP_CANOPY_COVER_TOTAL     | Total cover of species in the subplot                                   |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| Height\* = 91cm   | SP_CANOPY_COVER_LAYER_1_2 | Cover of layer between 0 and 6 feet 0 (0-1.8m)                          |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| Height\* = 340 cm | SP_CANOPY_COVER_LAYER_3   | Cover of layer between 6 and 16 feet                                    |
+|                   |                           |                                                                         |
+|                   |                           | (1.8-4.9 m)                                                             |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| Height\* = 500 cm | SP_CANOPY_COVER_LAYER_4   | Cover of layer above 16 feet (4.9 m)                                    |
++-------------------+---------------------------+-------------------------------------------------------------------------+
+| *GROWTH_HABIT*    | *GROWTH_HABIT*            | Variable from Ref_plant dictionary: forbs, herb, shrub, graminoid ..... |
++-------------------+---------------------------+-------------------------------------------------------------------------+
 
-Data is obtained at subplot level, but certain information ( default HT ) is aggregated at plot level.
+Data is obtained at subplot level, but certain information ( default Height ) is aggregated at plot level.
 
 We use maximum cover percentage of a species in different layers (SP_CANOPY_COVER_LAYER_X) to calculate the averaged height at plot level. For that, mid point of the interval is employed except for layer 4 where minimum is used.
 
@@ -646,7 +660,7 @@ Since *P2VEG_SUBPLOT_SPP* collects data from different growth forms (*GROWTH_HAB
 
 Information about herbs is collected in a separated table (Herbs), *GROWTH_HABIT =* ("Forb/herb", "Graminoids") for these records.
 
-Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SP_CODE ", "SP_NAME", "HT", "COVER ", "GROWTH_HABIT"
+Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SP_CODE ", "SP_NAME", "Height", "COVER ", "GROWTH_HABIT"
 
 -   **Process for *P2VEG_SUBPLOT_SPP.csv (P2)***
 
@@ -659,7 +673,7 @@ Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD",
 +-----------------+-------------------+-------------------------------------------------------------+
 | COVER           | COVER_PCT         | Total cover of species in a specific subplot plot and layer |
 +-----------------+-------------------+-------------------------------------------------------------+
-| HT\* (cm)       | LAYER             | VERTICAL LAYER                                              |
+| Height\* (cm)   | LAYER             | VERTICAL LAYER                                              |
 |                 |                   |                                                             |
 |                 |                   | LAYER 1 –\> 0 to 2.0 feet                                   |
 |                 |                   |                                                             |
@@ -672,8 +686,8 @@ Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD",
 | GROWTH_HABIT    | GROWTH_HABIT_CD   | Shrub (SH) , forbs (FB), graminoids (GR)                    |
 +-----------------+-------------------+-------------------------------------------------------------+
 
-: Data is obtained at subplot level, but certain information ( default HT ) is aggregated at plot level.\
-HT is approximated by using the LAYER info.
+: Data is obtained at subplot level, but certain information ( default Height ) is aggregated at plot level.\
+Height is approximated by using the LAYER info.
 
 | LAYER   | Default height |
 |---------|----------------|
@@ -684,7 +698,7 @@ HT is approximated by using the LAYER info.
 
 If there are data in both files ( *P2VEG_SUBPLOT_SPP and \_VEG_SUBPLOT_SPP)* , P3 data is prioritized and P2 data is added if gives additional information on certain species.
 
-Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SP_CODE ", "SP_NAME", "GROWTH_HABIT_CD", "HT", "COVER ", "GROWTH_HABIT"
+Final variables provided are : "ID_UNIQUE_PLOT", "YEAR ", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SP_CODE ", "SP_NAME", "GROWTH_HABIT_CD", "Height", "COVER ", "GROWTH_HABIT"
 
 ### FIA REGEN TABLES PROCESS
 
@@ -714,11 +728,73 @@ New variables added:
 
 -   DBH = 2.54 cm (default value)
 
-. <!--# TO DO SEEDLING_REGEN FOR SURVEY.RSCD = 23, 24:  In 2012, the Northern Research Station (SURVEY.RSCD = 23, 24) implemented a new protocol, Tree Seedling Regeneration, on a subset of the P2 grid (P2 plus) to estimate regeneration success (McWilliams and others 2012). The protocol includes counts of seedlings at least 2 inches in length and an assessment of browse impact on the plot. These data, in combination with the P2 Vegetation and Invasive Plants data, can be used to provide information about the expected future forest composition and the adequacy of the forest to sustain its native composition -->
+### FIA PLOT TABLES PROCESS
+
+Plot data (seedling) is obtained from : "*PLOT.csv" , "SURVEY.csv", and "COND*.csv"
+
+Data is obtained from both the last available year with the required information for the plot and the year of interest. Variables that end as "\_ORIGINAL" stand for the year of interest. Note that in most cases information on plot condition is collected once, when the plot is set.
+
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| Harmonization name             | Original name                  | Description                                                                                                                                                                                                                                                                                                                                                                                     | Source table |
++================================+================================+=================================================================================================================================================================================================================================================================================================================================================================================================+==============+
+| RSCD                           | RSCD                           | Region or station code                                                                                                                                                                                                                                                                                                                                                                          | SURVEY       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| STATECD                        | STATECD                        | State code                                                                                                                                                                                                                                                                                                                                                                                      | SURVEY       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| STATEAB                        | STATEAB                        | State abbreviation                                                                                                                                                                                                                                                                                                                                                                              | SURVEY       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| STATENM                        | STATENM                        | State name                                                                                                                                                                                                                                                                                                                                                                                      | SURVEY       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| PLOT                           | PLOT                           |                                                                                                                                                                                                                                                                                                                                                                                                 | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| COUNTYCD                       | COUNTYCD                       | State name                                                                                                                                                                                                                                                                                                                                                                                      | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| YEAR                           | INVYR                          | Inventory year                                                                                                                                                                                                                                                                                                                                                                                  | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| COORD1                         | LAT                            | The approximate latitude of the plot in decimal degrees.                                                                                                                                                                                                                                                                                                                                        | PLOT         |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | Actual plot coordinates cannot be released Therefore, this attribute is approximately +/- 1 mile and, for annual inventory data, most plots are within +/- ½ mile.                                                                                                                                                                                                                              |              |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| COORD2                         | LON                            | The approximate longitude of the plot in decimal degrees.                                                                                                                                                                                                                                                                                                                                       | PLOT         |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | Actual plot coordinates cannot be released. Therefore, this attribute is approximately +/- 1 mile and, for annual inventory data, most plots are within +/- ½ mile.                                                                                                                                                                                                                             |              |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| ELEV                           | ELEV                           | The distance the plot is located above sea level.\* For certain FIA work units (SURVEY.RSCD = 22, 23, 24, 33), the ELEV value is rounded to the nearest 10 feet. For other FIA work units (SURVEY.RSCD = 26, 27), the ELEV value is based on 200-foot groupings, and then a mid-point value is returned starting at 100 feet.                                                                   | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| P3PANEL                        | P3PANEL                        | Phase 3 panel number. A panel is a sample in which the same elements are measured on two or more occasions. FIA divides the plots in each State into 5 panels that can be used to independently sample the population. The value for P3PANEL ranges from 1 to 5 for those plots where Phase 3 data were collected. If the plot is not a Phase 3 plot, then this attribute is left blank (null). | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| DESIGNCD                       | DESIGNCD                       | A code indicating the type of plot design used to collect the data. Refer to appendix G for a list of codes and descriptions                                                                                                                                                                                                                                                                    | PLOT         |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| P2VEG_SAMPLING_STATUS_CD       | P2VEG_SAMPLING_STATUS_CD       | P2 vegetation sampling status code. A code indicating whether the plot is part of the P2 (Phase 2) vegetation sample included in the inventory.                                                                                                                                                                                                                                                 | PLOT         |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 0 Plot is not part of the P2 vegetation sample.                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 1 P2 vegetation data are sampled only on accessible forest land conditions.                                                                                                                                                                                                                                                                                                                     |              |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 2 P2 vegetation data are sampled on all accessible land conditions.                                                                                                                                                                                                                                                                                                                             |              |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| P2VEG_SAMPLING_LEVEL_DETAIL_CD | P2VEG_SAMPLING_LEVEL_DETAIL_CD | . A code indicating whether data were collected for vegetation structure growth habits only, or for individual species as well.                                                                                                                                                                                                                                                                 | PLOT         |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | Code Description                                                                                                                                                                                                                                                                                                                                                                                |              |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 1 Data collected for vegetation structure only; total aerial canopy cover and canopy cover by layer for tally tree species (all sizes), non-tally tree species (all sizes),shrubs/subshrubs/woody vines, forbs, and graminoids.                                                                                                                                                                 |              |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 2 Vegetation structure data (LOD = 1) plus understory species composition data collected including up to four most abundant species per GROWTH_HABIT_CD per subplot of: seedlings and saplings of any tree species (tally or non-tally) \<5 inches d.b.h. (d.r.c. for woodland species), shrubs/subshrubs/woody vines, forbs, and graminoids.                                                   |              |
+|                                |                                |                                                                                                                                                                                                                                                                                                                                                                                                 |              |
+|                                |                                | 3 Vegetation structure data, understory species composition data (LOD = 2), plus up to four most abundant tree species (tally or non-tally) \<5 inches d.b.h. (d.r.c for woodland species) per GROWTH_HABIT_CD per subplot.                                                                                                                                                                     |              |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| ASPECT                         | ASPECT                         | Condition aspect. The aspect across the condition to the nearest 1 degree. North is recorded as 360. When slope is \<5 percent, there is no aspect and this item is set to 0.                                                                                                                                                                                                                   | CONDID       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+| SLOPE                          | SLOPE                          | Condition percent slope. The predominant or average angle of the slope across the condition, to the nearest 1 percent                                                                                                                                                                                                                                                                           | CONDID       |
++--------------------------------+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
+
+We add ID_UNIQUE_PLOT and COORD_SYS: NAD 83 datum except for SURVEY.RSCD = 26 and SURVEY.STATECD = 60, 64, 66, 68, 69, or 70 that use WSG84 datum.
+
+Elevation is transformed from feet to meters bt multiplying by 0.3048.
+
+\
 
 ### **Appendix 1**
-
-<!--#  Is it ok? how to insert a table only that is in the package ? -->
 
 ``` r
 #FIRST WE NEED A SPECIES LIST  , IT  IS OBTAINED FROM CSV METADONNES 
@@ -745,11 +821,11 @@ growth_form_lignified_france <- growth_form |>
 ```
 
 ```{r}
-head(fr_species_cdref) 
+head(esus:::fr_species_cdref) 
 ```
 
 ```{r}
-head(growth_form_lignified_france)
+head(esus:::growth_form_lignified_france)
 ```
 
 ``` r

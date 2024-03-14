@@ -326,17 +326,17 @@ ifn_tree_table_process <- function(
       # transformations and filters
       dplyr::rename(
         province_code = "PROVINCIA", PLOT = "ESTADILLO", SP_CODE = "ESPECIE",
-        TREE = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", HT = "ALTURA"
+        TREE = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", Height = "ALTURA"
       ) |>
       dplyr::mutate(
         PLOT = as.character(.data$PLOT),
         province_code = as.character(.data$province_code),
         Dn1 = as.numeric(.data$Dn1),
         Dn2 = as.numeric(.data$Dn2),
-        HT = as.numeric(stringr::str_replace(.data$HT, ",", ".")),
+        Height = as.numeric(stringr::str_replace(.data$Height, ",", ".")),
         SP_CODE = as.numeric(.data$SP_CODE),
         DIA = ((.data$Dn1 + .data$Dn2) / 2) * 0.1, # From mm to cm
-        HT = .data$HT, # in meters
+        Height = .data$Height, # in meters
         DENSITY = dplyr::case_when(
           .data$DIA < 12.5 ~ 127.3239546,
           .data$DIA >= 12.5 & .data$DIA < 22.5 ~ 31.83098865,
@@ -354,7 +354,7 @@ ifn_tree_table_process <- function(
       dplyr::select(
         "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE", "SP_NAME",
         "DIA", # diameter in cm
-        "HT", # height in m
+        "Height", # height in m
         "DENSITY",
         "FORMA",
         "CALIDAD"
@@ -395,7 +395,7 @@ ifn_tree_table_process <- function(
     }
 
     tree <- tree_filtered_data |>
-      dplyr::rename(PLOT = "Estadillo", HT = "Ht", Clase = "Cla") |>
+      dplyr::rename(PLOT = "Estadillo", Height = "Ht", Clase = "Cla") |>
       # units transformations
       dplyr::mutate(
         province_code = province,
@@ -434,7 +434,7 @@ ifn_tree_table_process <- function(
           #diameter in cm
           "DIA",
           #height in cm
-          "HT", "DENSITY"
+          "Height", "DENSITY"
         ))
       )
 
@@ -485,13 +485,12 @@ ifn_shrub_table_process <- function(
 
     #we add the id code
     shrub <- shrub_filtered_data |>
-      dplyr::rename(PLOT = "ESTADILLO", COVER = "FRACCAB", HT = "ALTUMED") |>
+      dplyr::rename(PLOT = "ESTADILLO", COVER = "FRACCAB", Height = "ALTUMED") |>
       dplyr::mutate(
         PLOT = as.character(.data$PLOT),
         province_code = as.character(.data$PROVINCIA),
-        HT = as.numeric(.data$HT),
+        Height = as.numeric(.data$Height) * 10, # DM TO cm
         COVER = as.numeric(.data$COVER),
-        HT = .data$HT * 10, # DM TO cm
         SP_CODE = as.numeric(.data$ESPECIE)
       ) |>
       # 3. ref_plant_dictionary
@@ -503,7 +502,7 @@ ifn_shrub_table_process <- function(
         by = "SP_CODE"
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
-      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER")
+      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", "SP_CODE", "Height", "COVER")
     # Return shrub
     return(shrub)
   }
@@ -546,14 +545,14 @@ ifn_shrub_table_process <- function(
     }
 
     shrub <- shrub_filtered_data |>
-      dplyr::rename(PLOT = "Estadillo", HT = "Hm", Clase = "Cla") |>
+      dplyr::rename(PLOT = "Estadillo", Height = "Hm", Clase = "Cla") |>
       dplyr::mutate(
         province_code = province,
         # Subclass fixes
         Subclase = .ifn_subclass_fixer(.data$Subclase),
         COVER = .data$Fcc,
         # DM TO CM
-        HT = .data$HT * 10,
+        Height = as.numeric(.data$Height) * 10,
         COVER = as.numeric(.data$COVER),
         SP_CODE = as.numeric(.data$Especie)
       ) |>
@@ -567,7 +566,7 @@ ifn_shrub_table_process <- function(
       ) |>
       dplyr::select(
         "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase",
-        "PLOT", "SP_NAME", "SP_CODE", "HT", "COVER"
+        "PLOT", "SP_NAME", "SP_CODE", "Height", "COVER"
       )
 
     return(shrub)
@@ -632,26 +631,35 @@ ifn_regen_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(Numero = "NUMERO", Regena = "REGENA") |>
+      #information for different individuals of same species is recorded in different variables but same row
+      #for this we will repeat each line so that we can keep records separately 
+      #and apply the different transformations
       dplyr::slice(rep(dplyr::row_number(), each = 2)) |>
       dplyr::mutate(
+        #even rows will give information on regena (species with a diameter below 25)
+        # odd rows will give information on species with a diameter above  25 (numero) 
+        #numero is associated with Hm 
         Regena = ifelse(dplyr::row_number() %% 2 != 0, NA, .data$Regena),
         Numero  = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Numero),
         Hm = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Hm),
+        #dbh default value is lower for species with a diameter below 25 ( regena class)
         DBH = dplyr::case_when(.data$Numero > 0 ~ 5, .data$Regena > 0 ~ 1, TRUE ~ NA),
-        N = .data$Numero * 127.3239546,
+        DENSITY = 127.3239546,
+        #default values of N = NUMERO IND * DENSITY; Num of individuals is given for each regena class 
+        #density is equal for all
         N = dplyr::case_when(
-          .data$Regena == 1 ~ 2.5 * 127.3239546,
-          .data$Regena == 2 ~ 10 * 127.3239546,
-          .data$Regena == 3 ~ 20 * 127.3239546,
-          .data$N > 0 ~ .data$N,
+          .data$Regena == 1 ~ 2.5 * DENSITY,
+          .data$Regena == 2 ~ 10 * DENSITY,
+          .data$Regena == 3 ~ 20 * DENSITY,
+          .data$N > 0 ~ .data$Numero * DENSITY,
           TRUE ~ NA
         ),
+        # we give a default value for individual below 25 cm of diameter
         Height = dplyr::case_when(
           .data$Hm > 0 ~ .data$Hm,
           .data$Regena > 0 ~ 100,
           TRUE ~ NA
-        ),
-        DENSITY = 127.3239546
+        )
       ) |>
       dplyr::select(
         "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE",
@@ -712,6 +720,8 @@ ifn_regen_table_process <- function(
         by = "SP_CODE"
       ) |>
       dplyr::mutate(
+        DENSITY = 127.3239546,
+        #default values for different catdes (development category) 
         DBH = dplyr::case_when(
           .data$CatDes == 1 ~ 0.1,
           .data$CatDes == 2 ~ 0.5,
@@ -719,21 +729,22 @@ ifn_regen_table_process <- function(
           .data$CatDes == 4 ~ 5,
           TRUE ~ NA
         ),
+        #default values of NUmPies for different values of "Densidad"
         N = dplyr::case_when(
-          .data$Densidad == 1 ~ 2.5 * 127.3239546,
-          .data$Densidad == 2 ~ 10 * 127.3239546,
-          .data$Densidad == 3 ~ 20 * 127.3239546,
-          .data$CatDes == 4 ~ NumPies * 127.3239546,
+          .data$Densidad == 1 ~ 2.5 * DENSITY,
+          .data$Densidad == 2 ~ 10 * DENSITY,
+          .data$Densidad == 3 ~ 20 * DENSITY,
+          .data$CatDes == 4 ~ NumPies * DENSITY,
           TRUE ~ NA
         ),
+        #default values of height for different values of "CatDes"
         Height = dplyr::case_when(
           .data$CatDes == 1 ~ 10,
           .data$CatDes == 2 ~ 80,
           .data$CatDes == 3 ~ 100,
           .data$CatDes == 4 ~ Hm,
           TRUE ~ NA
-        ),
-        DENSITY = 127.3239546
+        )
       ) |>
       dplyr::select(
         "ID_UNIQUE_PLOT", "province_code", "Clase", "Subclase", "PLOT",
