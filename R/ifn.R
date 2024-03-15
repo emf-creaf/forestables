@@ -502,7 +502,8 @@ ifn_shrub_table_process <- function(
         by = "SP_CODE"
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
-      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", "SP_CODE", "Height", "COVER")
+      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", 
+                    "SP_CODE","Height", "COVER")
     # Return shrub
     return(shrub)
   }
@@ -631,8 +632,8 @@ ifn_regen_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(Numero = "NUMERO", Regena = "REGENA") |>
-      #information for different individuals of same species is recorded in different variables but same row
-      #for this we will repeat each line so that we can keep records separately 
+      #information for different individuals of same species is recorded in different variables 
+      #but in the same row. we will repeat each line twice so that we can keep records separately 
       #and apply the different transformations
       dplyr::slice(rep(dplyr::row_number(), each = 2)) |>
       dplyr::mutate(

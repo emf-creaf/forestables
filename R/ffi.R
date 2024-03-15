@@ -306,9 +306,11 @@ ffi_tables_process <- function(
       
       #shrub should be the same all time
       if (nrow(shrub_regen) > 0) {
-        # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
-        #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
-        #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
+        # IMPORTANT NOTE: there is an unsolved problem, not all species of french inventory 
+        #are present  in  growth_form_lignified_france
+        #thus we systematically loss some records that are NA  when we apply filter. 
+        #We could fill missing values of growth form file manually from the list of fr_species 
+        #and have a static copy!!!  
         shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
       }
       
@@ -330,9 +332,11 @@ ffi_tables_process <- function(
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
           regen <- shrub_regen |>  
-            # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
-            #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
-            #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
+            # IMPORTANT note that there is an unsolved problem, not all species are present  
+            #in  growth_form_lignified_france thus we systematically loss some records that are NA
+            #(no here but in ffi tables process when we apply filter)  . 
+            #We could fill missing growth form manually from the list of fr_species
+            #and have a static copy!!!  
             dplyr::filter(.data$GrowthForm == "tree") |>
             dplyr::mutate(
               #default dbh, added to be  coherent with table from regen process
@@ -729,11 +733,11 @@ ffi_shrub_table_process <- function(
       SP_CODE = "CD_REF",
       COVER = "ABOND"
     ) |>
-    # dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "Height") |>
     # we join this table to differentiate between tree , shrub and herbs
-    # IMPORTANT note that there is an unsolved problem, not all species are present  in  growth_form_lignified_france
-    #thus we systematically loss some records that are NA (no here but in ffi tables process when we apply filter)  . 
-    #We could fill missing growth form manually from the list of fr_species and have a static copy!!!  
+    # IMPORTANT note that there is an unsolved problem, not all species are present  in 
+    #growth_form_lignified_france thus we systematically loss some records that are NA 
+    #(no here but in ffi tables process when we apply filter)  . 
+    #We could fill missing growth form manually from the list of fr_species and have a static copy!! 
     dplyr::left_join(
       growth_form_lignified_france |>
         dplyr::select("AccSpeciesName", "GrowthForm") |>
@@ -824,7 +828,8 @@ ffi_regen_table_process <- function(
     ) |>
     dplyr::rename(PLOT = "IDP", SP_NAME = "lib_cdref", SP_CODE = "CD_REF") |>
     # selection of final variables
-    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME", "COVER", "DBH", "Height", "GrowthForm") |>
+    dplyr::select("ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE", "SP_NAME",
+                  "COVER", "DBH", "Height", "GrowthForm") |>
     dplyr::as_tibble()
 
   return(regen)

@@ -247,6 +247,7 @@ fia_tables_process <- function(
       shrub <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
+        #codes are namely different as have different sources
         growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
         ref_plant_dictionary,
         .call
@@ -255,6 +256,7 @@ fia_tables_process <- function(
       herbs <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
+        #codes are namely different as have different sources
         growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
         ref_plant_dictionary,
         .call
@@ -269,15 +271,11 @@ fia_tables_process <- function(
       # subplot
       subplot <-
         fia_subplot_table_process(subplot_table_file, plots, county, year, .call) |>
+        #maybe we should not filter this as info here is from condid 1 only? check!!
         dplyr::select(!dplyr::any_of(redundant_vars))
 
       # we group in a data frame understory info
       understory <- dplyr::tibble(
-        # PLOT = plots,
-        # COUNTYCD = county,
-        # YEAR = year,
-        # STATECD = state,
-        # ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
         shrub = list(shrub),
         herbs = list(herbs)
       ) |>
@@ -364,7 +362,8 @@ fia_plot_table_process <- function(
     #there might be more than 1 record
     dplyr::distinct() |>
     .extract_fia_metadata(
-      c("RSCD", "STATECD", "STATEAB", "STATENM"), county, plot, year, .soil_mode = FALSE
+      c("RSCD", "STATECD", "STATEAB", "STATENM"),
+      county, plot, year, .soil_mode = FALSE
     ) |>
     dplyr::mutate(PLOT  = plot, INVYR  = year, COUNTYCD = county)
 
@@ -405,6 +404,7 @@ fia_plot_table_process <- function(
       # DESIGN : can change between years:
       "DESIGNCD"
     ) |>
+    #this is done to obtain last year with information available and also the year of search
     data.table::as.data.table() |>
     .extract_fia_metadata(
       c(
@@ -439,7 +439,6 @@ fia_plot_table_process <- function(
       # the time of the plot establishment,
       # the condition class at plot center (the center of subplot 1) is usually designated as
       # condition class 1.
-
       # condid 1 to use this as proxy
       .data$CONDID == 1
     ) |>
@@ -450,10 +449,11 @@ fia_plot_table_process <- function(
     dplyr::select("ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "SLOPE", "ASPECT", "INVYR") |>
     dplyr::distinct() |>
     data.table::as.data.table() |>
+    #this is done to obtain last year with information available and also the year of search  
+    # we extract the vars we need and return the object
     .extract_fia_metadata(c("SLOPE", "ASPECT"), county, plot, year, .soil_mode = FALSE) |>
     dplyr::mutate(PLOT = plot, INVYR = year, COUNTYCD = county)
-
-  # we extract the vars we need and return the object
+  
   data_survey |>
     dplyr::left_join(data_plot, by = c("PLOT", "INVYR", "COUNTYCD")) |>
     dplyr::left_join(data_cond, by = c("PLOT", "INVYR", "COUNTYCD")) |>
@@ -462,10 +462,10 @@ fia_plot_table_process <- function(
       COUNTRY = "US"
     ) |>
     dplyr::select(
-      "INVYR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM",
-      "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-      "RSCD", "DESIGNCD", "LON", "LON_ORIGINAL", "LAT", "LAT_ORIGINAL",
-      "COORD_SYS", "crs", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
+      "INVYR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM","COUNTYCD", 
+      "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+      "RSCD", "DESIGNCD", "LON", "LON_ORIGINAL", "LAT", "LAT_ORIGINAL", "COORD_SYS",
+      "crs", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
     ) |>
     dplyr::rename(
       YEAR = "INVYR",
@@ -518,7 +518,7 @@ fia_tree_table_process <- function(
   }
 
 
-  # 3. join with ref_species??
+  # 3. join with ref_species
 
   tree <- filtered_data |>
     # units transformations
@@ -529,7 +529,7 @@ fia_tree_table_process <- function(
       Height = .data$HT * 0.3048, # FEET TO M
       DENSITY = .data$TPA_UNADJ / 0.4046856422 # acre to ha
     ) |>
-    # add species info
+  # 4 . add species info
     dplyr::left_join(
       y = ref_species |>
         dplyr::select("SPCD", "GENUS", "SPECIES", "SPECIES_SYMBOL"),
@@ -655,9 +655,9 @@ fia_p3_understory_table_process <- function(
 
   # we add the id code
   understory_filtered_data <- filtered_data |>
-    # we group by species to calculate means (height, cover)
+    # we group by species --is this doing something?
     dplyr::group_by(.data$SPECIES_SYMBOL) |>
-    # here we calculate an averaged height by species, for that we select the height that has
+    # here we calculate an averaged height by species. For that we select the height that has
     # the maximum percentage cover and we assign as a height the middle value of the interval of
     # that layer in meters layer 1-2  = 0- 1,8288meters, layer 3 from 1,8288meters to 4,8768
     # and layer 4 more than  4,8768m
@@ -666,6 +666,7 @@ fia_p3_understory_table_process <- function(
       COVER_PCT = .data$SP_CANOPY_COVER_TOTAL,
       # Height in cm
       Height = dplyr::case_when(
+       # default height is approached to mid point of interval of layers
         (which.max(c(
           max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
           max(.data$SP_CANOPY_COVER_LAYER_4)
@@ -694,13 +695,14 @@ fia_p3_understory_table_process <- function(
             "GENUS",
             "SPECIES",
             "CATEGORY",
-            # we will use this variable to discriminate between functional/form group
+            # we will use this variable to discriminate between functional/growth form group
             "GROWTH_HABIT",
             "DURATION"
           ))
         ),
       by = "SPECIES_SYMBOL"
     ) |>
+    #growth habit codes are applied in fia_tables process
     dplyr::filter(.data$GROWTH_HABIT %in% growth_habit)
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
@@ -717,6 +719,7 @@ fia_p3_understory_table_process <- function(
   # we add latin name and select variables
   understory <- understory_filtered_data |>
     dplyr::mutate(SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " ")) |>
+    #information at subplot level
     dplyr::arrange(.data$SPECIES_SYMBOL, .data$SUBP) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
@@ -781,10 +784,10 @@ fia_p2_understory_table_process <- function(
 
   # we add the id code
   understory_p2_filtered_data <- filtered_data |>
-    # we group by species to calculate means (height, cover)
+    # we group by species , is this doing anything?-- i dont think so
     dplyr::group_by(.data$SPECIES_SYMBOL) |>
     dplyr::filter(.data$GROWTH_HABIT_CD %in% growth_habit) |>
-    # we calculate mean cover an height from layer
+    # we  approximate height from layer info
     dplyr::mutate(
       ID_UNIQUE_PLOT = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       # Height in cm
@@ -908,12 +911,12 @@ fia_seedling_table_process <- function(
       SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " "),
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
       Height = 15,
-      #LESS THAN 1 INCH = 2.54 CM default ? revisar ifn
+      #LESS THAN 1 INCH = 2.54 CM default 
       DBH = 2.54,
       #calculate density represented by tree
       N = .data$TPA_UNADJ * .data$TREECOUNT_CALC
     ) |>
-    # we arrange by species and tpa
+    # we arrange by species and subplot
     dplyr::arrange(.data$SPCD, .data$SUBP) |>
     #selection of final variables
     dplyr::select(
@@ -984,7 +987,7 @@ fia_subplot_table_process <- function(
       "SUBPCOND", "MICRCOND"
     ) |>
     dplyr::rename(YEAR = "INVYR") |>
-    # We have repeated rows after the selection because we summarised shrubs species. We remove with
+    # We have repeated rows after the selection because we summarized shrubs species. We remove with
     # distinct
     dplyr::distinct() |>
     dplyr::as_tibble()
