@@ -694,7 +694,7 @@ test_that("fia_subplot_table_process works as intended", {
 
   expected_names <- c(
     "ID_UNIQUE_PLOT", "YEAR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
-    "SLOPE", "ASPECT", "MACRCOND", "SUBPCOND", "MICRCOND"
+    "SLOPE_SUBP", "ASPECT_SUBP", "MACRCOND", "SUBPCOND", "MICRCOND"
   )
 
   # object

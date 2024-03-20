@@ -247,7 +247,7 @@ fia_tables_process <- function(
       shrub <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
-        #codes are namely different as have different sources
+        #codes are different as have different sources
         growth_habit_p3 = "Shrub", growth_habit_p2 = "SH",
         ref_plant_dictionary,
         .call
@@ -256,7 +256,7 @@ fia_tables_process <- function(
       herbs <- fia_understory_table_process(
         p3_understory_table_file, p2_veg_subplot_table_file,
         plots, county, year,
-        #codes are namely different as have different sources
+        #codes are different as have different sources
         growth_habit_p3 = c("Forb/herb", "Graminoids"), growth_habit_p2 = c("FB", "GR"),
         ref_plant_dictionary,
         .call
@@ -271,7 +271,6 @@ fia_tables_process <- function(
       # subplot
       subplot <-
         fia_subplot_table_process(subplot_table_file, plots, county, year, .call) |>
-        #maybe we should not filter this as info here is from condid 1 only? check!!
         dplyr::select(!dplyr::any_of(redundant_vars))
 
       # we group in a data frame understory info
@@ -986,7 +985,7 @@ fia_subplot_table_process <- function(
       # Condition number for the condition at the center of the subplot.
       "SUBPCOND", "MICRCOND"
     ) |>
-    dplyr::rename(YEAR = "INVYR") |>
+    dplyr::rename(YEAR = "INVYR", SLOPE_SUBP = "SLOPE",ASPECT_SUBP = "ASPECT") |>
     # We have repeated rows after the selection because we summarized shrubs species. We remove with
     # distinct
     dplyr::distinct() |>
