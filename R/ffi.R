@@ -311,7 +311,9 @@ ffi_tables_process <- function(
         #thus we systematically loss some records that are NA  when we apply filter. 
         #We could fill missing values of growth form file manually from the list of fr_species 
         #and have a static copy!!!  
-        shrub <- shrub_regen |>  dplyr::filter(.data$GrowthForm == "shrub")
+        shrub <- shrub_regen 
+        #quitamos filtro temporalmente
+        # dplyr::filter(.data$GrowthForm == "shrub")
       }
       
       if (nrow(shrub) < 1) {
@@ -336,8 +338,9 @@ ffi_tables_process <- function(
             #in  growth_form_lignified_france thus we systematically loss some records that are NA
             #(no here but in ffi tables process when we apply filter)  . 
             #We could fill missing growth form manually from the list of fr_species
-            #and have a static copy!!!  
-            dplyr::filter(.data$GrowthForm == "tree") |>
+            #and have a static copy!!! 
+            #quitamos filtro temporalmente
+            # dplyr::filter(.data$GrowthForm == "tree") |>
             dplyr::mutate(
               #default dbh, added to be  coherent with table from regen process
               DBH = NA
