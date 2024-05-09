@@ -234,7 +234,7 @@ differences between parallelization strategies.
 
 ## FIA
 
-```{r ffi_selection}
+```{r fia_selection}
 # choose the departments, those in the mediterranean area
 west_coast_states <- c("WA", "CA", "OR")
 # get the plots for those departments
@@ -243,7 +243,7 @@ west_coast_plots
 ```
 
 
-```{r plots_visualization}
+```{r fia_plots_visualization}
 # france map for plotting
 west_coast_map <- ne_states(geounit = "United States of America") |>
   select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
@@ -325,7 +325,7 @@ fia_data_2012 |>
 
 ## IFN
 
-```{r ffi_selection}
+```{r ifn_selection}
 # choose the departments, those in the mediterranean area
 north_spain_provinces <- c("24", "33", "15", "27", "39", "48", "20")
 # get the plots for those departments
@@ -337,7 +337,7 @@ north_spain_plots
 ```
 
 
-```{r plots_visualization}
+```{r ifn_plots_visualization}
 # france map for plotting
 north_spain_map <- ne_states(country = "spain") |>
   select(dep_code = "iso_3166_2", dep_name = "name") |>
