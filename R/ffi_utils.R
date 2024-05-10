@@ -32,7 +32,7 @@ utils::globalVariables(".data")
   verbose_msg(
     cli::cli_inform(c(
       "Getting ready to retrieve
-      {.strong {filter_list |> purrr::flatten_chr() |> length()}}
+      {.strong {filter_list |> purrr::flatten() |> length()}}
       plots for {.val {year}}"
     )), .verbose
   )
