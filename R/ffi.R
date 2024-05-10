@@ -574,6 +574,7 @@ ffi_tree_table_process <- function(
     colClasses = list(character = c("ESPAR", "IDP")),
     header = TRUE
   )
+  
 
   # we filter the data for plot/year and status (alive)????
   tree_filtered_data <- tree_raw_data |>
@@ -595,9 +596,9 @@ ffi_tree_table_process <- function(
 
   #IMPORTANT do NOT change this!!!!!!!!!!
   # we need to get all data first to fill missing values of known var 
-  #filter per year is dione at the end
+  #filter per year is done at the end
   tree <- tree_raw_data |>
-    # we filter the datqa for plot
+    # we filter the data for plot
     dplyr::filter(.data$IDP == plot) |>
     # transformations and filters
     dplyr::mutate(
@@ -642,17 +643,37 @@ ffi_tree_table_process <- function(
     #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR, 
     #some variables are register only in first visit but are important to have in revisit
     dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
-    #espar var will appear empty "" in the revisited plots , we first convert to NA 
+    #temporal change
+    #espar var will appear empty "" in the revisited plots , we first convert to NA
     dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
     dplyr::as_tibble() |>
     #since we still have info of previous year because we have not filtered by year yet,
     # we can fill missing information of espar, sp_code and sp_name
     #as we are arranging by tree and tree  codes do not change there is not problem
-    #new individuals that are recensables have new codes in tree = no filling 
+    #new individuals that are recensables have new codes in tree = no filling
     tidyr::fill(c("ESPAR", "SP_CODE", "SP_NAME")) |>
     #THIS MUST BE DONE AT THE END
     dplyr::filter(.data$YEAR == year)
 
+    # data.table::as.data.table() |>
+    # #arrange by year descending to apply extract ffi metadata: two var last record and original
+    # dplyr::arrange(desc(.data$YEAR)) |>
+    # # #espar var will appear empty "" in the revisited plots , we first convert to NA 
+    #  dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
+    # #there might be more than 1 record
+    # dplyr::distinct() |>
+    # .extract_ffi_tree_metadata(
+    #   c("ID_UNIQUE_PLOT", "PLOT", "DEP",  "TREE", "ESPAR", "SP_CODE", "SP_NAME", "STATUS", 
+    #     "VEGET5", "DIA", "Height", "DENSITY"),
+    #   plot,
+    #   year,
+    #   .soil_mode = TRUE
+    # ) |>
+    # dplyr::mutate(PLOT  = plot, YEAR  = year) |>
+    # dplyr::as_tibble()
+    # 
+  
+  
   return(tree)
 }
 

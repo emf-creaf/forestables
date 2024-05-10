@@ -443,3 +443,105 @@ create_filter_list_ffi <- function(plots_info) {
     data.table::as.data.table() |>
     dtplyr::lazy_dt(immutable = TRUE)
 }
+
+
+#' Helper function to extract plot and soil metadata from from tables
+#'
+#' Extract year and most recent metadata for plot
+#'
+#' This function extracts the metadata for a plot in a year, creating two values for
+#' each specified variable in \code{vars}. One with the value for the year selected
+#' (\code{VAR_ORIG}) and another with the most recent value (\code{VAR}).
+#' This function is intended exclusively to be called by the individual table process
+#' functions that needs this functionality (plot and soil tables).
+#'
+#' @param data_processed Table data after reading and processing.
+#' @param vars Character, names of variables to be extracted.
+#' @param plot Numeric, codes for dep or plot to be processed
+#' @param year Numeric with the year to process
+#' @param tree numeric with tree id/number 
+#' @param .soil_mode Logical. If \code{TRUE}, \code{.extract_ffi_tree_metadata} is run on soil mode,
+#'   which means that no NAs are filtered before returning most recent data, to allow for
+#'   different layers to be retrieved. If \code{FALSE}, then years with \code{NA} for \code{VAR}
+#'   are removed prior to find the most recent value.
+#'
+#' @return A data frame with variables in \code{var} values for the desired year and for the
+#'   most recent year with value.
+#'
+#' @importFrom rlang `:=`
+#' @noRd
+
+# .extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
+#   
+#   browser()
+#   # ORIGINAL names
+#   vars_orig <- paste0(vars, "_ORIGINAL")
+#   
+#   data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
+#   
+#   output <- list()
+#   
+#   output_tibble <- tibble::tibble(
+#     PLOT = character(),  # Crear columna para almacenar el valor de PLOT
+#     YEAR = numeric(),    # Crear columna para almacenar el valor de YEAR
+#     across(vars, ~ character()),  # Crear columnas para las variables
+#     across(paste0(vars, "_ORIGINAL"), ~ character())  # Crear columnas para las variables originales
+#   )
+#   
+#   # Agrupar los datos por el valor de "PLOT"
+#   grouped_data <- data_processed |> 
+#     dplyr::group_by(PLOT) |> 
+#     as.data.table()
+#   
+# 
+#     # Loop para recorrer cada fila del dataframe filtrado
+#     for (i in 1:length(grouped_data)) {
+#       row <- dplyr::slice(grouped_data, i) 
+#       
+#       # Construir un tibble con los valores de la fila actual
+#       row_tibble <- tibble::tibble(
+#         "PLOT"  := row$PLOT,
+#         "YEAR" := year
+#       )
+#       
+#       # Loop para recorrer cada variable y extraer su valor más reciente
+#       for (var in vars) {
+#         var_orig <- paste0(var, "_ORIGINAL")
+#         
+#         # Valor más reciente de la variable
+#         var_value <- grouped_data |> 
+#           dplyr::filter(!.soil_mode | !is.na({{ var }})) |> 
+#           dplyr::filter(YEAR == min(grouped_data$YEAR, na.rm = TRUE)) |> 
+#           dplyr::pull({{ var }}) |> 
+#           unique()
+#         
+#         # Valor de la variable en el año consultado
+#         var_orig_value <- grouped_data |> 
+#           dplyr::filter(YEAR == year) |> 
+#           dplyr::pull({{ var }}) |> 
+#           unique()
+#         
+#         # Asignar NA si no se encuentra el valor
+#         if (length(var_orig_value) < 1) {
+#           var_orig_value <- NA
+#         }
+#         if (length(var_value) < 1) {
+#           var_value <- NA
+#         }
+#         
+#         row_tibble[[var]] <- var_value
+#         row_tibble[[var_orig]] <- var_orig_value
+#       }
+#       
+#       # Agregar el tibble al resultado
+#       output_tibble <- bind_rows(output_tibble, row_tibble)
+#     }
+#   
+  
+  # Combinar los resultados en un solo data.table
+  output_combined <- data.table::rbindlist(output)
+  
+  output_combined <- dtplyr::lazy_dt(output_combined, immutable = TRUE)
+  
+  output_combined
+}
