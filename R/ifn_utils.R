@@ -145,6 +145,7 @@
   # it takes care of the version logic for us, DRY!!!
   # The only thing we need to take care of is the dancing coord ref systems. But for that is the crs
   # variable, so we group and transform to common crs
+  # browser()
   res <- ifn_plot_table_process(
     plot_path, coord_path, version, plots_arg_value, province, ifn_provinces_dictionary
   ) |>
