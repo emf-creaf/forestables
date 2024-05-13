@@ -72,7 +72,7 @@ ifn_to_tibble <- function(
   )
   # provinces are valid
   valid_provinces <- esus:::ifn_plots_thesaurus |>
-    dplyr::pull(PROVINCIA) |>
+    dplyr::pull(.data$PROVINCIA) |>
     unique() |>
     sort()
   invalid_provinces <- which(!provinces %in% valid_provinces)
@@ -829,32 +829,66 @@ ifn_plot_table_process <- function(
     # fix bad formatted coords and filter missing coordinates
     # Ok, here is a little weird, but is what it is. Some IFN2 provinces have letters in the
     # coordinates, which mess with the process. The thing is that due to some
-    # exporting/formatting/blackbox process numbers were converted to letters. B is 2, C is 3...
-    # So we try to fix this
+    # exporting/formatting/blackbox process numbers were converted to letters. A is the first number
+    # of the first ocurrence, B is the first number of the second ocurrence and so on. i.e. in province
+    # "03", A is 7, B is 6 and C is 2
     plot_coord_fixed_data <- plot_filtered_data |>
       dplyr::filter(!is.na(.data$COORDEX), !is.na(.data$COORDEY)) |>
       dplyr:::mutate(
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "A", "1"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "B", "2"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "C", "3"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "D", "4"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "E", "5"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "F", "6"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "G", "7"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "H", "8"),
-        COORDEX = stringr::str_replace_all(.data$COORDEX, "I", "9"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "A", "1"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "B", "2"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "C", "3"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "D", "4"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "E", "5"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "F", "6"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "G", "7"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "H", "8"),
-        COORDEY = stringr::str_replace_all(.data$COORDEY, "I", "9")
+        coordx_orig = COORDEX,
+        coordy_orig = COORDEY,
+        # corrections per province
+        COORDEX = dplyr::case_when(
+          # 03
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "7"),
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "6"),
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Cc]") ~ stringr::str_replace_all(.data$COORDEX, "C", "2"),
+          # 11
+          .data$PROVINCIA == "11" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "2"),
+          # 29
+          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "3"),
+          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "3"),
+          # 35
+          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Dd]") ~ stringr::str_replace_all(.data$COORDEX, "D", "4"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Ee]") ~ stringr::str_replace_all(.data$COORDEX, "E", "5"),
+          # 38
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "1"),
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "2"),
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Cc]") ~ stringr::str_replace_all(.data$COORDEX, "C", "3"),
+          TRUE ~ .data$COORDEX
+        ),
+        COORDEY = dplyr::case_when(
+          # 35
+          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEY, "A", "3"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Dd]") ~ stringr::str_replace_all(.data$COORDEY, "D", "3"),
+          # 11
+          .data$PROVINCIA == "11" & stringr::str_detect(coordy_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEY, "B", "4"),
+          TRUE ~ .data$COORDEY
+        )
+
+
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "A", "1"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "B", "2"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "C", "3"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "D", "4"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "E", "5"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "F", "6"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "G", "7"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "H", "8"),
+        # COORDEX = stringr::str_replace_all(.data$COORDEX, "I", "9"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "A", "1"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "B", "2"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "C", "3"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "D", "4"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "E", "5"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "F", "6"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "G", "7"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "H", "8"),
+        # COORDEY = stringr::str_replace_all(.data$COORDEY, "I", "9")
       )
 
     # we add the id code
+    # browser()
     info_plot <- plot_coord_fixed_data |>
       dplyr::rename(
         PLOT = "ESTADILLO", SLOPE = "MAXPEND2", ELEV = "ALTITUD2", YEAR = "ANO", ASPECT = "ORIENTA2"
@@ -872,17 +906,58 @@ ifn_plot_table_process <- function(
           .data$SLOPE == 5 ~ 40
           ),
         ASPECT = as.numeric(.data$ASPECT),
+        # COORDEX = dplyr::if_else(
+        #   province_code %in% c("07"),
+        #   as.numeric(.data$COORDEX),
+        #   as.numeric(.data$COORDEX) * 1000
+        # ),
+        # COORDEY = dplyr::if_else(
+        #   province_code %in% c("07"),
+        #   as.numeric(.data$COORDEY),
+        #   as.numeric(.data$COORDEY) * 1000
+        # ),
         COORDEX = as.numeric(.data$COORDEX) * 1000,
         COORDEY = as.numeric(.data$COORDEY) * 1000,
         version = version,
         Huso = dplyr::case_when(
-          .data$province_code %in% c("35", "38") ~ 28,
+          # Provinces with Huso 28 ok
           .data$province_code %in% c(
-            "01", "07", "08", "15", "17", "20", "25", "26", "27", "28",
-            "30", "32", "33", "36", "39", "43", "48", "02", "03", "04", "05",
-            "06", "09", "10", "11", "12", "13", "14", "16", "18", "19", "21",
-            "22", "23", "24", "29", "31", "34", "37", "40", "41", "42", "44",
-            "45", "46", "47", "49", "50"
+            "35", "38"
+          ) ~ 28,
+          # Provinces with Huso 29 ok
+          .data$province_code %in% c(
+            "15", "21", "32", "36"
+          ) ~ 29,
+          # Provinces with Huso 30 ok
+          .data$province_code %in% c(
+            "01", "02", "04", "05", "09", "13", "14", "16", "18", "19", "20",
+            "23", "26", "28", "29", "30", "31", "34", "40", "42", "45", "46",
+            "47", "48"
+          ) ~ 30,
+          # Provinces with Huso 31 ok
+          .data$province_code %in% c(
+            "07", "08", "17", "25", "43"
+          ) ~ 31,
+          # Provinces with mix of Huso 30 and 31
+          .data$province_code %in% c(
+            "03", "12", "22", "44", "50"
+          ) & .data$COORDEX < 5e+05 ~ 31,
+          .data$province_code %in% c(
+            "03", "12", "22", "44", "50"
+          ) & .data$COORDEX > 5e+05 ~ 30,
+          # Provinces with mix of Huso 30 and 29
+          .data$province_code %in% c(
+            "06", "10", "11", "24", "27", "37", "41", "49"
+          ) & .data$COORDEX < 5e+05 ~ 30,
+          .data$province_code %in% c(
+            "06", "10", "11", "24", "27", "37", "41", "49"
+          ) & .data$COORDEX > 5e+05 ~ 29,
+
+
+
+
+          .data$province_code %in% c(
+            "31", "33", "39"
           ) ~ 30
         ),
         COORD_SYS = dplyr::case_when(
@@ -897,7 +972,7 @@ ifn_plot_table_process <- function(
         ),
         crs = dplyr::case_when(
           .data$Huso == 30 & .data$COORD_SYS == "ED50" ~ 23030,
-          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 4326,
+          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 23031,
           .data$Huso == 29 & .data$COORD_SYS == "ED50" ~ 23029,
           .data$Huso == 30 & .data$COORD_SYS == "ETRS89" ~ 25830,
           .data$Huso == 31 & .data$COORD_SYS == "ETRS89" ~ 25831,
@@ -915,7 +990,7 @@ ifn_plot_table_process <- function(
       dplyr::select(dplyr::any_of(c(
         "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_name_original", "province_code",
         "PLOT", "YEAR", "version", "HOJA", "Huso", "COORDEX", "COORDEY", "COORD_SYS", "crs",
-        "PENDIEN2", "SLOPE", "ELEV", "ASPECT" # "soils"
+        "PENDIEN2", "SLOPE", "ELEV", "ASPECT", "coordx_orig", "coordy_orig" # "soils"
       )))
 
     return(info_plot)
@@ -1067,6 +1142,7 @@ ifn_plot_table_process <- function(
     ## join these two tables and we use plot and province code. There is only one
     ## set of coordinates by PLOT (estadillo), so any plots with the same PLOT but
     ## different classes have the same coordinates.
+    # browser()
     info_plot <- info_plot |>
       dplyr::left_join(
         y = coords_data |>
@@ -1081,9 +1157,45 @@ ifn_plot_table_process <- function(
       dplyr::filter(!is.na(.data$COORDEX)) |>
       dplyr::mutate(
         crs = dplyr::case_when(
+          # corrections per province
+          # provinces ok in 23031
+          province_code %in% c(
+            "07", "08", "17", "43"
+          ) & is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23031,
+          # provinces ok in 23029
+          province_code %in% c(
+            "15", "21", "32", "36"
+          ) & is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23029,
+          # provinces ok in 23028
+          province_code %in% c(
+            "35", "38"
+          ) & is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23028,
+          # Provinces with mix of Huso 30 and 31
+          .data$province_code %in% c(
+            "03", "12", "22", "25", "44", "50"
+          ) & .data$COORDEX < 5e+05 & is.na(.data$Huso) &
+          .data$COORD_SYS == "ED50" ~ 23031,
+          .data$province_code %in% c(
+            "03", "12", "22", "25", "44", "50"
+          ) & .data$COORDEX > 5e+05 & is.na(.data$Huso) &
+          .data$COORD_SYS == "ED50" ~ 23030,
+          # Provinces with mix of Huso 30 and 29
+          .data$province_code %in% c(
+            "06", "10", "11", "24", "27", "33", "37", "41", "49"
+          ) & .data$COORDEX < 5e+05 & is.na(.data$Huso) &
+          .data$COORD_SYS == "ED50" ~ 23030,
+          .data$province_code %in% c(
+            "06", "10", "11", "24", "27", "33", "37", "41", "49"
+          ) & .data$COORDEX > 5e+05 & is.na(.data$Huso) &
+          .data$COORD_SYS == "ED50" ~ 23029,
+            # Province 24, some unidentified plots are in Huso 29 in ifn4
+          province_code == "24" & .data$Huso == 29 &
+            .data$COORD_SYS == "ETRS89" & .data$COORDEX < 5e+05 ~ 25830,
+
+
           is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
           .data$Huso == 30 & .data$COORD_SYS == "ED50" ~ 23030,
-          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 4326,
+          .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 23031,
           .data$Huso == 29 & .data$COORD_SYS == "ED50" ~ 23029,
           .data$Huso == 30 & .data$COORD_SYS == "ETRS89" ~ 25830,
           .data$Huso == 31 & .data$COORD_SYS == "ETRS89" ~ 25831,
