@@ -990,10 +990,10 @@ ifn_plot_table_process <- function(
       dplyr::select(dplyr::any_of(c(
         "ID_UNIQUE_PLOT", "COUNTRY", "ca_name_original", "province_name_original", "province_code",
         "PLOT", "YEAR", "version", "HOJA", "Huso", "COORDEX", "COORDEY", "COORD_SYS", "crs",
-        "PENDIEN2", "SLOPE", "ELEV", "ASPECT", "coordx_orig", "coordy_orig" # "soils"
+        "PENDIEN2", "SLOPE", "ELEV", "ASPECT" #"coordx_orig", "coordy_orig" # "soils"
       )))
 
-    return(info_plot)
+    # return(info_plot)
   }
 
   if (version %in% c("ifn3", "ifn4")) {
@@ -1213,9 +1213,9 @@ ifn_plot_table_process <- function(
         ))
       )
 
-    return(info_plot)
+    # return(info_plot)
   }
 
-  # Return plot with soil
+  # Return plot info
   return(info_plot)
 }

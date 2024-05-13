@@ -80,3 +80,77 @@ show_plots_from(
     "IFN", folder = ifn_folder,
     provinces = "08", versions = c("ifn2", "ifn3", "ifn4")
   )
+
+# diagnostics plots
+# ifn2
+info_plot |>
+  dplyr::filter(!is.na(.data$ID_UNIQUE_PLOT)) |>
+  dplyr::select(
+    "ID_UNIQUE_PLOT", "version", "province_code",
+    "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY",
+    "coordx_orig", "coordy_orig"
+  ) |>
+  dplyr::mutate(
+    have_letter = stringr::str_detect(coordx_orig, "[A-Za-z]"),
+    letter_x = case_when(
+        !stringr::str_detect(coordx_orig, "[A-Za-z]") ~ "0",
+        stringr::str_detect(coordx_orig, "[Aa]") ~ "A",
+        stringr::str_detect(coordx_orig, "[Bb]") ~ "B",
+        stringr::str_detect(coordx_orig, "[Cc]") ~ "C",
+        stringr::str_detect(coordx_orig, "[Dd]") ~ "D",
+        stringr::str_detect(coordx_orig, "[Ee]") ~ "E",
+        TRUE ~ "Other"
+    ),
+    letter_y = case_when(
+        !stringr::str_detect(coordy_orig, "[A-Za-z]") ~ "0",
+        stringr::str_detect(coordy_orig, "[Aa]") ~ "A",
+        stringr::str_detect(coordy_orig, "[Bb]") ~ "B",
+        stringr::str_detect(coordy_orig, "[Cc]") ~ "C",
+        stringr::str_detect(coordy_orig, "[Dd]") ~ "D",
+        stringr::str_detect(coordy_orig, "[Ee]") ~ "E",
+        TRUE ~ "Other"
+    )
+  ) |>
+  dplyr::group_by(.data$crs) |>
+  dplyr::group_modify(
+    .f = \(crs_group, crs_code) {
+      crs_group |>
+        sf::st_as_sf(
+          coords = c("COORDEX", "COORDEY"),
+          crs = sf::st_crs(unique(crs_code[["crs"]]))
+        ) |>
+        sf::st_transform(crs = 4326)
+    }
+  ) |>
+  sf::st_as_sf() |>
+  ggplot() +
+  geom_sf(aes(color = letter_x, fill = as.character(crs)), shape = 21) +
+  geom_sf(data = province_polygons |> filter(province_code == unique(info_plot$province_code)), alpha = 0, linewidth = 2) +
+  # coord_sf(ylim = c(35, 39)) +
+  theme_minimal()
+
+# ifn3
+info_plot |>
+  dplyr::filter(!is.na(.data$ID_UNIQUE_PLOT)) |>
+  dplyr::select(
+    "ID_UNIQUE_PLOT", "version", "province_code",
+    "province_name_original", "PLOT", "crs", "COORDEX", "COORDEY"
+  ) |>
+  dplyr::group_by(.data$crs) |>
+  dplyr::group_modify(
+    .f = \(crs_group, crs_code) {
+      crs_group |>
+        sf::st_as_sf(
+          coords = c("COORDEX", "COORDEY"),
+          crs = sf::st_crs(unique(crs_code[["crs"]]))
+        ) |>
+        sf::st_transform(crs = 4326)
+    }
+  ) |>
+  sf::st_as_sf() |>
+  ggplot() +
+  geom_sf(aes(color = as.character(crs))) +
+  geom_sf(data = province_polygons |> filter(province_code == unique(info_plot$province_code)), alpha = 0, linewidth = 2) +
+  # coord_sf(ylim = c(-1e-04, 1e-04), xlim = c(-2, -1)) +
+  theme_minimal()
+
