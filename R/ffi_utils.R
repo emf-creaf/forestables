@@ -539,9 +539,9 @@ create_filter_list_ffi <- function(plots_info) {
 #   
   
   # Combinar los resultados en un solo data.table
-  output_combined <- data.table::rbindlist(output)
-  
-  output_combined <- dtplyr::lazy_dt(output_combined, immutable = TRUE)
-  
-  output_combined
-}
+#   output_combined <- data.table::rbindlist(output)
+#   
+#   output_combined <- dtplyr::lazy_dt(output_combined, immutable = TRUE)
+#   
+#   output_combined
+# }
