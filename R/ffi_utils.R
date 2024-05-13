@@ -471,77 +471,78 @@ create_filter_list_ffi <- function(plots_info) {
 #' @importFrom rlang `:=`
 #' @noRd
 
-# .extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
-#   
-#   browser()
-#   # ORIGINAL names
-#   vars_orig <- paste0(vars, "_ORIGINAL")
-#   
-#   data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
-#   
-#   output <- list()
-#   
-#   output_tibble <- tibble::tibble(
-#     PLOT = character(),  # Crear columna para almacenar el valor de PLOT
-#     YEAR = numeric(),    # Crear columna para almacenar el valor de YEAR
-#     across(vars, ~ character()),  # Crear columnas para las variables
-#     across(paste0(vars, "_ORIGINAL"), ~ character())  # Crear columnas para las variables originales
-#   )
-#   
-#   # Agrupar los datos por el valor de "PLOT"
-#   grouped_data <- data_processed |> 
-#     dplyr::group_by(PLOT) |> 
-#     as.data.table()
-#   
-# 
-#     # Loop para recorrer cada fila del dataframe filtrado
-#     for (i in 1:length(grouped_data)) {
-#       row <- dplyr::slice(grouped_data, i) 
-#       
-#       # Construir un tibble con los valores de la fila actual
-#       row_tibble <- tibble::tibble(
-#         "PLOT"  := row$PLOT,
-#         "YEAR" := year
-#       )
-#       
-#       # Loop para recorrer cada variable y extraer su valor más reciente
-#       for (var in vars) {
-#         var_orig <- paste0(var, "_ORIGINAL")
-#         
-#         # Valor más reciente de la variable
-#         var_value <- grouped_data |> 
-#           dplyr::filter(!.soil_mode | !is.na({{ var }})) |> 
-#           dplyr::filter(YEAR == min(grouped_data$YEAR, na.rm = TRUE)) |> 
-#           dplyr::pull({{ var }}) |> 
-#           unique()
-#         
-#         # Valor de la variable en el año consultado
-#         var_orig_value <- grouped_data |> 
-#           dplyr::filter(YEAR == year) |> 
-#           dplyr::pull({{ var }}) |> 
-#           unique()
-#         
-#         # Asignar NA si no se encuentra el valor
-#         if (length(var_orig_value) < 1) {
-#           var_orig_value <- NA
-#         }
-#         if (length(var_value) < 1) {
-#           var_value <- NA
-#         }
-#         
-#         row_tibble[[var]] <- var_value
-#         row_tibble[[var_orig]] <- var_orig_value
-#       }
-#       
-#       # Agregar el tibble al resultado
-#       output_tibble <- bind_rows(output_tibble, row_tibble)
-#     }
-#   
+.extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
+
+    browser()
+  data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
   
-  # Combinar los resultados en un solo data.table
-#   output_combined <- data.table::rbindlist(output)
-#   
-#   output_combined <- dtplyr::lazy_dt(output_combined, immutable = TRUE)
-#   
-#   output_combined
-# }
+  # ORIGINAL names
+  vars_orig <- paste0(vars, "_ORIGINAL")
+  
+  if (!("PLOT" %in% names(data_processed))) {
+    data_processed <- data_processed |>
+      dplyr::mutate(
+        PLOT = plot
+      )
+  }
+  
+  trees <-  as.character(data_processed$parent$TREE)
+  
+  
+  
+  output_tibble <- tibble::tibble(
+    PLOT = character(),
+    YEAR = numeric()
+  )
+  
+  for (tree in 1:length(trees)) {
+    row <- dplyr::slice(data_processed, tree)
+    
+    row_tibble <- tibble::tibble(
+      PLOT := plot,
+      YEAR := year
+    )
+    
+    for (var in vars) {
+      
+      browser()
+      var_orig <- paste0(var, "_ORIGINAL")
+      
+      filter_nas <- TRUE
+      if (!.soil_mode) {
+        filter_nas <- rlang::expr(!is.na({{ var }}))
+      }
+      
+      var_value <- data_processed |>
+        dplyr::filter(
+          {{ filter_nas }},
+          YEAR == min(.data$YEAR, na.rm = TRUE)
+        ) |>
+        dplyr::filter(.data$TREE == tree) |>
+        dplyr::pull({{ var }}) 
+      
+      var_orig_value <- data_processed |>
+        dplyr::filter(.data$YEAR == year) |>
+        dplyr::filter(.data$TREE == tree) |> 
+        dplyr::pull({{ var }}) 
+      
+      if (length(var_orig_value) < 1) {
+        var_orig_value <- rep(NA, length(var_orig_value))
+      }
+      
+      if (length(var_value) < 1) {
+        var_value <- rep(NA, length(var_value))
+      }
+      
+      row_tibble[[var]] <- var_value
+      row_tibble[[var_orig]] <- var_orig_value
+    }
+    
+    output_tibble <- dplyr::bind_rows(output_tibble, row_tibble)
+  }
+  
+  
+  # Convertir output_tibble a lazy_dt
+  output_combined <- lazy_dt(output_tibble, immutable = TRUE)
+  output_combined
+}

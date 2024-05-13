@@ -91,6 +91,7 @@ test_cdref <- test_metadonnees |>
 
 # growth_form_lignified_france comes from internal data
 test_growth_form_lignified_france <- growth_form_lignified_france
+
 #
 # # table functions -----------------------------------------------------------------------------
 test_that("ffi_plot_table_process works as intended", {
@@ -181,8 +182,11 @@ test_that("ffi_plot_table_process works as intended", {
 test_that("ffi_tree_table_process works as intended", {
 
   expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR", "SP_CODE",
-    "SP_NAME", "STATUS", "VEGET5", "DIA", "Height", "DENSITY"
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE","TREE_ORIGINAL", "ESPAR",
+    "ESPAR_ORIGINAL", "SP_CODE", "SP_CODE_ORIGINAL", "SP_NAME",
+    "SP_NAME_ORIGINAL", "STATUS", "STATUS_ORIGINAL",
+    "STATUS5", "STATUS5_ORIGINAL", "DIA", "DIA_ORIGINAL", "Height",
+    "Height_ORIGINAL", "DENSITY", "DENSITY_ORIGINAL" 
   )
 
   # object
@@ -543,6 +547,7 @@ test_that("ffi_tables_process works as intended", {
 })
 
 # ffi_to_tibble -------------------------------------------------------------------------------
+
 
 test_that("ffi_to_tibble works as intended", {
 
