@@ -182,7 +182,9 @@ ifn_tables_process <- function(
   # Create input df for year
   input_df <- .build_ifn_input_with(version, provinces, filter_list, folder, .verbose, .call)
 
-  # purrr::pmap(
+  ## Debugging needs purrr maps, as future maps are in other R processes and we
+  ## can't access the objects.
+  ## temp_res <- purrr::pmap(
   temp_res <- furrr::future_pmap(
     .progress = .verbose,
     .l = input_df,
@@ -191,8 +193,8 @@ ifn_tables_process <- function(
     ) {
 
       plot_info <- ifn_plot_table_process(
-          plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
-        )
+        plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
+      )
 
       redundant_vars <- c(
         "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_name_original",
@@ -503,7 +505,7 @@ ifn_shrub_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", 
-                    "SP_CODE","Height", "COVER")
+                    "SP_CODE", "Height", "COVER")
     # Return shrub
     return(shrub)
   }
@@ -835,8 +837,9 @@ ifn_plot_table_process <- function(
     plot_coord_fixed_data <- plot_filtered_data |>
       dplyr::filter(!is.na(.data$COORDEX), !is.na(.data$COORDEY)) |>
       dplyr:::mutate(
-        coordx_orig = COORDEX,
-        coordy_orig = COORDEY,
+        # debug vars, will be removed in the output object
+        coordx_orig = .data$COORDEX,
+        coordy_orig = .data$COORDEY,
         # corrections per province
         COORDEX = dplyr::case_when(
           # 03
