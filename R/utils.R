@@ -134,6 +134,7 @@ create_filter_list <- function(plots_info) {
   res <- plots_info |>
     inventory_function()
 
+  return(res)
 }
 
 #' Function to read inventory files
