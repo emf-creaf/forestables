@@ -364,14 +364,16 @@ ifn_filter_list <-
 #     })
 
 plan("multisession")
+tictoc::tic()
 ifn_data <- ifn_to_tibble(
   provinces = north_spain_provinces,
   versions = "ifn4",
   filter_list = ifn_filter_list,
   folder = ifn_folder
 )
+tictoc::toc()
 
-ifn_data |>
+density_map_ifn <- ifn_data |>
   esus:::clean_empty(c("tree", "regen")) |>
   esus:::inventory_as_sf() |>
   # dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
@@ -396,9 +398,10 @@ ifn_data |>
   ) |>
   dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
-  dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 150, DENSITY < 300) |>
-  # dplyr::left_join(as_tibble(north_spain_map), by = c("STATEAB" = "dep_code")) |>
+  dplyr::mutate(n = n())
+
+density_map_ifn |>
+  dplyr::filter(n > 85) |>
   ggplot() +
   geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
