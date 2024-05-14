@@ -348,7 +348,7 @@ north_spain_map <- ne_states(country = "spain") |>
 
 ggplot(north_spain_map) +
   geom_sf() +
-  geom_sf(aes(color = province_name_original, alpha = 0.1), data = north_spain_plots) +
+  geom_sf(aes(color = province_name_original), data = north_spain_plots, alpha = 0.1) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 
 ifn_filter_list <-
@@ -365,16 +365,16 @@ ifn_filter_list <-
 
 plan("multisession")
 ifn_data <- ifn_to_tibble(
-  provinces = north_spain_provinces[1],
+  provinces = north_spain_provinces,
   versions = "ifn4",
-  filter_list = ifn_filter_list[3],
+  filter_list = ifn_filter_list,
   folder = ifn_folder
 )
 
 ifn_data |>
   dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
   dplyr::group_by(crs) |>
-  dplyr::group_map(
+  dplyr::group_modify(
     .f = \(crs_subset, crs) {
       sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
         sf::st_transform(crs = 4326) |>
@@ -382,8 +382,8 @@ ifn_data |>
     }
   ) |>
   # dplyr::bind_rows() |>
-  magrittr::extract2(2) |>
-  as_tibble() |>
+  # magrittr::extract2(2) |>
+  # as_tibble() |>
   tidyr::unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(

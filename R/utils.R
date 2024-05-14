@@ -218,3 +218,33 @@ create_filter_list <- function(plots_info) {
   # debugging cli::cli_inform(c("#####DEBUG#####", "v" = "{.emph {cmd}} found in {.envvar PATH}"))
   return(invisible(TRUE))
 }
+
+#' Cleaning empty results
+#'
+#' Cleaning inventory results to filter out empty data
+#'
+#' This functions remove plot rows with empty data in the desired
+#' nested columns
+#' 
+#' @param inventory_data Data from an inventory as obtained from
+#'   \code{\link{ifn_to_tibble}}, \code{\link{fia_to_tibble}} or
+#'   \code{\link{ffi_to_tibble}}.
+#' @param cols vector with column names to clean from empty
+#'   results. Can be one or more of \code{"tree"},
+#'   \code{"understory"} and \code{"regen"}. If more than one,
+#'   only plots with data in all columns selected will be
+#'   retained.
+#' 
+#' @return A tibble the same as \code{inventory_data} with the
+#'   empty data removed for the columns selected.
+#' 
+#' @noRd
+clean_empty <- function(inventory_data, cols) {
+  inventory_data |>
+    dplyr::filter(
+      dplyr::if_all(
+        dplyr::contains(cols),
+        ~ !purrr::map_lgl(.x, rlang::is_empty)
+      )
+    )
+}
