@@ -11,6 +11,13 @@
 #'   \code{"ifn3"} and \code{"ifn4"}.
 #' @param filter_list A list of provinces and plots to extract the data from.
 #' @param folder The path to the folder containing the IFN db files, as character.
+#' @param clean_empty Vector with column names from where to remove empty
+#'   results. Can be one or more of \code{"tree"},
+#'   \code{"understory"} and \code{"regen"}. If more than one,
+#'   only plots with data in all columns selected will be
+#'   retained.
+#' @param as_sf Logical indicating if the data must be returned as an spatial object. This always
+#'   can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.
 #' @param ... Not used at the moment
 #' @param .parallel_options An object of class \code{furrr_options}. See
 #'   \code{\link[furrr]{furrr_options}}.
@@ -56,6 +63,8 @@ ifn_to_tibble <- function(
   versions,
   filter_list,
   folder,
+  clean_empty = NULL,
+  as_sf = FALSE,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
@@ -150,7 +159,7 @@ ifn_to_tibble <- function(
   # get the caller environment to propagate errors
   .call <- rlang::caller_env(0)
   # send the versions in loop to process table function
-  purrr::map(
+  inventory_data <- purrr::map(
     versions,
     .f = \(version) {
       ifn_tables_process(
@@ -159,7 +168,15 @@ ifn_to_tibble <- function(
     },
     .progress = FALSE
   ) |>
-    purrr::list_rbind()
+    purrr::list_rbind() |>
+    clean_empty(clean_empty)
+  
+  if (isTRUE(as_sf)) {
+    inventory_data <- inventory_data |>
+      inventory_as_sf()
+  }
+
+  return(inventory_data)
 }
 
 #' Inner function to process all tables for one version

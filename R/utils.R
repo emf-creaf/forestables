@@ -240,6 +240,11 @@ create_filter_list <- function(plots_info) {
 #' 
 #' @noRd
 clean_empty <- function(inventory_data, cols) {
+
+  if (is.null(cols)) {
+    return(inventory_data)
+  }
+
   inventory_data |>
     dplyr::filter(
       dplyr::if_all(
