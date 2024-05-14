@@ -372,19 +372,22 @@ ifn_data <- ifn_to_tibble(
 )
 
 ifn_data |>
-  dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
-  dplyr::group_by(crs) |>
-  dplyr::group_modify(
-    .f = \(crs_subset, crs) {
-      sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
-        sf::st_transform(crs = 4326) |>
-        dplyr::mutate(crs_orig = crs$crs)
-    }
-  ) |>
+  esus:::clean_empty(c("tree", "regen")) |>
+  esus:::inventory_as_sf() |>
+  # dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
+  # dplyr::group_by(crs) |>
+  # dplyr::group_modify(
+  #   .f = \(crs_subset, crs) {
+  #     sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
+  #       sf::st_transform(crs = 4326) |>
+  #       dplyr::mutate(crs_orig = crs$crs)
+  #   }
+  # ) |>
   # dplyr::bind_rows() |>
   # magrittr::extract2(2) |>
   # as_tibble() |>
-  tidyr::unnest("tree") |>
+  unnest("tree") |>
+  dplyr::filter(!is.na(SP_NAME)) |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(
     DENSITY = mean(DENSITY, na.rm = TRUE),
