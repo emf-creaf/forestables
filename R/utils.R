@@ -248,3 +248,30 @@ clean_empty <- function(inventory_data, cols) {
       )
     )
 }
+
+#' Convert inventory data to sf based on coords and crs present
+#' 
+#' Use coords vars and crs to convert to sf
+#' 
+#' @param inventory_data Data from an inventory as obtained from
+#'   \code{\link{ifn_to_tibble}}, \code{\link{fia_to_tibble}} or
+#'   \code{\link{ffi_to_tibble}}.
+#' 
+#' @return An sf object with the same data as \code{inventory_data}
+#'   and a new column with the original crs for traceability.
+#' 
+#' @noRd
+inventory_as_sf <- function(inventory_data) {
+  inventory_data |>
+    dplyr::group_by(crs) |>
+    dplyr::group_modify(
+      .f = \(crs_subset, crs) {
+        sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
+          sf::st_transform(crs = 4326) |>
+          dplyr::mutate(crs_orig = crs$crs)
+      }
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(crs = 4326) |>
+    sf::st_as_sf()
+}
