@@ -238,7 +238,7 @@ create_filter_list <- function(plots_info) {
 #' @return A tibble the same as \code{inventory_data} with the
 #'   empty data removed for the columns selected.
 #' 
-#' @noRd
+#' @export
 clean_empty <- function(inventory_data, cols) {
 
   if (is.null(cols)) {
@@ -265,7 +265,7 @@ clean_empty <- function(inventory_data, cols) {
 #' @return An sf object with the same data as \code{inventory_data}
 #'   and a new column with the original crs for traceability.
 #' 
-#' @noRd
+#' @export
 inventory_as_sf <- function(inventory_data) {
   inventory_data |>
     dplyr::group_by(crs) |>
