@@ -575,7 +575,6 @@ ffi_tree_table_process <- function(
     header = TRUE
   )
   
-
   # we filter the data for plot/year and status (alive)????
   tree_filtered_data <- tree_raw_data |>
     dplyr::filter(
@@ -593,7 +592,7 @@ ffi_tree_table_process <- function(
     ), call = .call)
     return(dplyr::tibble())
   }
-
+ # browser()
   #IMPORTANT do NOT change this!!!!!!!!!!
   # we need to get all data first to fill missing values of known var 
   #filter per year is done at the end
@@ -656,24 +655,25 @@ ffi_tree_table_process <- function(
     # #THIS MUST BE DONE AT THE END
     # dplyr::filter(.data$YEAR == year)
 
-    data.table::as.data.table() |>
     #arrange by year descending to apply extract ffi metadata: two var last record and original
     dplyr::arrange(desc(.data$YEAR)) |>
     # #espar var will appear empty "" in the revisited plots , we first convert to NA
      dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
     #there might be more than 1 record
     dplyr::distinct() |>
-    .extract_ffi_tree_metadata(
-      c("ID_UNIQUE_PLOT", "DEP",  "TREE", "ESPAR", "SP_CODE", "SP_NAME",
-        "STATUS","STATUS5", "DIA", "Height", "DENSITY"),
-      plot,
-      year,
-      .soil_mode = TRUE
-    ) |>
+    data.table::as.data.table() |>
+  
+    dplyr::group_by(.data$PLOT, .data$YEAR, .data$TREE) |> 
+    dplyr::group_split() |> 
+    purrr::map(~ .extract_ffi_metadata(data_processed = .x, vars =  c("ID_UNIQUE_PLOT", "DEP",  "TREE", "ESPAR", "SP_CODE", "SP_NAME",
+                                                                       "STATUS","STATUS5", "DIA", "Height", "DENSITY")
+                                                                      , plot = .x$PLOT[1], year = .x$YEAR[1], .soil_mode = TRUE)) |> 
+    lapply(function(x) x$parent) |>   # Extraer los data frames del atributo parent
+    dplyr::bind_rows() |> 
     dplyr::mutate(
-      PLOT  = plot, YEAR  = year
-      ) |>
-    
+      PLOT = plot,
+      YEAR = year
+    ) |> 
     dplyr::select(
       "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE","TREE_ORIGINAL", "ESPAR",
       "ESPAR_ORIGINAL", "SP_CODE", "SP_CODE_ORIGINAL", "SP_NAME",
@@ -681,8 +681,7 @@ ffi_tree_table_process <- function(
       "STATUS5", "STATUS5_ORIGINAL", "DIA", "DIA_ORIGINAL", "Height",
       "Height_ORIGINAL", "DENSITY", "DENSITY_ORIGINAL" 
       
-    ) |> 
-    dplyr::as_tibble()
+    )
 
   
   
