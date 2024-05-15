@@ -134,6 +134,7 @@ create_filter_list <- function(plots_info) {
   res <- plots_info |>
     inventory_function()
 
+  return(res)
 }
 
 #' Function to read inventory files
@@ -216,4 +217,96 @@ create_filter_list <- function(plots_info) {
   # This is some cli for
   # debugging cli::cli_inform(c("#####DEBUG#####", "v" = "{.emph {cmd}} found in {.envvar PATH}"))
   return(invisible(TRUE))
+}
+
+#' Cleaning empty results
+#'
+#' Cleaning inventory results to filter out empty data
+#'
+#' This functions remove plot rows with empty data in the desired
+#' nested columns
+#' 
+#' @param inventory_data Data from an inventory as obtained from
+#'   \code{\link{ifn_to_tibble}}, \code{\link{fia_to_tibble}} or
+#'   \code{\link{ffi_to_tibble}}.
+#' @param cols vector with column names to clean from empty
+#'   results. Can be one or more of \code{"tree"},
+#'   \code{"understory"} and \code{"regen"}. If more than one,
+#'   only plots with data in all columns selected will be
+#'   retained.
+#' 
+#' @return A tibble the same as \code{inventory_data} with the
+#'   empty data removed for the columns selected.
+#' 
+#' @export
+clean_empty <- function(inventory_data, cols) {
+
+  ## assertions
+  # inventory_data has the necessary columns
+  assertthat::assert_that(
+    assertthat::has_name(inventory_data, "tree"),
+    assertthat::has_name(inventory_data, "regen"),
+    assertthat::has_name(inventory_data, "understory"),
+    msg = cli::cli_abort(
+      "{.arg inventory_data} must have columns for tree, regen and understory data"
+    )
+  )
+  # cols
+  assertthat::assert_that(
+    is.null(cols) || all(cols %in% c("tree", "regen", "understory")),
+    msg = cli::cli_abort(
+      "{.arg cols} must be one or more of 'tree', 'regen' or 'understory'"
+    )
+  )
+
+  if (is.null(cols)) {
+    return(inventory_data)
+  }
+
+  inventory_data |>
+    dplyr::filter(
+      dplyr::if_all(
+        dplyr::contains(cols),
+        ~ !purrr::map_lgl(.x, rlang::is_empty)
+      )
+    )
+}
+
+#' Convert inventory data to sf based on coords and crs present
+#' 
+#' Use coords vars and crs to convert to sf
+#' 
+#' @param inventory_data Data from an inventory as obtained from
+#'   \code{\link{ifn_to_tibble}}, \code{\link{fia_to_tibble}} or
+#'   \code{\link{ffi_to_tibble}}.
+#' 
+#' @return An sf object with the same data as \code{inventory_data}
+#'   and a new column with the original crs for traceability.
+#' 
+#' @export
+inventory_as_sf <- function(inventory_data) {
+  
+  ## assertions
+  # inventory_data has the necessary columns
+  assertthat::assert_that(
+    assertthat::has_name(inventory_data, "COORD1"),
+    assertthat::has_name(inventory_data, "COORD2"),
+    assertthat::has_name(inventory_data, "crs"),
+    msg = cli::cli_abort(
+      "{.arg inventory_data} must have columns for coordinates and crs"
+    )
+  )
+
+  inventory_data |>
+    dplyr::group_by(crs) |>
+    dplyr::group_modify(
+      .f = \(crs_subset, crs) {
+        sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
+          sf::st_transform(crs = 4326) |>
+          dplyr::mutate(crs_orig = crs$crs)
+      }
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(crs = 4326) |>
+    sf::st_as_sf()
 }

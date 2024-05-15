@@ -13,6 +13,13 @@
 #'   If left \code{NULL} all plots for the state for all years will be extracted, which can use a
 #'   big amount of memory. See details.
 #' @param folder The path to the folder containing the FIA csv files, as character.
+#' @param clean_empty Vector with column names from where to remove empty
+#'   results. Can be one or more of \code{"tree"},
+#'   \code{"understory"} and \code{"regen"}. If more than one,
+#'   only plots with data in all columns selected will be
+#'   retained.
+#' @param as_sf Logical indicating if the data must be returned as an spatial object. This always
+#'   can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.
 #' @param ... Not used at the moment
 #' @param .parallel_options An object of class \code{furrr_options}. See
 #'   \code{\link[furrr]{furrr_options}}.
@@ -58,6 +65,8 @@ fia_to_tibble <- function(
   states,
   filter_list = NULL,
   folder,
+  clean_empty = NULL,
+  as_sf = FALSE,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
@@ -157,7 +166,7 @@ fia_to_tibble <- function(
   # get the caller environment to propagate errors
   .call <- rlang::caller_env(0)
   ## send the years in loop to process table function
-  purrr::map(
+  inventory_data <- purrr::map(
     years,
     .f = \(year) {
       fia_tables_process(
@@ -168,7 +177,15 @@ fia_to_tibble <- function(
     },
     .progress = FALSE
   ) |>
-    purrr::list_rbind()
+    purrr::list_rbind() |>
+    clean_empty(clean_empty)
+  
+  if (isTRUE(as_sf)) {
+    inventory_data <- inventory_data |>
+      inventory_as_sf()
+  }
+
+  return(inventory_data)
 }
 
 

@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -18,16 +18,16 @@ knitr::opts_chunk$set(
 
 # Setup
 
-```{r setup}
+```{r doc_setup, include = FALSE}
 # libraries
 library(esus)
-library(sf)
 library(dplyr)
 library(rnaturalearth)
+library(sf)
 library(ggplot2)
 library(stringr)
-library(furrr)
-library(future)
+# library(furrr)
+# library(future)
 
 # paths
 ffi_folder <- Sys.getenv("ffi_path")
@@ -35,53 +35,110 @@ fia_folder <- Sys.getenv("fia_path")
 ifn_folder <- Sys.getenv("ifn_path")
 ```
 
+This vignette explains how to retrieve information about available inventory plots
+and using it to select them based to use in modelling or analyses.
 
-## FFI example
+Workflows with all three inventories (FFI, FIA and IFN) are shown below
 
-```{r ffi_selection}
+
+## FFI workflow
+
+For the French forest inventory (FFI), we are gonna select all mediterranean plots
+sampled in 2012. First step is to select de departments the plots we want are in.
+
+```{r ffi_mediterranean_deps, eval = FALSE}
 # choose the departments, those in the mediterranean area
-mediterranean_deps <- c("66", "11", "34", "30", "13", "84", "04", "83", "06")
+mediterranean_deps <- c(
+  "04", "06", "11", "13", "30",
+  "34", "66", "83", "84"
+)
+```
+
+Now we can use the department codes to obtain some basic metadata (plot codes,
+coordinates and campaign year) with `show_plots_from()`.
+For this we need the inventory we want plots from, the folder containing the
+downloaded inventory files and a vector with the department codes (as created
+above):
+
+```{r ffi_selection, eval = FALSE}
 # get the plots for those departments
-mediterranean_plots <- show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) 
+mediterranean_plots <- show_plots_from(
+  inventory = "FFI",
+  folder = ffi_folder,
+  departments = mediterranean_deps
+)
 mediterranean_plots
 ```
 
+These are all the plots present in those departments for all
+years, but we want 2012 plots, so we filter the results by campaign year:
 
-```{r plots_visualization}
+```{r ffi_selection_2012, eval = FALSE}
+mediterranean_plots_2012 <- mediterranean_plots |>
+  filter(CAMPAGNE == 2012)
+mediterranean_plots_2012
+```
+
+Also, we need a the polygons for the departments for plotting results later.
+To obtain them, we are gonna use the [`rnaturalearth`]() R package:
+
+```{r ffi_department_polygons, eval = FALSE}
 # france map for plotting
-france_map <- ne_states(geounit = "france") |>
+south_france_map <- ne_states(geounit = "france") |>
   select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
   mutate(dep_code = str_remove(dep_code, "FR-")) |>
   filter(dep_code %in% mediterranean_deps)
+south_france_map
+```
 
-ggplot(france_map) +
-  geom_sf() +
-  geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots) +
-  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+Now we can visualize the plots selected:
 
-mediterranean_plots_2012 <- mediterranean_plots |>
-  filter(CAMPAGNE == 2012)
-
-ggplot(france_map) +
+```{r ffi_plots_loc, eval = FALSE}
+ggplot(south_france_map) +
   geom_sf() +
   geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+```
 
-filter_list_2012 <-
-  show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) |>
-  filter(CAMPAGNE == 2012) |>
+Seems like we have the plots we need, so we are going to create a *filter list*
+to use it to retrieve those plots data from the inventory files:
+
+```{r ffi_filter_list_creation, eval = FALSE}
+ffi_filter_list <- mediterranean_plots_2012 |>
   create_filter_list()
 
+## we can do all in one pipe:
+# ffi_filter_list <-
+#   show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) |>
+#   filter(CAMPAGNE == 2012) |>
+#   create_filter_list()
+```
 
-plan("multisession")
-data_2012 <- ffi_to_tibble(
+And we are ready for retrieving the data from the plots with `ffi_to_tibble()`. For
+that we need the department codes, the year, the filter list we obtained before and
+the path to the folder containing the inventory files.
+
+```{r ffi_data_2012, eval = FALSE}
+## We can parallelize the process with the future package.
+## In this case we use 4 parallel processes
+library(future)
+plan("multisession", workers = 4)
+
+# get the data for the selected plots
+ffi_data_2012 <- ffi_to_tibble(
   departments = mediterranean_deps,
   years = 2012,
-  filter_list = filter_list_2012,
+  filter_list = ffi_filter_list,
   folder = ffi_folder
 )
 
-data_2012 |>
+ffi_data_2012
+```
+
+
+
+```{r, eval = FALSE}
+ffi_data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
   sf::st_transform(crs = 4326) |>
@@ -94,22 +151,22 @@ data_2012 |>
   dplyr::filter(n > 25, DENSITY < 300) |>
   dplyr::left_join(as_tibble(france_map), by = c("DEP" = "dep_code")) |>
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~ SP_NAME) +
+  facet_wrap(~SP_NAME) +
   theme_minimal()
 ```
 
 
 ### FFI Tree diagnostics
 
-```{r tree_diagnostics}
+```{r tree_diagnostics, eval = FALSE}
 # understory
 data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs= 4326) |>
+  sf::st_transform(crs = 4326) |>
   tidyr::unnest(understory, names_sep = "_") |>
   tidyr::unnest(understory_herbs, names_sep = "_") |>
   ggplot() +
@@ -121,7 +178,7 @@ data_2012 |>
 data_clean_2012 <- data_2012 |>
   dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
   sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs= 4326)
+  sf::st_transform(crs = 4326)
 
 na_in_diameter_index <- purrr::map_lgl(
   seq_len(nrow(data_clean_2012)),
@@ -159,7 +216,7 @@ na_in_ht_index <- purrr::map_lgl(
   }
 )
 
-na_in_sp_name_index <-  purrr::map_lgl(
+na_in_sp_name_index <- purrr::map_lgl(
   seq_len(nrow(data_clean_2012)),
   .f = \(i) {
     data_clean_2012 |>
@@ -172,7 +229,8 @@ na_in_sp_name_index <-  purrr::map_lgl(
 )
 
 identical(na_in_diameter_index, na_in_ht_index)
-sum(na_in_diameter_index); sum(na_in_ht_index)
+sum(na_in_diameter_index)
+sum(na_in_ht_index)
 sum(na_in_sp_name_index)
 
 
@@ -180,125 +238,92 @@ data_clean_2012 |>
   tidyr::unnest(tree, names_sep = "_")
 ```
 
-### FFI benchmarking
+## FIA workflow
 
-From previous benchmarks, grep still is the better option, even if there is no cache for files
-read.
+For the USA forest inventory (FIA) we are going to explore the west coast
+inventory plot for 2012. The steps are very similar to the FFI example. First we
+need the state codes, retrieve the plots metadata for those states and filter for
+the desired year, 2012:
 
-This bechmark finds the better configuration of paralellization for the example data set
-
-```{r ffi_bench, eval=FALSE}
-plan("multisession")
-ffi_to_tibble_benchmark <- bench::mark(
-  sche_2 = ffi_to_tibble(
-    departments = mediterranean_deps,
-    years = 2012,
-    filter_list = filter_list_2012,
-    folder = ffi_folder,
-    .parallel_options = furrr_options(scheduling = 1L), .verbose = TRUE
-  ),
-  sche_1 = ffi_to_tibble(
-    departments = mediterranean_deps,
-    years = 2012,
-    filter_list = filter_list_2012,
-    folder = ffi_folder,
-    .parallel_options = furrr_options(scheduling = 1L), .verbose = TRUE
-  ),
-  chunk_300 = ffi_to_tibble(
-    departments = mediterranean_deps,
-    years = 2012,
-    filter_list = filter_list_2012,
-    folder = ffi_folder,
-    .parallel_options = furrr_options(chunk_size = 300L), .verbose = TRUE
-  ),
-  chunk_100 = ffi_to_tibble(
-    departments = mediterranean_deps,
-    years = 2012,
-    filter_list = filter_list_2012,
-    folder = ffi_folder,
-    .parallel_options = furrr_options(chunk_size = 100L), .verbose = TRUE
-  ),
-  min_time = Inf, iterations = 3
-)
-saveRDS(
-  ffi_to_tibble_benchmark,
-  file = paste0("data-raw/benchmarking/ffi_to_tibble_", Sys.Date(), ".rds")
-)
-
-ffi_to_tibble_benchmark
-```
-
-Seems like the best is around chunk 100, but the standard, scheduling 1 is also good. No big
-differences between parallelization strategies.
-
-
-## FIA
-
-```{r fia_selection}
+```{r fia_west_coast_states}
 # choose the departments, those in the mediterranean area
 west_coast_states <- c("WA", "CA", "OR")
 # get the plots for those departments
-west_coast_plots <- show_plots_from("FIA", folder = fia_folder, states = west_coast_states) 
-west_coast_plots
+west_coast_plots_2012 <- show_plots_from(
+  inventory = "FIA",
+  folder = fia_folder,
+  states = west_coast_states
+) |>
+  filter(INVYR == 2012)
+west_coast_plots_2012
 ```
 
+Also, if we obtain the states polygons with the `rnaturalearth` library, we
+can visualize the plots:
 
-```{r fia_plots_visualization}
-# france map for plotting
+```{r fia_states_polygons}
+# USA map for plotting
 west_coast_map <- ne_states(geounit = "United States of America") |>
-  select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
-  mutate(dep_code = str_remove(dep_code, "US-")) |>
-  filter(dep_code %in% west_coast_states)
-
-ggplot(west_coast_map) +
-  geom_sf() +
-  geom_sf(aes(color = STATEAB, alpha = 0.1), data = west_coast_plots) +
-  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
-
-west_coast_plots_2012 <- west_coast_plots |>
-  filter(INVYR == 2012)
+  select(state_code = "iso_3166_2", state_name = "gn_name") |>
+  mutate(state_code = str_remove(state_code, "US-")) |>
+  filter(state_code %in% west_coast_states)
 
 ggplot(west_coast_map) +
   geom_sf() +
   geom_sf(aes(color = STATEAB, alpha = 0.1), data = west_coast_plots_2012) +
-  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+  scale_color_manual(values = hcl.colors(3, palette = "Zissou 1"))
+```
 
-fia_filter_list_2012 <-
-  show_plots_from("FIA", folder = fia_folder, states = west_coast_states) |>
-  filter(INVYR == 2012) |>
+Now that we have the inventory plots selected, we can obtain the *filter list*
+to retrieve the data only from those plots:
+
+```{r fia_filter_list}
+fia_filter_list <- west_coast_plots_2012 |>
   create_filter_list()
 
-# fia_filter_list_2012 <- fia_filter_list_2012 |>
-#     purrr::map_depth(.depth = 2, .f = \(x) {
-#       sample(x, 5, replace = TRUE) |> unique()
-#     })
+## we can do all in one pipe:
+# fia_filter_list <-
+#   show_plots_from("FIA", folder = fia_folder, states = west_coast_states) |>
+#   filter(INVYR == 2012) |>
+#   create_filter_list()
+```
 
-plan("multisession")
+And now we have everything we need for retrieving the data with
+`fia_to_tibble()`. For that we need the state codes, the year, the filter list
+we obtained before and the path to the folder containing the inventory files.
+
+```{r fia_data_2012}
+## We can parallelize the process with the future package.
+## In this case we use 4 parallel processes
+library(future)
+plan("multisession", workers = 4)
+
+# get the data
 fia_data_2012 <- fia_to_tibble(
   states = west_coast_states,
   years = 2012,
-  filter_list = fia_filter_list_2012,
+  filter_list = fia_filter_list,
   folder = fia_folder
 )
+```
 
+```{r, eval = FALSE}
 fia_data_2012 |>
-  dplyr::filter(!purrr::map_lgl(fia_data_2012$tree, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
-  sf::st_transform(crs = 4326) |>
-  as_tibble() |>
-  tidyr::unnest("tree") |>
+  clean_empty(c("tree", "regen")) |>
+  inventory_as_sf() |>
+  unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
   dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 200, DENSITY < 300) |>
-  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
+  dplyr::filter(n > 100) |>
+  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "state_code")) |>
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~ SP_NAME) +
+  facet_wrap(~SP_NAME) +
   theme_minimal()
 
 fia_data_2012 |>
@@ -315,22 +340,23 @@ fia_data_2012 |>
   dplyr::filter(n > 100, DENSITY < 300) |>
   dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~ SP_NAME) +
+  facet_wrap(~SP_NAME) +
   theme_minimal()
 ```
 
 
-## IFN
+## IFN workflow
 
 ```{r ifn_selection}
 # choose the departments, those in the mediterranean area
 north_spain_provinces <- c("24", "33", "15", "27", "39", "48", "20")
 # get the plots for those departments
 north_spain_plots <- show_plots_from(
-  "IFN", folder = ifn_folder,
+  "IFN",
+  folder = ifn_folder,
   provinces = north_spain_provinces, versions = "ifn4"
 )
 north_spain_plots
@@ -348,12 +374,13 @@ north_spain_map <- ne_states(country = "spain") |>
 
 ggplot(north_spain_map) +
   geom_sf() +
-  geom_sf(aes(color = province_name_original, alpha = 0.1), data = north_spain_plots) +
+  geom_sf(aes(color = province_name_original), data = north_spain_plots, alpha = 0.1) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 
 ifn_filter_list <-
   show_plots_from(
-    "IFN", folder = ifn_folder,
+    "IFN",
+    folder = ifn_folder,
     provinces = north_spain_provinces, versions = "ifn4"
   ) |>
   create_filter_list()
@@ -364,27 +391,32 @@ ifn_filter_list <-
 #     })
 
 plan("multisession")
+tictoc::tic()
 ifn_data <- ifn_to_tibble(
-  provinces = north_spain_provinces[1],
+  provinces = north_spain_provinces,
   versions = "ifn4",
-  filter_list = ifn_filter_list[3],
+  filter_list = ifn_filter_list,
   folder = ifn_folder
 )
+tictoc::toc()
 
-ifn_data |>
-  dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
-  dplyr::group_by(crs) |>
-  dplyr::group_map(
-    .f = \(crs_subset, crs) {
-      sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
-        sf::st_transform(crs = 4326) |>
-        dplyr::mutate(crs_orig = crs$crs)
-    }
-  ) |>
+density_map_ifn <- ifn_data |>
+  esus:::clean_empty(c("tree", "regen")) |>
+  esus:::inventory_as_sf() |>
+  # dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
+  # dplyr::group_by(crs) |>
+  # dplyr::group_modify(
+  #   .f = \(crs_subset, crs) {
+  #     sf::st_as_sf(crs_subset, coords = c("COORD1", "COORD2"), crs = unique(crs$crs)) |>
+  #       sf::st_transform(crs = 4326) |>
+  #       dplyr::mutate(crs_orig = crs$crs)
+  #   }
+  # ) |>
   # dplyr::bind_rows() |>
-  magrittr::extract2(2) |>
-  as_tibble() |>
-  tidyr::unnest("tree") |>
+  # magrittr::extract2(2) |>
+  # as_tibble() |>
+  unnest("tree") |>
+  dplyr::filter(!is.na(SP_NAME)) |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(
     DENSITY = mean(DENSITY, na.rm = TRUE),
@@ -393,14 +425,15 @@ ifn_data |>
   ) |>
   dplyr::filter(!is.nan(DENSITY)) |>
   dplyr::group_by(SP_NAME) |>
-  dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 150, DENSITY < 300) |>
-  # dplyr::left_join(as_tibble(north_spain_map), by = c("STATEAB" = "dep_code")) |>
+  dplyr::mutate(n = n())
+
+density_map_ifn |>
+  dplyr::filter(n > 85) |>
   ggplot() +
   geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~ SP_NAME) +
+  facet_wrap(~SP_NAME) +
   theme_minimal()
 
 ifn_data |>
@@ -417,9 +450,9 @@ ifn_data |>
   dplyr::filter(n > 100, DENSITY < 300) |>
   dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[,c("geometry.y")]), alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~ SP_NAME) +
+  facet_wrap(~SP_NAME) +
   theme_minimal()
 ```

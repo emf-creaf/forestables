@@ -586,6 +586,29 @@ test_that("ffi_to_tibble works as intended", {
   # for plot revisited after 5 year check that species name appear
   expect_identical(!is.na(test_res[["tree"]][[60]]$SP_NAME), rep(TRUE, 24))
 
+  # tests for clean_empty and as_sf arguments
+  sf_expected_names <- c(
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
+    "COORD1_ORIGINAL", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
+    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen",
+    "geometry", "crs_orig"
+    # "soils"
+  )
+  expect_s3_class(
+    sf_res <- suppressWarnings(ffi_to_tibble(
+      test_departments, test_years, test_plots, test_folder,
+      as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "sf"
+  )
+
+  expect_named(sf_res, sf_expected_names, ignore.order = TRUE)
+  expect_true(nrow(sf_res) < nrow(test_res))
+  expect_false(any(purrr::map_lgl(sf_res$tree, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
 
   ### test all assertions done in fia_to_tibble
   # departments

@@ -1471,31 +1471,10 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
 
   # tests data
   expected_names <- c(
-    "ID_UNIQUE_PLOT",
-    "COUNTRY",
-    "YEAR",
-    "ca_name_original",
-    "province_name_original",
-    "province_code",
-    "PLOT",
-    "version",
-    "HOJA",
-    "Huso",
-    "COORD_SYS",
-    "COORD1",
-    "COORD2",
-    "crs",
-    "PENDIEN2",
-    "SLOPE",
-    "ELEV",
-    "ASPECT",
-    "tree",
-    "understory",
-    "regen",
-    "Cla",
-    "Subclase",
-    "Tipo"
-    # "soils"
+    "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_name_original",
+    "province_code", "PLOT", "version", "HOJA", "Huso", "COORD_SYS", "COORD1", "COORD2",
+    "crs", "PENDIEN2", "SLOPE", "ELEV", "ASPECT", "tree", "understory", "regen",
+    "Cla", "Subclase", "Tipo"
   )
 
   # object
@@ -1517,6 +1496,29 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   )
   expect_true(all(unique(test_ifn234_res$province_code) %in% names(test_ifn234_plots)))
   expect_true(all(unique(test_ifn234_res$version) %in% test_ifn234_versions))
+
+  # tests for clean_empty and as_sf arguments
+  sf_expected_names <- c(
+    "ID_UNIQUE_PLOT", "COUNTRY", "YEAR", "ca_name_original", "province_name_original", "province_code",
+    "PLOT", "version", "HOJA", "Huso", "COORD_SYS", "crs", "PENDIEN2", "SLOPE", "ELEV", "ASPECT", "tree",
+    "understory", "regen", "Cla", "Subclase", "Tipo", "geometry", "crs_orig"
+    # "soils"
+  )
+  expect_s3_class(
+    sf_res <- suppressWarnings(ifn_to_tibble(
+      test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
+      as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
+      .parallel_options = test_ifn234_parallel_conf,
+      .verbose = FALSE
+    )),
+    "sf"
+  )
+
+  expect_named(sf_res, sf_expected_names, ignore.order = TRUE)
+  expect_true(nrow(sf_res) < nrow(test_ifn234_res))
+  expect_false(any(purrr::map_lgl(sf_res$tree, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
 
   ## test assertions in ifn_to_tibble
   # provinces
