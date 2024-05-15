@@ -241,6 +241,24 @@ create_filter_list <- function(plots_info) {
 #' @export
 clean_empty <- function(inventory_data, cols) {
 
+  ## assertions
+  # inventory_data has the necessary columns
+  assertthat::assert_that(
+    assertthat::has_name(inventory_data, "tree"),
+    assertthat::has_name(inventory_data, "regen"),
+    assertthat::has_name(inventory_data, "understory"),
+    msg = cli::cli_abort(
+      "{.arg inventory_data} must have columns for tree, regen and understory data"
+    )
+  )
+  # cols
+  assertthat::assert_that(
+    is.null(cols) || all(cols %in% c("tree", "regen", "understory")),
+    msg = cli::cli_abort(
+      "{.arg cols} must be one or more of 'tree', 'regen' or 'understory'"
+    )
+  )
+
   if (is.null(cols)) {
     return(inventory_data)
   }
@@ -267,6 +285,18 @@ clean_empty <- function(inventory_data, cols) {
 #' 
 #' @export
 inventory_as_sf <- function(inventory_data) {
+  
+  ## assertions
+  # inventory_data has the necessary columns
+  assertthat::assert_that(
+    assertthat::has_name(inventory_data, "COORD1"),
+    assertthat::has_name(inventory_data, "COORD2"),
+    assertthat::has_name(inventory_data, "crs"),
+    msg = cli::cli_abort(
+      "{.arg inventory_data} must have columns for coordinates and crs"
+    )
+  )
+
   inventory_data |>
     dplyr::group_by(crs) |>
     dplyr::group_modify(
