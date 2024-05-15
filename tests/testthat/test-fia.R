@@ -916,6 +916,31 @@ test_that("fia_to_tibble works as intended", {
   ))
   expect_true(all(unique(test_res$YEAR) %in% test_years))
 
+  # tests for clean_empty and as_sf arguments
+  sf_expected_names <- c(
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
+    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "COORD1_ORIGINAL", "COORD2_ORIGINAL", "COORD_SYS", "crs",
+    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
+    "tree", "understory", "regen", "subplot", "geometry", "crs_orig"
+    # "soils"
+  )
+  expect_s3_class(
+    sf_res <- suppressWarnings(fia_to_tibble(
+      test_years, test_states, test_plots, test_folder,
+      as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
+      .parallel_options = test_parallel_conf,
+      .verbose = FALSE
+    )),
+    "sf"
+  )
+
+  expect_named(sf_res, sf_expected_names, ignore.order = TRUE)
+  expect_true(nrow(sf_res) < nrow(test_res))
+  expect_false(any(purrr::map_lgl(sf_res$tree, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
+  expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
+
   ### test all assertions done in fia_to_tibble
   # states
   expect_error(

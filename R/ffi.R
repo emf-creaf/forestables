@@ -65,7 +65,7 @@ ffi_to_tibble <- function(
   years,
   filter_list,
   folder,
-  clean_empty = c("tree"),
+  clean_empty = NULL,
   as_sf = FALSE,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
