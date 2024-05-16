@@ -9,6 +9,8 @@ fia_to_tibble(
   states,
   filter_list = NULL,
   folder,
+  clean_empty = NULL,
+  as_sf = FALSE,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
@@ -25,6 +27,15 @@ If left \code{NULL} all plots for the state for all years will be extracted, whi
 big amount of memory. See details.}
 
 \item{folder}{The path to the folder containing the FIA csv files, as character.}
+
+\item{clean_empty}{Vector with column names from where to remove empty
+results. Can be one or more of \code{"tree"},
+\code{"understory"} and \code{"regen"}. If more than one,
+only plots with data in all columns selected will be
+retained.}
+
+\item{as_sf}{Logical indicating if the data must be returned as an spatial object. This always
+can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.}
 
 \item{...}{Not used at the moment}
 

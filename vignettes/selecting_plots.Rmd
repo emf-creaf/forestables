@@ -139,10 +139,9 @@ ffi_data_2012
 
 ```{r, eval = FALSE}
 ffi_data_2012 |>
-  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs = 4326) |>
-  tidyr::unnest("tree") |>
+  clean_empty(c("tree")) |>
+  inventory_as_sf() |>
+  unnest("tree") |>
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), DEP = unique(DEP), n = n()) |>
   dplyr::filter(!is.nan(DENSITY)) |>

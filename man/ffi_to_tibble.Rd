@@ -9,6 +9,8 @@ ffi_to_tibble(
   years,
   filter_list,
   folder,
+  clean_empty = NULL,
+  as_sf = FALSE,
   ...,
   .parallel_options = furrr::furrr_options(scheduling = 1L, stdout = TRUE),
   .verbose = TRUE
@@ -25,6 +27,15 @@ plots for the department for all years will be extracted, which can use a big am
 See details.}
 
 \item{folder}{The path to the folder containing the FFI csv files, as character.}
+
+\item{clean_empty}{Vector with column names from where to remove empty
+results. Can be one or more of \code{"tree"},
+\code{"understory"} and \code{"regen"}. If more than one,
+only plots with data in all columns selected will be
+retained.}
+
+\item{as_sf}{Logical indicating if the data must be returned as an spatial object. This always
+can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.}
 
 \item{...}{Not used at the moment}
 

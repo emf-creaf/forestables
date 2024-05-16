@@ -374,13 +374,17 @@ create_filter_list_ffi <- function(plots_info) {
 #'   which means that no NAs are filtered before returning most recent data, to allow for
 #'   different layers to be retrieved. If \code{FALSE}, then years with \code{NA} for \code{VAR}
 #'   are removed prior to find the most recent value.
+#' @param .year_fun function to select the "original" year. Default to max.
 #'
 #' @return A data frame with variables in \code{var} values for the desired year and for the
 #'   most recent year with value.
 #'
 #' @importFrom rlang `:=`
 #' @noRd
-.extract_ffi_metadata <- function(data_processed, vars,  plot, year, .soil_mode = TRUE) {
+.extract_ffi_metadata <- function(
+  data_processed, vars,  plot, year,
+  .soil_mode = TRUE, .year_fun = max
+) {
 
   # browser()
   # ORIGINAL names
@@ -414,7 +418,7 @@ create_filter_list_ffi <- function(plots_info) {
           .data$PLOT == plot,
           {{ filter_nas }}
         ) |>
-        dplyr::filter(.data$YEAR == max(.data$YEAR, na.rm = TRUE)) |>
+        dplyr::filter(.data$YEAR == .year_fun(.data$YEAR, na.rm = TRUE)) |>
         dplyr::pull({{ var }})
 
       # value at queried year
@@ -443,232 +447,4 @@ create_filter_list_ffi <- function(plots_info) {
     purrr::list_cbind() |>
     data.table::as.data.table() |>
     dtplyr::lazy_dt(immutable = TRUE)
-}
-
-
-#' Helper function to extract plot and soil metadata from from tables
-#'
-#' Extract year and most recent metadata for plot
-#'
-#' This function extracts the metadata for a plot in a year, creating two values for
-#' each specified variable in \code{vars}. One with the value for the year selected
-#' (\code{VAR_ORIG}) and another with the most recent value (\code{VAR}).
-#' This function is intended exclusively to be called by the individual table process
-#' functions that needs this functionality (plot and soil tables).
-#'
-#' @param data_processed Table data after reading and processing.
-#' @param vars Character, names of variables to be extracted.
-#' @param plot Numeric, codes for dep or plot to be processed
-#' @param year Numeric with the year to process
-#' @param tree numeric with tree id/number
-#' @param .soil_mode Logical. If \code{TRUE}, \code{.extract_ffi_tree_metadata} is run on soil mode,
-#'   which means that no NAs are filtered before returning most recent data, to allow for
-#'   different layers to be retrieved. If \code{FALSE}, then years with \code{NA} for \code{VAR}
-#'   are removed prior to find the most recent value.
-#'
-#' @return A data frame with variables in \code{var} values for the desired year and for the
-#'   most recent year with value.
-#'
-#' @importFrom rlang `:=`
-#' @noRd
-# 
-# .extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
-# 
-#    browser()
-#   # output_tibble <- tibble::tibble(
-#   #   PLOT = character(),
-#   #   YEAR = numeric()
-#   # )
-#   output_tibble <- NULL
-# 
-#    data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
-# 
-#   # ORIGINAL names
-#   vars_orig <- paste0(vars, "_ORIGINAL")
-# 
-#   if (!("PLOT" %in% names(data_processed))) {
-#     data_processed <- data_processed |>
-#       dplyr::mutate(
-#         PLOT = plot
-#       )
-#   }
-# 
-#   trees <-  as.character(data_processed$parent$TREE)
-# 
-# 
-#   for (tree in trees) {
-#   # browser()
-#    
-#     row_tibble <- tibble::tibble(
-#       PLOT := plot,
-#       YEAR := year
-#     )
-# 
-#     for (variable in vars) {
-# 
-#       # browser()
-#       var_orig <- paste0(variable, "_ORIGINAL")
-# 
-#       filter_nas <- TRUE
-#       if (!.soil_mode) {
-#         filter_nas <- rlang::expr(!is.na({{ variable }}))
-#       }
-# 
-#       var_value <- data_processed |>
-#         dplyr::filter(
-#           {{ filter_nas }},
-#           YEAR == min(.data$YEAR, na.rm = TRUE)
-#         ) |>
-#         dplyr::filter(.data$TREE == tree) |>
-#         dplyr::pull({{ variable }})
-# 
-#       var_orig_value <- data_processed |>
-#         dplyr::filter(.data$YEAR == year) |>
-#         dplyr::filter(.data$TREE == tree) |>
-#         dplyr::pull({{ variable }})
-# 
-#       if (length(var_orig_value) < 1) {
-#         var_orig_value <- rep(NA, length(var_orig_value))
-#       }
-# 
-#       if (length(var_value) < 1) {
-#         var_value <- rep(NA, length(var_value))
-#       }
-# 
-#       row_tibble[[variable]] <- var_value
-#       row_tibble[[var_orig]] <- var_orig_value
-#     }
-# 
-#     if (is.null(output_tibble)) {
-#       output_tibble <- row_tibble
-#     } else {
-#       # Utilizar bind_rows solo si output_tibble no es NULL
-#       output_tibble <- dplyr::bind_rows(output_tibble, row_tibble)
-#     }
-#   }
-#   
-#   # Convertir output_tibble a lazy_dt
-#   output_combined <- output_tibble |>
-#     data.table::as.data.table() |>
-#     dtplyr::lazy_dt(immutable = TRUE)
-#   
-#   return(output_combined)
-#   
-# }
-
-# .extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
-#   
-#   # Agregar la columna PLOT si no existe
-#   if (!("PLOT" %in% names(data_processed))) {
-#     data_processed <- mutate(data_processed, PLOT = plot)
-#   }
-#   
-#   # Obtener la lista de árboles únicos
-#   trees <- unique(data_processed$parent$TREE)
-#   
-#   # Crear una función para extraer los valores de las variables para un árbol dado
-#   extract_values <- function(tree) {
-#     browser()
-#     row_tibble <- tibble::tibble(PLOT = plot, YEAR = year)
-#     for (var in vars) {
-#       var_orig <- paste0(var, "_ORIGINAL")
-#       filter_nas <- if (.soil_mode) {
-#         rlang::expr(TRUE)
-#       } else {
-#         rlang::expr(!is.na(!!sym(var)))
-#       }
-#       
-#       var_value <- data_processed |>
-#         dplyr::filter(!!filter_nas, YEAR == min(!!sym(var) ~ ., na.rm = TRUE), TREE == tree) |>
-#         pull(var)
-#       
-#       var_orig_value <- data_processed |> 
-#         dplyr::filter(YEAR == year, TREE == tree) |>
-#         pull(var)
-#       
-#       if (length(var_orig_value) < 1) {
-#         var_orig_value <- NA
-#       }
-#       
-#       if (length(var_value) < 1) {
-#         var_value <- NA
-#       }
-#       
-#       row_tibble[[var]] <- var_value
-#       row_tibble[[var_orig]] <- var_orig_value
-#     }
-#     row_tibble
-#   }
-#   
-#   # Aplicar la función extract_values a cada árbol
-#   output_tibble <- purrr::map_dfr(trees, extract_values)
-#   
-#   # Convertir output_tibble a lazy_dt si es necesario
-#   output_combined <- dtplyr::lazy_dt(output_tibble, immutable = TRUE)
-#   
-#   return(output_combined)
-# }
-
-
-.extract_ffi_tree_metadata <- function(data_processed, vars, plot, year, .soil_mode = TRUE) {
-  
-  browser()
-  # ORIGINAL names
-  vars_orig <- paste0(vars, "_ORIGINAL")
-  
-  data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
-  
-  if (!("PLOT" %in% names(data_processed))) {
-    data_processed <- data_processed |>
-      dplyr::mutate(
-        PLOT = plot
-      )
-  }
-  
-
-  trees <- as.data.table(data_processed) |> dplyr::pull(TREE)
-  
-  # output_combined <- purrr::map_dfr(trees, function(tree) {
-  #   
-    browser()
-    purrr::map2(
-      .x = vars,
-      .y = vars_orig,
-      .f = \(var, var_orig) {
-        # filter_nas <- TRUE
-        # if (!.soil_mode) {
-        #   filter_nas <- rlang::expr(!is.na({{ var }}))
-        # }
-     
-        var_value <- data_processed |>
-          dplyr::filter(YEAR == min(YEAR, na.rm = TRUE), TREE == tree) |>
-          dplyr::pull({{ var }})
-        
-        var_orig_value <- data_processed |>
-          dplyr::filter(YEAR == year, TREE == tree) |>
-          dplyr::pull({{ var }})
-        
-        if (length(var_orig_value) < 1) {
-          var_orig_value <- NA
-        }
-        
-        if (length(var_value) < 1) {
-          var_value <- NA
-        }
-        
-        # build the tibble
-        dplyr::tibble(
-          "{var}" := var_value,
-          "{var_orig}" := var_orig_value
-        )
-      }
-    ) |>
-      purrr::list_cbind() |>
-      data.table::as.data.table() |>
-      dtplyr::lazy_dt(immutable = TRUE)
-   
-    
-  
-  output_combined <- dtplyr::lazy_dt(output_combined, immutable = TRUE)
-  return(output_combined)
 }

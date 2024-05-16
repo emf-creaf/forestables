@@ -94,7 +94,7 @@ test_cdref <- test_metadonnees |>
 test_growth_form_lignified_france <- growth_form_lignified_france
 
 #
-# # table functions -----------------------------------------------------------------------------
+# table functions -----------------------------------------------------------------------------
 test_that("ffi_plot_table_process works as intended", {
 
   expected_names <- c(
@@ -183,11 +183,9 @@ test_that("ffi_plot_table_process works as intended", {
 test_that("ffi_tree_table_process works as intended", {
 
   expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE","TREE_ORIGINAL", "ESPAR",
-    "ESPAR_ORIGINAL", "SP_CODE", "SP_CODE_ORIGINAL", "SP_NAME",
-    "SP_NAME_ORIGINAL", "STATUS", "STATUS_ORIGINAL",
-    "STATUS5", "STATUS5_ORIGINAL", "DIA", "DIA_ORIGINAL", "Height",
-    "Height_ORIGINAL", "DENSITY", "DENSITY_ORIGINAL" 
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
+    "SP_CODE", "SP_NAME", "STATUS", "STATUS5", "DIA", "Height",
+    "Height_ORIGINAL", "DENSITY"
   )
 
   # object
@@ -210,7 +208,7 @@ test_that("ffi_tree_table_process works as intended", {
   expect_length(unique(test_res$PLOT), 1)
   expect_length(unique(test_res$DEP), 1)
 
-  expect_identical(unique(test_res$YEAR), test_year |> as.integer())
+  expect_identical(unique(test_res$YEAR), test_year)
   expect_identical(unique(test_res$PLOT), test_input$plots[1] |> as.character())
   expect_identical(unique(test_res$DEP) |> as.character(), test_input$department[1])
 

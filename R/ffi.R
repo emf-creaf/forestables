@@ -609,10 +609,10 @@ ffi_tree_table_process <- function(
     ), call = .call)
     return(dplyr::tibble())
   }
- # browser()
+  # browser()
   #IMPORTANT do NOT change this!!!!!!!!!!
   # we need to get all data first to fill missing values of known var 
-  #filter per year is done at the end
+  # filter per year is done at the end
   tree <- tree_raw_data |>
     # we filter the data for plot
     dplyr::filter(.data$IDP == plot) |>
@@ -660,47 +660,63 @@ ffi_tree_table_process <- function(
     #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR, 
     #some variables are register only in first visit but are important to have in revisit
     dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
-    #temporal change
-    #espar var will appear empty "" in the revisited plots , we first convert to NA
+    # espar var will appear empty "" in the revisited plots , we first convert to NA
     dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
-    # dplyr::as_tibble() |>
-    # #since we still have info of previous year because we have not filtered by year yet,
-    # # we can fill missing information of espar, sp_code and sp_name
-    # #as we are arranging by tree and tree  codes do not change there is not problem
-    # #new individuals that are recensables have new codes in tree = no filling
-    # tidyr::fill(c("ESPAR", "SP_CODE", "SP_NAME")) |>
-    # #THIS MUST BE DONE AT THE END
-    # dplyr::filter(.data$YEAR == year)
-
-    #arrange by year descending to apply extract ffi metadata: two var last record and original
+    # arrange by year descending to apply extract ffi metadata: two var last record and original
     dplyr::arrange(desc(.data$YEAR)) |>
-    # #espar var will appear empty "" in the revisited plots , we first convert to NA
-     dplyr::mutate(ESPAR = dplyr::na_if(.data$ESPAR, "")) |>
-    #there might be more than 1 record
+    # there might be more than 1 record
     dplyr::distinct() |>
-    data.table::as.data.table() |>
-  
-    dplyr::group_by(.data$PLOT, .data$YEAR, .data$TREE) |> 
-    dplyr::group_split() |> 
-    purrr::map(~ .extract_ffi_metadata(data_processed = .x, vars =  c("ID_UNIQUE_PLOT", "DEP",  "TREE", "ESPAR", "SP_CODE", "SP_NAME",
-                                                                       "STATUS","STATUS5", "DIA", "Height", "DENSITY")
-                                                                      , plot = .x$PLOT[1], year = .x$YEAR[1], .soil_mode = TRUE)) |> 
-    lapply(function(x) x$parent) |>   # Extraer los data frames del atributo parent
-    dplyr::bind_rows() |> 
+    # data.table::as.data.table() |>
+    dplyr::as_tibble() |>
+    # dplyr::group_by(
+    #   # needed for later, no effect on the grouping:
+    #   .data$ID_UNIQUE_PLOT, .data$DEP, .data$DENSITY,
+    #   # real grouping ones:
+    #   .data$PLOT, .data$TREE
+    # ) |>
+    tidyr::nest(
+      .key = ".metadata",
+      .by = c(
+        # needed for later, no effect on the grouping:
+        "ID_UNIQUE_PLOT", "DEP", "DENSITY",
+        # real grouping ones:
+        "PLOT", "TREE"
+      )
+    ) |>
     dplyr::mutate(
-      PLOT = plot,
-      YEAR = year
+      .extracted_metadata = purrr::map(
+        .data$.metadata,
+        .f = \(metadata) {
+          .extract_ffi_metadata(
+            data_processed = metadata,
+            vars =  c(
+              "ESPAR", "SP_CODE", "SP_NAME",
+              "STATUS", "STATUS5", "DIA", "Height"
+            ),
+            plot = .data$PLOT |> unique(),
+            year = year, .soil_mode = TRUE, .year_fun = min
+          ) |>
+            dplyr::as_tibble()
+        }
+      )
+    ) |>
+    dplyr::select(!".metadata") |>
+    unnest(cols = c(".extracted_metadata")) |> 
+    dplyr::mutate(
+      YEAR = year,
+      ESPAR = dplyr::if_else(is.na(ESPAR_ORIGINAL), ESPAR, ESPAR_ORIGINAL),
+      SP_CODE = dplyr::if_else(is.na(SP_CODE_ORIGINAL), SP_CODE, SP_CODE_ORIGINAL),
+      SP_NAME = dplyr::if_else(is.na(SP_NAME_ORIGINAL), SP_NAME, SP_NAME_ORIGINAL),
+      STATUS = dplyr::if_else(is.na(STATUS_ORIGINAL), STATUS, STATUS_ORIGINAL),
+      STATUS5 = dplyr::if_else(is.na(STATUS5_ORIGINAL), STATUS5, STATUS5_ORIGINAL),
+      DIA = dplyr::if_else(is.na(DIA_ORIGINAL), DIA, DIA_ORIGINAL),
     ) |> 
     dplyr::select(
-      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE","TREE_ORIGINAL", "ESPAR",
-      "ESPAR_ORIGINAL", "SP_CODE", "SP_CODE_ORIGINAL", "SP_NAME",
-      "SP_NAME_ORIGINAL", "STATUS", "STATUS_ORIGINAL",
-      "STATUS5", "STATUS5_ORIGINAL", "DIA", "DIA_ORIGINAL", "Height",
-      "Height_ORIGINAL", "DENSITY", "DENSITY_ORIGINAL" 
-      
-    )
-
-  
+      "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
+      "SP_CODE", "SP_NAME", "STATUS",  "STATUS5", "DIA",
+      "Height", "Height_ORIGINAL", "DENSITY"
+    ) |>
+    dplyr::ungroup()
   
   return(tree)
 }
