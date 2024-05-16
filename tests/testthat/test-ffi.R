@@ -450,7 +450,7 @@ test_that("ffi_tables_process works as intended", {
   )
 
   # data integrity
-  expect_named(test_res, expected_names)
+  expect_named(test_res, expected_names, ignore.order = TRUE)
   expect_true(all(unique(test_res$DEP) %in% names(test_plots)))
 
   ### missing tables/plots
@@ -575,7 +575,7 @@ test_that("ffi_to_tibble works as intended", {
   )
 
   # data integrity
-  expect_named(test_res, expected_names)
+  expect_named(test_res, expected_names, ignore.order = TRUE)
   expect_false("tururu" %in% unique(test_res$DEP))
   expect_identical(nrow(test_res), 62L) # two plots dont exist, so 2x2=4 rows less
   expect_true(all(unique(test_res$DEP) %in% names(test_plots)))

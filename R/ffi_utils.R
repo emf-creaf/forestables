@@ -388,7 +388,7 @@ create_filter_list_ffi <- function(plots_info) {
 
   # browser()
   # ORIGINAL names
-  vars_orig <- paste0(vars, "_ORIGINAL")
+  vars_orig <- paste0(vars, "_last_recorded")
 
   data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
 
@@ -438,9 +438,13 @@ create_filter_list_ffi <- function(plots_info) {
       }
 
       # build the tibble
+      # dplyr::tibble(
+      #   "{var}" := var_value,
+      #   "{var_orig}" := var_orig_value
+      # )
       dplyr::tibble(
-        "{var}" := var_value,
-        "{var_orig}" := var_orig_value
+        "{var}" := var_orig_value,
+        "{var_orig}" := var_value
       )
     }
   ) |>
