@@ -438,10 +438,6 @@ create_filter_list_ffi <- function(plots_info) {
       }
 
       # build the tibble
-      # dplyr::tibble(
-      #   "{var}" := var_value,
-      #   "{var_orig}" := var_orig_value
-      # )
       dplyr::tibble(
         "{var}" := var_orig_value,
         "{var_orig}" := var_value

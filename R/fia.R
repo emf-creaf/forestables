@@ -243,8 +243,8 @@ fia_tables_process <- function(
       redundant_vars <- c(
         "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM",
         "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-        "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL",
-        "COORD_SYS", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
+        "RSCD", "DESIGNCD", "COORD1", "COORD1_last_recorded", "COORD2", "COORD2_last_recorded",
+        "COORD_SYS", "ELEV", "ELEV_last_recorded", "ASPECT", "ASPECT_last_recorded", "SLOPE", "SLOPE_last_recorded"
       )
 
       # if there is no info for the plot (missing files) there is no need to continue,
@@ -318,10 +318,7 @@ fia_tables_process <- function(
   temp_res |>
     # filtering the missing plots. This is done based on the fact plot table functions returns NAs
     # for all vars, including coords, when the plot is not found
-    dplyr::filter(!(
-      is.na(.data$COORD1) & is.na(.data$COORD2_ORIGINAL) &
-        is.na(.data$COORD1) & is.na(.data$COORD1_ORIGINAL)
-    ))
+    dplyr::filter(!(is.na(.data$COORD2) & is.na(.data$COORD1)))
 }
 
 #' FIA data tables process
@@ -381,7 +378,14 @@ fia_plot_table_process <- function(
       c("RSCD", "STATECD", "STATEAB", "STATENM"),
       county, plot, year, .soil_mode = FALSE
     ) |>
-    dplyr::mutate(PLOT  = plot, INVYR  = year, COUNTYCD = county)
+    dplyr::mutate(
+      PLOT  = plot, INVYR  = year, COUNTYCD = county,
+      # possible missing vars, fill with original if necessary
+      RSCD = dplyr::if_else(is.na(RSCD), RSCD_last_recorded, RSCD),
+      STATECD = dplyr::if_else(is.na(STATECD), STATECD_last_recorded, STATECD),
+      STATEAB = dplyr::if_else(is.na(STATEAB), STATEAB_last_recorded, STATEAB),
+      STATENM = dplyr::if_else(is.na(STATENM), STATENM_last_recorded, STATENM)
+    )
 
   # plot table
   data_plot_raw <- .read_inventory_data(
@@ -430,12 +434,22 @@ fia_plot_table_process <- function(
       county, plot, year, .soil_mode = FALSE
     ) |>
     dplyr::mutate(
+      # possible missing vars, fill with original if necessary
+      LAT = dplyr::if_else(is.na(LAT), LAT_last_recorded, LAT),
+      LON = dplyr::if_else(is.na(LON), LON_last_recorded, LON),
+      ELEV = dplyr::if_else(is.na(ELEV), ELEV_last_recorded, ELEV),
+      P3PANEL = dplyr::if_else(is.na(P3PANEL), P3PANEL_last_recorded, P3PANEL),
+      P2VEG_SAMPLING_STATUS_CD = dplyr::if_else(is.na(P2VEG_SAMPLING_STATUS_CD), P2VEG_SAMPLING_STATUS_CD_last_recorded, P2VEG_SAMPLING_STATUS_CD),
+      P2VEG_SAMPLING_LEVEL_DETAIL_CD = dplyr::if_else(is.na(P2VEG_SAMPLING_LEVEL_DETAIL_CD), P2VEG_SAMPLING_LEVEL_DETAIL_CD_last_recorded, P2VEG_SAMPLING_LEVEL_DETAIL_CD),
+      DESIGNCD = dplyr::if_else(is.na(DESIGNCD), DESIGNCD_last_recorded, DESIGNCD),
+      COORD_SYS = dplyr::if_else(is.na(COORD_SYS), COORD_SYS_last_recorded, COORD_SYS),
+      # other needed
       crs = dplyr::case_when(
         .data$COORD_SYS == "WGS84" ~ 4326,
         .data$COORD_SYS == "NAD83" ~ 4269),
       PLOT  = plot,
       INVYR  = year,
-      COUNTYCD   = county,
+      COUNTYCD   = county
     )
 
   # CONDITION TABLE
@@ -468,7 +482,12 @@ fia_plot_table_process <- function(
     #this is done to obtain last year with information available and also the year of search  
     # we extract the vars we need and return the object
     .extract_fia_metadata(c("SLOPE", "ASPECT"), county, plot, year, .soil_mode = FALSE) |>
-    dplyr::mutate(PLOT = plot, INVYR = year, COUNTYCD = county)
+    dplyr::mutate(
+      PLOT = plot, INVYR = year, COUNTYCD = county,
+      # possible missing vars, fill with original if necessary
+      SLOPE = dplyr::if_else(is.na(SLOPE), SLOPE_last_recorded, SLOPE),
+      ASPECT = dplyr::if_else(is.na(ASPECT), ASPECT_last_recorded, ASPECT)
+    )
   
   data_survey |>
     dplyr::left_join(data_plot, by = c("PLOT", "INVYR", "COUNTYCD")) |>
@@ -478,18 +497,20 @@ fia_plot_table_process <- function(
       COUNTRY = "US"
     ) |>
     dplyr::select(
-      "INVYR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM","COUNTYCD", 
-      "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-      "RSCD", "DESIGNCD", "LON", "LON_ORIGINAL", "LAT", "LAT_ORIGINAL", "COORD_SYS",
-      "crs", "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
-    ) |>
-    dplyr::rename(
       YEAR = "INVYR",
-      COORD1 = "LON",
-      COORD2 = "LAT",
-      COORD1_ORIGINAL = "LON_ORIGINAL",
-      COORD2_ORIGINAL = "LAT_ORIGINAL"
+      "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB",
+      "STATENM", "COUNTYCD", "PLOT", "P3PANEL", "P2VEG_SAMPLING_STATUS_CD",
+      "P2VEG_SAMPLING_LEVEL_DETAIL_CD", "RSCD", "DESIGNCD",
+      COORD1 = "LON", COORD2 = "LAT",
+      "COORD_SYS", "crs", "ELEV", "ASPECT", "SLOPE"
     ) |>
+    # dplyr::rename(
+    #   YEAR = "INVYR",
+    #   COORD1 = "LON",
+    #   COORD2 = "LAT",
+    #   COORD1_last_recorded = "LON_last_recorded",
+    #   COORD2_last_recorded = "LAT_last_recorded"
+    # ) |>
     dplyr::as_tibble()
 }
 

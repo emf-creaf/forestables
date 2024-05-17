@@ -62,10 +62,11 @@ test_input <-
 test_that("fia_plot_table_process works as intended", {
 
   expected_names <- c(
-    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
-    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL"
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD",
+    "STATEAB", "STATENM", "COUNTYCD", "PLOT", "P3PANEL",
+    "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "COORD1", "COORD2", "COORD_SYS",
+    "crs", "ELEV", "ASPECT", "SLOPE"
   )
 
   # object
@@ -761,11 +762,11 @@ test_that("fia_table_process works as intended", {
 
   # tests data
   expected_names <- c(
-    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
-    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
-    "tree", "understory", "regen", "subplot"
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB",
+    "STATENM", "COUNTYCD", "PLOT", "P3PANEL",
+    "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "COORD1", "COORD2", "COORD_SYS", "crs",
+    "ELEV", "ASPECT", "SLOPE", "tree", "understory", "regen", "subplot"
     # "soils"
   )
 
@@ -886,11 +887,11 @@ test_that("fia_to_tibble works as intended", {
 
   # tests data
   expected_names <- c(
-    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "COORD_SYS", "crs",
-    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
-    "tree", "understory", "regen", "subplot"
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB",
+    "STATENM", "COUNTYCD", "PLOT", "P3PANEL",
+    "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "COORD1", "COORD2", "COORD_SYS", "crs",
+    "ELEV", "ASPECT", "SLOPE", "tree", "understory", "regen", "subplot"
     # "soils"
   )
   test_years <- c(2005, 2010)
@@ -918,11 +919,12 @@ test_that("fia_to_tibble works as intended", {
 
   # tests for clean_empty and as_sf arguments
   sf_expected_names <- c(
-    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB", "STATENM", "COUNTYCD", "PLOT",
-    "P3PANEL", "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
-    "RSCD", "DESIGNCD", "COORD1_ORIGINAL", "COORD2_ORIGINAL", "COORD_SYS", "crs",
-    "ELEV", "ELEV_ORIGINAL", "ASPECT", "ASPECT_ORIGINAL", "SLOPE", "SLOPE_ORIGINAL",
-    "tree", "understory", "regen", "subplot", "geometry", "crs_orig"
+    "YEAR", "ID_UNIQUE_PLOT", "COUNTRY", "STATECD", "STATEAB",
+    "STATENM", "COUNTYCD", "PLOT", "P3PANEL",
+    "P2VEG_SAMPLING_STATUS_CD", "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
+    "RSCD", "DESIGNCD", "COORD_SYS", "crs", "ELEV", "ASPECT",
+    "SLOPE", "tree", "understory", "regen", "subplot",
+    "geometry", "crs_orig"
     # "soils"
   )
   expect_s3_class(

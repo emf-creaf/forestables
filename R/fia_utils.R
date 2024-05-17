@@ -479,7 +479,7 @@ create_filter_list_fia <- function(plots_info) {
 .extract_fia_metadata <- function(data_processed, vars, county, plot, year, .soil_mode = TRUE) {
 
   # ORIGINAL names
-  vars_orig <- paste0(vars, "_ORIGINAL")
+  vars_orig <- paste0(vars, "_last_recorded")
 
   data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
 
@@ -527,9 +527,13 @@ create_filter_list_fia <- function(plots_info) {
       }
 
       # build the tibble
+      # dplyr::tibble(
+      #   "{var}" := var_value,
+      #   "{var_orig}" := var_orig_value
+      # )
       dplyr::tibble(
-        "{var}" := var_value,
-        "{var_orig}" := var_orig_value
+        "{var}" := var_orig_value,
+        "{var_orig}" := var_value
       )
     }
   ) |>
