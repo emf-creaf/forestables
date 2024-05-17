@@ -179,7 +179,7 @@ fia_to_tibble <- function(
   ) |>
     purrr::list_rbind() |>
     clean_empty(clean_empty)
-  
+
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>
       inventory_as_sf()
@@ -381,10 +381,18 @@ fia_plot_table_process <- function(
     dplyr::mutate(
       PLOT  = plot, INVYR  = year, COUNTYCD = county,
       # possible missing vars, fill with original if necessary
-      RSCD = dplyr::if_else(is.na(RSCD), RSCD_last_recorded, RSCD),
-      STATECD = dplyr::if_else(is.na(STATECD), STATECD_last_recorded, STATECD),
-      STATEAB = dplyr::if_else(is.na(STATEAB), STATEAB_last_recorded, STATEAB),
-      STATENM = dplyr::if_else(is.na(STATENM), STATENM_last_recorded, STATENM)
+      RSCD = dplyr::if_else(
+        is.na(.data$RSCD), .data$RSCD_last_recorded, .data$RSCD
+      ),
+      STATECD = dplyr::if_else(
+        is.na(.data$STATECD), .data$STATECD_last_recorded, .data$STATECD
+      ),
+      STATEAB = dplyr::if_else(
+        is.na(.data$STATEAB), .data$STATEAB_last_recorded, .data$STATEAB
+      ),
+      STATENM = dplyr::if_else(
+        is.na(.data$STATENM), .data$STATENM_last_recorded, .data$STATENM
+      )
     )
 
   # plot table
@@ -435,18 +443,42 @@ fia_plot_table_process <- function(
     ) |>
     dplyr::mutate(
       # possible missing vars, fill with original if necessary
-      LAT = dplyr::if_else(is.na(LAT), LAT_last_recorded, LAT),
-      LON = dplyr::if_else(is.na(LON), LON_last_recorded, LON),
-      ELEV = dplyr::if_else(is.na(ELEV), ELEV_last_recorded, ELEV),
-      P3PANEL = dplyr::if_else(is.na(P3PANEL), P3PANEL_last_recorded, P3PANEL),
-      P2VEG_SAMPLING_STATUS_CD = dplyr::if_else(is.na(P2VEG_SAMPLING_STATUS_CD), P2VEG_SAMPLING_STATUS_CD_last_recorded, P2VEG_SAMPLING_STATUS_CD),
-      P2VEG_SAMPLING_LEVEL_DETAIL_CD = dplyr::if_else(is.na(P2VEG_SAMPLING_LEVEL_DETAIL_CD), P2VEG_SAMPLING_LEVEL_DETAIL_CD_last_recorded, P2VEG_SAMPLING_LEVEL_DETAIL_CD),
-      DESIGNCD = dplyr::if_else(is.na(DESIGNCD), DESIGNCD_last_recorded, DESIGNCD),
-      COORD_SYS = dplyr::if_else(is.na(COORD_SYS), COORD_SYS_last_recorded, COORD_SYS),
+      LAT = dplyr::if_else(
+        is.na(.data$LAT), .data$LAT_last_recorded, .data$LAT
+      ),
+      LON = dplyr::if_else(
+        is.na(.data$LON), .data$LON_last_recorded, .data$LON
+      ),
+      ELEV = dplyr::if_else(
+        is.na(.data$ELEV), .data$ELEV_last_recorded, .data$ELEV
+      ),
+      P3PANEL = dplyr::if_else(
+        is.na(.data$P3PANEL), .data$P3PANEL_last_recorded,
+        .data$P3PANEL
+      ),
+      P2VEG_SAMPLING_STATUS_CD = dplyr::if_else(
+        is.na(.data$P2VEG_SAMPLING_STATUS_CD),
+        .data$P2VEG_SAMPLING_STATUS_CD_last_recorded,
+        .data$P2VEG_SAMPLING_STATUS_CD
+      ),
+      P2VEG_SAMPLING_LEVEL_DETAIL_CD = dplyr::if_else(
+        is.na(.data$P2VEG_SAMPLING_LEVEL_DETAIL_CD),
+        .data$P2VEG_SAMPLING_LEVEL_DETAIL_CD_last_recorded,
+        .data$P2VEG_SAMPLING_LEVEL_DETAIL_CD
+      ),
+      DESIGNCD = dplyr::if_else(
+        is.na(.data$DESIGNCD), .data$DESIGNCD_last_recorded,
+        .data$DESIGNCD
+      ),
+      COORD_SYS = dplyr::if_else(
+        is.na(.data$COORD_SYS), .data$COORD_SYS_last_recorded,
+        .data$COORD_SYS
+      ),
       # other needed
       crs = dplyr::case_when(
         .data$COORD_SYS == "WGS84" ~ 4326,
-        .data$COORD_SYS == "NAD83" ~ 4269),
+        .data$COORD_SYS == "NAD83" ~ 4269
+      ),
       PLOT  = plot,
       INVYR  = year,
       COUNTYCD   = county
@@ -479,16 +511,20 @@ fia_plot_table_process <- function(
     dplyr::select("ID_UNIQUE_PLOT", "PLOT", "COUNTYCD", "SLOPE", "ASPECT", "INVYR") |>
     dplyr::distinct() |>
     data.table::as.data.table() |>
-    #this is done to obtain last year with information available and also the year of search  
+    #this is done to obtain last year with information available and also the year of search
     # we extract the vars we need and return the object
     .extract_fia_metadata(c("SLOPE", "ASPECT"), county, plot, year, .soil_mode = FALSE) |>
     dplyr::mutate(
       PLOT = plot, INVYR = year, COUNTYCD = county,
       # possible missing vars, fill with original if necessary
-      SLOPE = dplyr::if_else(is.na(SLOPE), SLOPE_last_recorded, SLOPE),
-      ASPECT = dplyr::if_else(is.na(ASPECT), ASPECT_last_recorded, ASPECT)
+      SLOPE = dplyr::if_else(
+        is.na(.data$SLOPE), .data$SLOPE_last_recorded, .data$SLOPE
+      ),
+      ASPECT = dplyr::if_else(
+        is.na(.data$ASPECT), .data$ASPECT_last_recorded, .data$ASPECT
+      )
     )
-  
+
   data_survey |>
     dplyr::left_join(data_plot, by = c("PLOT", "INVYR", "COUNTYCD")) |>
     dplyr::left_join(data_cond, by = c("PLOT", "INVYR", "COUNTYCD")) |>
@@ -566,7 +602,7 @@ fia_tree_table_process <- function(
       Height = .data$HT * 0.3048, # FEET TO M
       DENSITY = .data$TPA_UNADJ / 0.4046856422 # acre to ha
     ) |>
-  # 4 . add species info
+    # 4 . add species info
     dplyr::left_join(
       y = ref_species |>
         dplyr::select("SPCD", "GENUS", "SPECIES", "SPECIES_SYMBOL"),
@@ -703,7 +739,7 @@ fia_p3_understory_table_process <- function(
       COVER_PCT = .data$SP_CANOPY_COVER_TOTAL,
       # Height in cm
       Height = dplyr::case_when(
-       # default height is approached to mid point of interval of layers
+        # default height is approached to mid point of interval of layers
         (which.max(c(
           max(.data$SP_CANOPY_COVER_LAYER_1_2), max(.data$SP_CANOPY_COVER_LAYER_3),
           max(.data$SP_CANOPY_COVER_LAYER_4)
@@ -948,7 +984,7 @@ fia_seedling_table_process <- function(
       SP_NAME = paste(.data$GENUS, .data$SPECIES, sep = " "),
       #LESS THAN 6 INCH FOR CONIFER AND 12 FOR HARDWOOD MINIMUM default = 6 inch
       Height = 15,
-      #LESS THAN 1 INCH = 2.54 CM default 
+      #LESS THAN 1 INCH = 2.54 CM default
       DBH = 2.54,
       #calculate density represented by tree
       N = .data$TPA_UNADJ * .data$TREECOUNT_CALC
@@ -1023,9 +1059,11 @@ fia_subplot_table_process <- function(
       # Condition number for the condition at the center of the subplot.
       "SUBPCOND", "MICRCOND"
     ) |>
-    dplyr::rename(YEAR = "INVYR", SLOPE_SUBP = "SLOPE",ASPECT_SUBP = "ASPECT") |>
-    # We have repeated rows after the selection because we summarized shrubs species. We remove with
-    # distinct
+    dplyr::rename(
+      YEAR = "INVYR", SLOPE_SUBP = "SLOPE", ASPECT_SUBP = "ASPECT"
+    ) |>
+    # We have repeated rows after the selection because we summarized
+    # shrubs species. We remove with distinct
     dplyr::distinct() |>
     dplyr::as_tibble()
 

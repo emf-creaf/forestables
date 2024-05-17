@@ -170,7 +170,7 @@ ifn_to_tibble <- function(
   ) |>
     purrr::list_rbind() |>
     clean_empty(clean_empty)
-  
+
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>
       inventory_as_sf()
@@ -521,7 +521,7 @@ ifn_shrub_table_process <- function(
         by = "SP_CODE"
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
-      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME", 
+      dplyr::select("ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_NAME",
                     "SP_CODE", "Height", "COVER")
     # Return shrub
     return(shrub)
@@ -651,21 +651,21 @@ ifn_regen_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(Numero = "NUMERO", Regena = "REGENA") |>
-      #information for different individuals of same species is recorded in different variables 
-      #but in the same row. we will repeat each line twice so that we can keep records separately 
+      #information for different individuals of same species is recorded in different variables
+      #but in the same row. we will repeat each line twice so that we can keep records separately
       #and apply the different transformations
       dplyr::slice(rep(dplyr::row_number(), each = 2)) |>
       dplyr::mutate(
         #even rows will give information on regena (species with a diameter below 25)
-        # odd rows will give information on species with a diameter above  25 (numero) 
-        #numero is associated with Hm 
+        # odd rows will give information on species with a diameter above  25 (numero)
+        #numero is associated with Hm
         Regena = ifelse(dplyr::row_number() %% 2 != 0, NA, .data$Regena),
         Numero  = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Numero),
         Hm = ifelse(dplyr::row_number() %% 2 == 0, NA, .data$Hm),
         #dbh default value is lower for species with a diameter below 25 ( regena class)
         DBH = dplyr::case_when(.data$Numero > 0 ~ 5, .data$Regena > 0 ~ 1, TRUE ~ NA),
         DENSITY = 127.3239546,
-        #default values of N = NUMERO IND * DENSITY; Num of individuals is given for each regena class 
+        #default values of N = NUMERO IND * DENSITY; Num of individuals is given for each regena class
         #density is equal for all
         N = dplyr::case_when(
           .data$Regena == 1 ~ 2.5 * DENSITY,
@@ -741,7 +741,7 @@ ifn_regen_table_process <- function(
       ) |>
       dplyr::mutate(
         DENSITY = 127.3239546,
-        #default values for different catdes (development category) 
+        #default values for different catdes (development category)
         DBH = dplyr::case_when(
           .data$CatDes == 1 ~ 0.1,
           .data$CatDes == 2 ~ 0.5,
@@ -860,29 +860,44 @@ ifn_plot_table_process <- function(
         # corrections per province
         COORDEX = dplyr::case_when(
           # 03
-          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "7"),
-          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "6"),
-          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Cc]") ~ stringr::str_replace_all(.data$COORDEX, "C", "2"),
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Aa]") ~
+            stringr::str_replace_all(.data$COORDEX, "A", "7"),
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Bb]") ~
+            stringr::str_replace_all(.data$COORDEX, "B", "6"),
+          .data$PROVINCIA == "03" & stringr::str_detect(coordx_orig, "[Cc]") ~
+            stringr::str_replace_all(.data$COORDEX, "C", "2"),
           # 11
-          .data$PROVINCIA == "11" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "2"),
+          .data$PROVINCIA == "11" & stringr::str_detect(coordx_orig, "[Aa]") ~
+            stringr::str_replace_all(.data$COORDEX, "A", "2"),
           # 29
-          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "3"),
-          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "3"),
+          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Aa]") ~
+            stringr::str_replace_all(.data$COORDEX, "A", "3"),
+          .data$PROVINCIA == "29" & stringr::str_detect(coordx_orig, "[Bb]") ~
+            stringr::str_replace_all(.data$COORDEX, "B", "3"),
           # 35
-          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Dd]") ~ stringr::str_replace_all(.data$COORDEX, "D", "4"),
-          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Ee]") ~ stringr::str_replace_all(.data$COORDEX, "E", "5"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Dd]") ~
+            stringr::str_replace_all(.data$COORDEX, "D", "4"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordx_orig, "[Ee]") ~
+            stringr::str_replace_all(.data$COORDEX, "E", "5"),
           # 38
-          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEX, "A", "1"),
-          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEX, "B", "2"),
-          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Cc]") ~ stringr::str_replace_all(.data$COORDEX, "C", "3"),
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Aa]") ~
+            stringr::str_replace_all(.data$COORDEX, "A", "1"),
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Bb]") ~
+            stringr::str_replace_all(.data$COORDEX, "B", "2"),
+          .data$PROVINCIA == "38" & stringr::str_detect(coordx_orig, "[Cc]") ~
+            stringr::str_replace_all(.data$COORDEX, "C", "3"),
+          # default
           TRUE ~ .data$COORDEX
         ),
         COORDEY = dplyr::case_when(
           # 35
-          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Aa]") ~ stringr::str_replace_all(.data$COORDEY, "A", "3"),
-          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Dd]") ~ stringr::str_replace_all(.data$COORDEY, "D", "3"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Aa]") ~
+            stringr::str_replace_all(.data$COORDEY, "A", "3"),
+          .data$PROVINCIA == "35" & stringr::str_detect(coordy_orig, "[Dd]") ~
+            stringr::str_replace_all(.data$COORDEY, "D", "3"),
           # 11
-          .data$PROVINCIA == "11" & stringr::str_detect(coordy_orig, "[Bb]") ~ stringr::str_replace_all(.data$COORDEY, "B", "4"),
+          .data$PROVINCIA == "11" & stringr::str_detect(coordy_orig, "[Bb]") ~
+            stringr::str_replace_all(.data$COORDEY, "B", "4"),
           TRUE ~ .data$COORDEY
         )
 
@@ -924,7 +939,7 @@ ifn_plot_table_process <- function(
           .data$SLOPE == 3 ~ 16,
           .data$SLOPE == 4 ~ 27,
           .data$SLOPE == 5 ~ 40
-          ),
+        ),
         ASPECT = as.numeric(.data$ASPECT),
         # COORDEX = dplyr::if_else(
         #   province_code %in% c("07"),
@@ -1062,9 +1077,9 @@ ifn_plot_table_process <- function(
         SLOPE = as.numeric(.data$SLOPE),
         SLOPE = dplyr::case_when(
           SLOPE <= 0.6 ~ 1.5,
-          SLOPE > 0.6 & SLOPE <= 2.4 ~ 7.5 ,
-          SLOPE > 2.4 & SLOPE <= 4 ~ 16 ,
-          SLOPE > 4 & SLOPE <= 7 ~ 27 ,
+          SLOPE > 0.6 & SLOPE <= 2.4 ~ 7.5,
+          SLOPE > 2.4 & SLOPE <= 4 ~ 16,
+          SLOPE > 4 & SLOPE <= 7 ~ 27,
           SLOPE > 7 ~ 40
         ),
         COORD_SYS = dplyr::case_when(
@@ -1194,26 +1209,24 @@ ifn_plot_table_process <- function(
           .data$province_code %in% c(
             "03", "12", "22", "25", "44", "50"
           ) & .data$COORDEX < 5e+05 & is.na(.data$Huso) &
-          .data$COORD_SYS == "ED50" ~ 23031,
+            .data$COORD_SYS == "ED50" ~ 23031,
           .data$province_code %in% c(
             "03", "12", "22", "25", "44", "50"
           ) & .data$COORDEX > 5e+05 & is.na(.data$Huso) &
-          .data$COORD_SYS == "ED50" ~ 23030,
+            .data$COORD_SYS == "ED50" ~ 23030,
           # Provinces with mix of Huso 30 and 29
           .data$province_code %in% c(
             "06", "10", "11", "24", "27", "33", "37", "41", "49"
           ) & .data$COORDEX < 5e+05 & is.na(.data$Huso) &
-          .data$COORD_SYS == "ED50" ~ 23030,
+            .data$COORD_SYS == "ED50" ~ 23030,
           .data$province_code %in% c(
             "06", "10", "11", "24", "27", "33", "37", "41", "49"
           ) & .data$COORDEX > 5e+05 & is.na(.data$Huso) &
-          .data$COORD_SYS == "ED50" ~ 23029,
-            # Province 24, some unidentified plots are in Huso 29 in ifn4
+            .data$COORD_SYS == "ED50" ~ 23029,
+          # Province 24, some unidentified plots are in Huso 29 in ifn4
           province_code == "24" & .data$Huso == 29 &
             .data$COORD_SYS == "ETRS89" & .data$COORDEX < 5e+05 ~ 25830,
-
-
-          is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23030, # For now, we need to solve this: Issue #6
+          is.na(.data$Huso) & .data$COORD_SYS == "ED50" ~ 23030,
           .data$Huso == 30 & .data$COORD_SYS == "ED50" ~ 23030,
           .data$Huso == 31 & .data$COORD_SYS == "ED50" ~ 23031,
           .data$Huso == 29 & .data$COORD_SYS == "ED50" ~ 23029,

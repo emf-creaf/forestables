@@ -219,7 +219,7 @@ ffi_to_tibble <- function(
   ) |>
     purrr::list_rbind() |>
     clean_empty(clean_empty)
-  
+
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>
       inventory_as_sf()
@@ -320,23 +320,23 @@ ffi_tables_process <- function(
         )))
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
-      
+
       #shrub should be the same all time
       if (nrow(shrub_regen) > 0) {
-        # IMPORTANT NOTE: there is an unsolved problem, not all species of french inventory 
+        # IMPORTANT NOTE: there is an unsolved problem, not all species of french inventory
         #are present  in  growth_form_lignified_france
-        #thus we systematically loss some records that are NA  when we apply filter. 
-        #We could fill missing values of growth form file manually from the list of fr_species 
-        #and have a static copy!!!  
-        shrub <- shrub_regen 
+        #thus we systematically loss some records that are NA  when we apply filter.
+        #We could fill missing values of growth form file manually from the list of fr_species
+        #and have a static copy!!!
+        shrub <- shrub_regen
         #quitamos filtro temporalmente
         # dplyr::filter(.data$GrowthForm == "shrub")
       }
-      
+
       if (nrow(shrub) < 1) {
         shrub <- tibble::tibble()
       }
-      
+
       if (year < 2015) {
         #before, info was collected in table couvert (see french documentation)
         regen <- ffi_regen_table_process(
@@ -350,19 +350,18 @@ ffi_tables_process <- function(
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
-          regen <- shrub_regen |>  
-            # IMPORTANT note that there is an unsolved problem, not all species are present  
+          regen <- shrub_regen |>
+            # IMPORTANT note that there is an unsolved problem, not all species are present
             #in  growth_form_lignified_france thus we systematically loss some records that are NA
-            #(no here but in ffi tables process when we apply filter)  . 
+            #(no here but in ffi tables process when we apply filter).
             #We could fill missing growth form manually from the list of fr_species
-            #and have a static copy!!! 
+            #and have a static copy!!!
             #quitamos filtro temporalmente
             # dplyr::filter(.data$GrowthForm == "tree") |>
             dplyr::mutate(
               #default dbh, added to be  coherent with table from regen process
               DBH = NA
             )
-            
           # check if both have data
           if (nrow(regen) < 1) {
             regen <- tibble::tibble()
@@ -512,14 +511,30 @@ ffi_plot_table_process <- function(
     dplyr::mutate(
       PLOT  = plot, YEAR  = year,
       # possible missing vars, fill with original if necessary
-      ID_UNIQUE_PLOT = dplyr::if_else(is.na(ID_UNIQUE_PLOT), ID_UNIQUE_PLOT_last_recorded, ID_UNIQUE_PLOT),
-      PLOT = dplyr::if_else(is.na(PLOT), PLOT_last_recorded, PLOT),
-      DEP = dplyr::if_else(is.na(DEP), DEP_last_recorded, DEP),
-      DEP_NAME = dplyr::if_else(is.na(DEP_NAME), DEP_NAME_last_recorded, DEP_NAME),
-      VISITE = dplyr::if_else(is.na(VISITE), VISITE_last_recorded, VISITE),
-      COORD_SYS = dplyr::if_else(is.na(COORD_SYS), COORD_SYS_last_recorded, COORD_SYS),
-      XL = dplyr::if_else(is.na(XL), XL_last_recorded, XL),
-      YL = dplyr::if_else(is.na(YL), YL_last_recorded, YL)
+      ID_UNIQUE_PLOT = dplyr::if_else(
+        is.na(.data$ID_UNIQUE_PLOT), .data$ID_UNIQUE_PLOT_last_recorded, .data$ID_UNIQUE_PLOT
+      ),
+      PLOT = dplyr::if_else(
+        is.na(.data$PLOT), .data$PLOT_last_recorded, .data$PLOT
+      ),
+      DEP = dplyr::if_else(
+        is.na(.data$DEP), .data$DEP_last_recorded, .data$DEP
+      ),
+      DEP_NAME = dplyr::if_else(
+        is.na(.data$DEP_NAME), .data$DEP_NAME_last_recorded, .data$DEP_NAME
+      ),
+      VISITE = dplyr::if_else(
+        is.na(.data$VISITE), .data$VISITE_last_recorded, .data$VISITE
+      ),
+      COORD_SYS = dplyr::if_else(
+        is.na(.data$COORD_SYS), .data$COORD_SYS_last_recorded, .data$COORD_SYS
+      ),
+      XL = dplyr::if_else(
+        is.na(.data$XL), .data$XL_last_recorded, .data$XL
+      ),
+      YL = dplyr::if_else(
+        is.na(.data$YL), .data$YL_last_recorded, .data$YL
+      )
     ) |>
     dplyr::as_tibble()
 
@@ -550,12 +565,12 @@ ffi_plot_table_process <- function(
     dplyr::mutate(
       PLOT  = plot, YEAR  = year,
       # possible missing vars, fill with original if necessary
-      PLOT = dplyr::if_else(is.na(PLOT), PLOT_last_recorded, PLOT),
-      EXPO = dplyr::if_else(is.na(EXPO), EXPO_last_recorded, EXPO),
-      PENT2 = dplyr::if_else(is.na(PENT2), PENT2_last_recorded, PENT2),
-      LIGN1 = dplyr::if_else(is.na(LIGN1), LIGN1_last_recorded, LIGN1),
-      LIGN2 = dplyr::if_else(is.na(LIGN2), LIGN2_last_recorded, LIGN2),
-      HERB = dplyr::if_else(is.na(HERB), HERB_last_recorded, HERB),
+      PLOT = dplyr::if_else(is.na(.data$PLOT), .data$PLOT_last_recorded, .data$PLOT),
+      EXPO = dplyr::if_else(is.na(.data$EXPO), .data$EXPO_last_recorded, .data$EXPO),
+      PENT2 = dplyr::if_else(is.na(.data$PENT2), .data$PENT2_last_recorded, .data$PENT2),
+      LIGN1 = dplyr::if_else(is.na(.data$LIGN1), .data$LIGN1_last_recorded, .data$LIGN1),
+      LIGN2 = dplyr::if_else(is.na(.data$LIGN2), .data$LIGN2_last_recorded, .data$LIGN2),
+      HERB = dplyr::if_else(is.na(.data$HERB), .data$HERB_last_recorded, .data$HERB),
     ) |>
     tibble::as_tibble()
 
@@ -605,7 +620,7 @@ ffi_tree_table_process <- function(
     colClasses = list(character = c("ESPAR", "IDP")),
     header = TRUE
   )
-  
+
   # we filter the data for plot/year and status (alive)????
   tree_filtered_data <- tree_raw_data |>
     dplyr::filter(
@@ -625,7 +640,7 @@ ffi_tree_table_process <- function(
   }
   # browser()
   #IMPORTANT do NOT change this!!!!!!!!!!
-  # we need to get all data first to fill missing values of known var 
+  # we need to get all data first to fill missing values of known var
   # filter per year is done at the end
   tree <- tree_raw_data |>
     # we filter the data for plot
@@ -637,8 +652,8 @@ ffi_tree_table_process <- function(
       DIA = (.data$C13 / pi) * 100, # transformation to diameter
       YEAR = .data$CAMPAGNE,
       # ensure VEGET and VEGET5 are integers
-      VEGET = as.integer(VEGET),
-      VEGET5 = as.integer(VEGET5)
+      VEGET = as.integer(.data$VEGET),
+      VEGET5 = as.integer(.data$VEGET5)
     ) |>
     # join with espar_cdref
     dplyr::left_join(
@@ -671,7 +686,7 @@ ffi_tree_table_process <- function(
     # homogeneization
     # añadir condiciones en funcion de si es na o no ??
     dplyr::group_by(.data$ID_UNIQUE_PLOT) |>
-    #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR, 
+    #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR,
     #some variables are register only in first visit but are important to have in revisit
     dplyr::arrange(.data$ID_UNIQUE_PLOT, .data$TREE, .data$YEAR) |>
     # espar var will appear empty "" in the revisited plots , we first convert to NA
@@ -718,12 +733,12 @@ ffi_tree_table_process <- function(
     unnest(cols = c(".extracted_metadata")) |>
     dplyr::mutate(
       YEAR = year,
-      ESPAR = dplyr::if_else(is.na(ESPAR), ESPAR_last_recorded, ESPAR),
-      SP_CODE = dplyr::if_else(is.na(SP_CODE), SP_CODE_last_recorded, SP_CODE),
-      SP_NAME = dplyr::if_else(is.na(SP_NAME), SP_NAME_last_recorded, SP_NAME),
-      STATUS = dplyr::if_else(is.na(STATUS), STATUS_last_recorded, STATUS),
-      STATUS5 = dplyr::if_else(is.na(STATUS5), STATUS5_last_recorded, STATUS5),
-      DIA = dplyr::if_else(is.na(DIA), DIA_last_recorded, DIA)
+      ESPAR = dplyr::if_else(is.na(.data$ESPAR), .data$ESPAR_last_recorded, .data$ESPAR),
+      SP_CODE = dplyr::if_else(is.na(.data$SP_CODE), .data$SP_CODE_last_recorded, .data$SP_CODE),
+      SP_NAME = dplyr::if_else(is.na(.data$SP_NAME), .data$SP_NAME_last_recorded, .data$SP_NAME),
+      STATUS = dplyr::if_else(is.na(.data$STATUS), .data$STATUS_last_recorded, .data$STATUS),
+      STATUS5 = dplyr::if_else(is.na(.data$STATUS5), .data$STATUS5_last_recorded, .data$STATUS5),
+      DIA = dplyr::if_else(is.na(.data$DIA), .data$DIA_last_recorded, .data$DIA)
     ) |>
     dplyr::select(
       "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
@@ -731,7 +746,7 @@ ffi_tree_table_process <- function(
       "Height", "Height_last_recorded"
     ) |>
     dplyr::ungroup()
-  
+
   return(tree)
 }
 
@@ -760,7 +775,7 @@ ffi_shrub_table_process <- function(
 
   shrub_filtered_data <- .read_inventory_data(
     shrub_data,
-    select = c("CAMPAGNE","IDP", "CD_REF", "ABOND"),
+    select = c("CAMPAGNE", "IDP", "CD_REF", "ABOND"),
     header = TRUE,
     colClasses = list(character = c("IDP", "CD_REF"))
   ) |>
@@ -816,10 +831,10 @@ ffi_shrub_table_process <- function(
       COVER = "ABOND"
     ) |>
     # we join this table to differentiate between tree , shrub and herbs
-    # IMPORTANT note that there is an unsolved problem, not all species are present  in 
-    #growth_form_lignified_france thus we systematically loss some records that are NA 
-    #(no here but in ffi tables process when we apply filter)  . 
-    #We could fill missing growth form manually from the list of fr_species and have a static copy!! 
+    # IMPORTANT note that there is an unsolved problem, not all species are present  in
+    #growth_form_lignified_france thus we systematically loss some records that are NA
+    #(no here but in ffi tables process when we apply filter).
+    #We could fill missing growth form manually from the list of fr_species and have a static copy!!
     dplyr::left_join(
       growth_form_lignified_france |>
         dplyr::select("AccSpeciesName", "GrowthForm") |>
@@ -903,8 +918,8 @@ ffi_regen_table_process <- function(
     dplyr::mutate(
       ID_UNIQUE_PLOT = (paste("FR", .data$DEP, .data$IDP, sep = "_")),
       #we add this to be coherent with other inventories .
-      #DBH default  value could be set to 7 but may be too high 
-      DBH = NA, # in 
+      #DBH default  value could be set to 7 but may be too high
+      DBH = NA, # in
       Height = NA,
       GrowthForm = "tree"
     ) |>
