@@ -98,9 +98,9 @@ test_growth_form_lignified_france <- growth_form_lignified_france
 test_that("ffi_plot_table_process works as intended", {
 
   expected_names <- c(
-    "ID_UNIQUE_PLOT", "COUNTRY", "DEP", "DEP_NAME", "PLOT", "YEAR", "VISITE", "COORD_SYS", "XL",
-    "XL_ORIGINAL", "YL", "YL_ORIGINAL", "EXPO", "EXPO_ORIGINAL", "PENT2",  "PENT2_ORIGINAL",
-    "LIGN1", "LIGN2", "HERB"
+    "ID_UNIQUE_PLOT", "COUNTRY", "DEP", "DEP_NAME", "PLOT",
+    "YEAR", "VISITE", "COORD_SYS", "XL", "YL",
+    "EXPO", "PENT2", "LIGN1", "LIGN2", "HERB"
   )
 
   # object
@@ -185,7 +185,7 @@ test_that("ffi_tree_table_process works as intended", {
   expected_names <- c(
     "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "TREE", "ESPAR",
     "SP_CODE", "SP_NAME", "STATUS", "STATUS5", "DIA", "Height",
-    "Height_ORIGINAL", "DENSITY"
+    "Height_last_recorded", "DENSITY"
   )
 
   # object
@@ -339,16 +339,8 @@ test_that("ffi_regen_table_process works as intended", {
     .verbose = FALSE
   )
   expected_names <- c(
-    "ID_UNIQUE_PLOT",
-    "PLOT",
-    "DEP",
-    "YEAR",
-    "SP_CODE",
-    "SP_NAME",
-    "COVER",
-    "DBH",
-    "Height",
-    "GrowthForm"
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "YEAR", "SP_CODE",
+    "SP_NAME", "COVER", "DBH", "Height", "GrowthForm"
   )
 
   # object
@@ -433,9 +425,9 @@ test_that("ffi_tables_process works as intended", {
 
   # tests data
   expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
-    "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
-    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY",
+    "VISITE", "YEAR", "COORD1", "COORD2", "crs", "ASPECT",
+    "SLOPE", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
 
@@ -557,9 +549,9 @@ test_that("ffi_to_tibble works as intended", {
 
   # tests data
   expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
-    "COORD1", "COORD1_ORIGINAL", "COORD2", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
-    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen"
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY",
+    "VISITE", "YEAR", "COORD1", "COORD2", "crs", "ASPECT",
+    "SLOPE", "COORD_SYS", "tree", "understory", "regen"
     # "soils"
   )
   test_years <- c(2015, 2019)
@@ -586,10 +578,9 @@ test_that("ffi_to_tibble works as intended", {
 
   # tests for clean_empty and as_sf arguments
   sf_expected_names <- c(
-    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY", "VISITE", "YEAR",
-    "COORD1_ORIGINAL", "COORD2_ORIGINAL", "crs", "ASPECT", "ASPECT_ORIGINAL",
-    "SLOPE", "SLOPE_ORIGINAL", "COORD_SYS", "tree", "understory", "regen",
-    "geometry", "crs_orig"
+    "ID_UNIQUE_PLOT", "PLOT", "DEP", "DEP_NAME", "COUNTRY",
+    "VISITE", "YEAR", "crs", "ASPECT", "SLOPE", "COORD_SYS",
+    "tree", "understory", "regen", "geometry", "crs_orig"
     # "soils"
   )
   expect_s3_class(
