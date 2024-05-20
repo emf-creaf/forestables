@@ -46,7 +46,7 @@ Workflows with all three inventories (FFI, FIA and IFN) are shown below
 For the French forest inventory (FFI), we are gonna select all mediterranean plots
 sampled in 2012. First step is to select de departments the plots we want are in.
 
-```{r ffi_mediterranean_deps, eval = FALSE}
+```{r ffi_mediterranean_deps, eval = TRUE}
 # choose the departments, those in the mediterranean area
 mediterranean_deps <- c(
   "04", "06", "11", "13", "30",
@@ -60,7 +60,7 @@ For this we need the inventory we want plots from, the folder containing the
 downloaded inventory files and a vector with the department codes (as created
 above):
 
-```{r ffi_selection, eval = FALSE}
+```{r ffi_selection, eval = TRUE}
 # get the plots for those departments
 mediterranean_plots <- show_plots_from(
   inventory = "FFI",
@@ -73,7 +73,7 @@ mediterranean_plots
 These are all the plots present in those departments for all
 years, but we want 2012 plots, so we filter the results by campaign year:
 
-```{r ffi_selection_2012, eval = FALSE}
+```{r ffi_selection_2012, eval = TRUE}
 mediterranean_plots_2012 <- mediterranean_plots |>
   filter(CAMPAGNE == 2012)
 mediterranean_plots_2012
@@ -82,7 +82,7 @@ mediterranean_plots_2012
 Also, we need a the polygons for the departments for plotting results later.
 To obtain them, we are gonna use the [`rnaturalearth`]() R package:
 
-```{r ffi_department_polygons, eval = FALSE}
+```{r ffi_department_polygons, eval = TRUE}
 # france map for plotting
 south_france_map <- ne_states(geounit = "france") |>
   select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
@@ -93,7 +93,7 @@ south_france_map
 
 Now we can visualize the plots selected:
 
-```{r ffi_plots_loc, eval = FALSE}
+```{r ffi_plots_loc, eval = TRUE}
 ggplot(south_france_map) +
   geom_sf() +
   geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
@@ -103,7 +103,7 @@ ggplot(south_france_map) +
 Seems like we have the plots we need, so we are going to create a *filter list*
 to use it to retrieve those plots data from the inventory files:
 
-```{r ffi_filter_list_creation, eval = FALSE}
+```{r ffi_filter_list_creation, eval = TRUE}
 ffi_filter_list <- mediterranean_plots_2012 |>
   create_filter_list()
 
@@ -118,7 +118,7 @@ And we are ready for retrieving the data from the plots with `ffi_to_tibble()`. 
 that we need the department codes, the year, the filter list we obtained before and
 the path to the folder containing the inventory files.
 
-```{r ffi_data_2012, eval = FALSE}
+```{r ffi_data_2012, eval = TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -135,106 +135,32 @@ ffi_data_2012 <- ffi_to_tibble(
 ffi_data_2012
 ```
 
-
+Now we can explore the data, for example the most abundant species
+and their density (trees/ha):
 
 ```{r, eval = FALSE}
 ffi_data_2012 |>
+  # clean plots without tree data
   clean_empty(c("tree")) |>
+  # convert inventory table to sf/spatial object
   inventory_as_sf() |>
+  # unnest the tree data
   unnest("tree") |>
+  # calculate density by species in each plot
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
   dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), DEP = unique(DEP), n = n()) |>
   dplyr::filter(!is.nan(DENSITY)) |>
+  # filter species with 25 or less entries (plots)
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
   dplyr::filter(n > 25, DENSITY < 300) |>
-  dplyr::left_join(as_tibble(france_map), by = c("DEP" = "dep_code")) |>
+  # let's plot
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  geom_sf(data = south_france_map, alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~SP_NAME) +
+  facet_wrap(~SP_NAME, ncol = 3) +
   theme_minimal()
-```
-
-
-### FFI Tree diagnostics
-
-```{r tree_diagnostics, eval = FALSE}
-# understory
-data_2012 |>
-  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs = 4326) |>
-  tidyr::unnest(understory, names_sep = "_") |>
-  tidyr::unnest(understory_herbs, names_sep = "_") |>
-  ggplot() +
-  geom_sf(data = france_map) +
-  geom_sf(aes(color = understory_herbs_HERB)) +
-  scale_color_gradientn(colors = hcl.colors(20, "SunsetDark"))
-
-
-data_clean_2012 <- data_2012 |>
-  dplyr::filter(!purrr::map_lgl(data_2012$tree, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(data_2012$crs)) |>
-  sf::st_transform(crs = 4326)
-
-na_in_diameter_index <- purrr::map_lgl(
-  seq_len(nrow(data_clean_2012)),
-  .f = \(i) {
-    data_clean_2012 |>
-      dplyr::pull(tree) |>
-      magrittr::extract2(i) |>
-      dplyr::pull(DIA) |>
-      is.na() |>
-      all()
-  }
-)
-
-na_in_density_index <- purrr::map_lgl(
-  seq_len(nrow(data_clean_2012)),
-  .f = \(i) {
-    data_clean_2012 |>
-      dplyr::pull(tree) |>
-      magrittr::extract2(i) |>
-      dplyr::pull(DENSITY) |>
-      is.na() |>
-      all()
-  }
-)
-
-na_in_ht_index <- purrr::map_lgl(
-  seq_len(nrow(data_clean_2012)),
-  .f = \(i) {
-    data_clean_2012 |>
-      dplyr::pull(tree) |>
-      magrittr::extract2(i) |>
-      dplyr::pull(HT) |>
-      is.na() |>
-      all()
-  }
-)
-
-na_in_sp_name_index <- purrr::map_lgl(
-  seq_len(nrow(data_clean_2012)),
-  .f = \(i) {
-    data_clean_2012 |>
-      dplyr::pull(tree) |>
-      magrittr::extract2(i) |>
-      dplyr::pull(SP_NAME) |>
-      is.na() |>
-      all()
-  }
-)
-
-identical(na_in_diameter_index, na_in_ht_index)
-sum(na_in_diameter_index)
-sum(na_in_ht_index)
-sum(na_in_sp_name_index)
-
-
-data_clean_2012 |>
-  tidyr::unnest(tree, names_sep = "_")
 ```
 
 ## FIA workflow
@@ -306,46 +232,37 @@ fia_data_2012 <- fia_to_tibble(
 )
 ```
 
+As we did with the French inventory, we can now explore the data,
+for example, the most abundant species and their density (trees/ha):
+
 ```{r, eval = FALSE}
 fia_data_2012 |>
-  clean_empty(c("tree", "regen")) |>
+  # clean plots without tree data
+  clean_empty(c("tree")) |>
+  # convert inventory table to sf/spatial object
   inventory_as_sf() |>
+  # unnest the tree data
   unnest("tree") |>
+  # calculate density by species in each plot
   dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
-  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
+  dplyr::summarise(
+    DENSITY = mean(DENSITY, na.rm = TRUE),
+    STATEAB = unique(STATEAB), n = n(),
+    geometry = first(geometry)
+  ) |>
   dplyr::filter(!is.nan(DENSITY)) |>
+  # filter species with 100 or less entries (plots)
   dplyr::group_by(SP_NAME) |>
   dplyr::mutate(n = n()) |>
   dplyr::filter(n > 100) |>
-  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "state_code")) |>
+  # let's plot
   ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
+  geom_sf(data = south_france_map, alpha = 0, linewidth = 0.3) +
+  geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~SP_NAME) +
-  theme_minimal()
-
-fia_data_2012 |>
-  dplyr::filter(!purrr::map_lgl(fia_data_2012$regen, rlang::is_empty)) |>
-  sf::st_as_sf(coords = c("COORD1", "COORD2"), crs = unique(fia_data_2012$COORD_SYS)) |>
-  sf::st_transform(crs = 4326) |>
-  as_tibble() |>
-  tidyr::unnest("regen") |>
-  dplyr::group_by(ID_UNIQUE_PLOT, SP_NAME) |>
-  dplyr::summarise(DENSITY = mean(DENSITY, na.rm = TRUE), STATEAB = unique(STATEAB), n = n(), geometry = first(geometry)) |>
-  dplyr::filter(!is.nan(DENSITY)) |>
-  dplyr::group_by(SP_NAME) |>
-  dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 100, DENSITY < 300) |>
-  dplyr::left_join(as_tibble(west_coast_map), by = c("STATEAB" = "dep_code")) |>
-  ggplot() +
-  geom_sf(aes(geometry = geometry.y), data = ~ distinct(as_tibble(.x)[, c("geometry.y")]), alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry.x, color = DENSITY), size = 2.2, alpha = 0.8) +
-  scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~SP_NAME) +
+  facet_wrap(~SP_NAME, ncol = 3) +
   theme_minimal()
 ```
-
 
 ## IFN workflow
 
