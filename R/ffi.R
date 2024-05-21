@@ -296,8 +296,8 @@ ffi_tables_process <- function(
 
   cd_ref <-  metadonnees |>
     dplyr::filter(.data$UNITE == "CDREF13") |>
-    dplyr::mutate(lib_cdref = stringr::str_remove_all(.data$Libelle, "\\s*\\(.*?\\)")) |>
-    dplyr::rename(CD_REF = "Code")
+    dplyr::rename(CD_REF = "Code", Libelle = "Libell\u00e9") |>
+    dplyr::mutate(lib_cdref = stringr::str_remove_all(.data$Libelle, "\\s*\\(.*?\\)"))
 
   idp_dep_ref <- .read_inventory_data(
     fs::path(folder, "PLACETTE.csv"),
@@ -496,7 +496,7 @@ ffi_plot_table_process <- function(
     dplyr::left_join(
       y = metadonnees |>
         dplyr::filter(.data$UNITE == "DP") |>
-        dplyr::rename(DEP = "Code", DEP_NAME = "Libelle") |>
+        dplyr::rename(DEP = "Code", DEP_NAME = "Libell\u00e9") |>
         dplyr::select("DEP", "DEP_NAME"),
       by = "DEP"
     ) |>

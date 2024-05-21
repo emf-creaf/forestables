@@ -58,7 +58,7 @@ test_espar_cdref <- .read_inventory_data(
   dplyr::as_tibble() |>
   dplyr::rename(
     ESPAR = "// espar",
-    Libellé  = lib_espar
+    Libelle  = lib_espar
   ) |>
   #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
   dplyr::mutate(ESPAR = dplyr::case_when(
@@ -89,10 +89,10 @@ test_cdref <- test_metadonnees |>
   dplyr::filter(
     UNITE == "CDREF13"
   ) |>
+  dplyr::rename(CD_REF = Code, Libelle = "Libell\u00e9") |>
   dplyr::mutate(
-    lib_cdref = stringr::str_remove_all(Libellé, "\\s*\\(.*?\\)")
-  ) |>
-  dplyr::rename(CD_REF = Code)
+    lib_cdref = stringr::str_remove_all(Libelle, "\\s*\\(.*?\\)")
+  )
 
 # growth_form_lignified_france comes from internal data
 test_growth_form_lignified_france <- growth_form_lignified_france
