@@ -241,3 +241,68 @@ test_that("show_plots_from works as intended", {
   expect_true(length(test_fia_res[[2]]) > 0)
   expect_true(length(test_ifn_res[[2]]) > 0)
 })
+
+test_that("clean_empty works as expected", {
+  # clean empty method per se is tested in each inventory tests.
+  # Here we only test the assertions
+  inventory_data_test <- tibble::tibble(
+    tree = list(), regen = list(), understory = list()
+  )
+  inventory_data_no_tree <- inventory_data_test |>
+    dplyr::select(-tree)
+  inventory_data_no_regen <- inventory_data_test |>
+    dplyr::select(-regen)
+  inventory_data_no_understory <- inventory_data_test |>
+    dplyr::select(-understory)
+
+  # inventory_data assertions
+  expect_error(
+    clean_empty(inventory_data_no_tree, c("tree", "regen", "understory")),
+    "must have columns"
+  )
+  expect_error(
+    clean_empty(inventory_data_no_regen, c("tree", "regen", "understory")),
+    "must have columns"
+  )
+  expect_error(
+    clean_empty(inventory_data_no_understory, c("tree", "regen", "understory")),
+    "must have columns"
+  )
+
+  # cols assertions
+  expect_error(
+    clean_empty(inventory_data_test, cols = 25),
+    "must be one or more"
+  )
+  expect_error(
+    clean_empty(inventory_data_test, cols = c("tree", "regen", "tururu")),
+    "must be one or more"
+  )
+})
+
+test_that("inventory_as_sf works as intended", {
+  # conversion to sf method per se is tested in each inventory tests.
+  # Here we only test the assertions
+  inventory_data_test <- tibble::tibble(
+    COORD1 = numeric(), COORD2 = numeric(), crs = numeric()
+  )
+  inventory_data_no_coord1 <- inventory_data_test |>
+    dplyr::select(-COORD1)
+  inventory_data_no_coord2 <- inventory_data_test |>
+    dplyr::select(-COORD2)
+  inventory_data_no_crs <- inventory_data_test |>
+    dplyr::select(-crs)
+  
+  expect_error(
+    inventory_as_sf(inventory_data_no_coord1),
+    "must have columns for coordinates and crs"
+  )
+  expect_error(
+    inventory_as_sf(inventory_data_no_coord2),
+    "must have columns for coordinates and crs"
+  )
+  expect_error(
+    inventory_as_sf(inventory_data_no_crs),
+    "must have columns for coordinates and crs"
+  )
+})

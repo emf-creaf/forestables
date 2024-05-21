@@ -257,10 +257,10 @@ fia_data_2012 |>
   dplyr::filter(n > 100) |>
   # let's plot
   ggplot() +
-  geom_sf(data = south_france_map, alpha = 0, linewidth = 0.3) +
+  geom_sf(data = west_coast_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = DENSITY), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~SP_NAME, ncol = 3) +
+  facet_wrap(~SP_NAME, ncol = 6) +
   theme_minimal()
 ```
 
