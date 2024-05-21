@@ -2,6 +2,10 @@ skip_if(
   any(c(Sys.getenv("fia_path"), Sys.getenv("ffi_path"), Sys.getenv("ifn_path")) == ""),
   "No testing data found skipping tests"
 )
+skip_if(
+  Sys.which("grep") == "",
+  "grep not found in system commands"
+)
 
 # build path and input ------------------------------------------------------------------------
 
