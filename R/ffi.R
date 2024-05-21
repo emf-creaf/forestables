@@ -270,7 +270,7 @@ ffi_tables_process <- function(
     dplyr::as_tibble() |>
     dplyr::rename(
       ESPAR = "// espar",
-      Libellé = "lib_espar"
+      Libelle = "lib_espar"
     ) |>
     #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
     dplyr::mutate(ESPAR = dplyr::case_when(
@@ -291,12 +291,12 @@ ffi_tables_process <- function(
       show_col_types = FALSE
     )
   ) |>
-    dplyr::rename(UNITE = "// Unité") |>
+    dplyr::rename(UNITE = "// Unit\u00e9") |>
     dplyr::as_tibble()
 
   cd_ref <-  metadonnees |>
     dplyr::filter(.data$UNITE == "CDREF13") |>
-    dplyr::mutate(lib_cdref = stringr::str_remove_all(.data$Libellé, "\\s*\\(.*?\\)")) |>
+    dplyr::mutate(lib_cdref = stringr::str_remove_all(.data$Libelle, "\\s*\\(.*?\\)")) |>
     dplyr::rename(CD_REF = "Code")
 
   idp_dep_ref <- .read_inventory_data(
@@ -496,7 +496,7 @@ ffi_plot_table_process <- function(
     dplyr::left_join(
       y = metadonnees |>
         dplyr::filter(.data$UNITE == "DP") |>
-        dplyr::rename(DEP = "Code", DEP_NAME = "Libellé") |>
+        dplyr::rename(DEP = "Code", DEP_NAME = "Libelle") |>
         dplyr::select("DEP", "DEP_NAME"),
       by = "DEP"
     ) |>
@@ -696,7 +696,6 @@ ffi_tree_table_process <- function(
       "SP_CODE", "SP_NAME", "STATUS", "STATUS5", "DIA", "Height", "DENSITY"
     ) |>
     # homogeneization
-    # añadir condiciones en funcion de si es na o no ??
     dplyr::group_by(.data$ID_UNIQUE_PLOT) |>
     #important DO NOT CHANGE THIS:  WE ARRANGE BY PLOT, TREE AND YEAR,
     #some variables are register only in first visit but are important to have in revisit
@@ -813,16 +812,16 @@ ffi_shrub_table_process <- function(
       YEAR = .data$CAMPAGNE,
       # conversion to percentage
       ABOND = dplyr::case_when(
-        # présence faible	Taux de recouvrement de l'espèce inférieur à 5 % et présence faible.
+        # presence faible	Taux de recouvrement de l'espece inferieur a 5 % et presence faible.
         .data$ABOND == 1 ~ 5,
-        #présence nette	Taux de recouvrement de l'espèce inférieur à 25 % mais présence nette.
+        #presence nette	Taux de recouvrement de l'espece inferieur a 25 % mais presence nette.
         .data$ABOND == 	2	~ 12.5,
-        #Taux de recouvrement de l'espèce compris entre 25 et 50 %
+        #Taux de recouvrement de l'espece compris entre 25 et 50 %
         .data$ABOND	== 3 ~	37.5,
-        #Taux de recouvrement de l'espèce compris entre 25 et 50 %
-        #Taux de recouvrement de l'espèce compris entre 50% et 75 %.
+        #Taux de recouvrement de l'espece compris entre 25 et 50 %
+        #Taux de recouvrement de l'espece compris entre 50% et 75 %.
         .data$ABOND	== 4 ~	62.5,
-        #	Taux de recouvrement de l'espèce supérieur à 75%.
+        #	Taux de recouvrement de l'espece superieur a 75%.
         .data$ABOND	== 5 ~	87.5
       )
     ) |>

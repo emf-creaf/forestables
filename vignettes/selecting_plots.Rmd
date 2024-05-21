@@ -12,7 +12,8 @@ editor_options:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -46,7 +47,7 @@ Workflows with all three inventories (FFI, FIA and IFN) are shown below
 For the French forest inventory (FFI), we are gonna select all mediterranean plots
 sampled in 2012. First step is to select de departments the plots we want are in.
 
-```{r ffi_mediterranean_deps, eval = TRUE}
+```{r ffi_mediterranean_deps, eval = FALSE}
 # choose the departments, those in the mediterranean area
 mediterranean_deps <- c(
   "04", "06", "11", "13", "30",
@@ -60,7 +61,7 @@ For this we need the inventory we want plots from, the folder containing the
 downloaded inventory files and a vector with the department codes (as created
 above):
 
-```{r ffi_selection, eval = TRUE}
+```{r ffi_selection, eval = FALSE}
 # get the plots for those departments
 mediterranean_plots <- show_plots_from(
   inventory = "FFI",
@@ -73,7 +74,7 @@ mediterranean_plots
 These are all the plots present in those departments for all
 years, but we want 2012 plots, so we filter the results by campaign year:
 
-```{r ffi_selection_2012, eval = TRUE}
+```{r ffi_selection_2012, eval = FALSE}
 mediterranean_plots_2012 <- mediterranean_plots |>
   filter(CAMPAGNE == 2012)
 mediterranean_plots_2012
@@ -82,7 +83,7 @@ mediterranean_plots_2012
 Also, we need a the polygons for the departments for plotting results later.
 To obtain them, we are gonna use the [`rnaturalearth`]() R package:
 
-```{r ffi_department_polygons, eval = TRUE}
+```{r ffi_department_polygons, eval = FALSE}
 # france map for plotting
 south_france_map <- ne_states(geounit = "france") |>
   select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
@@ -93,7 +94,7 @@ south_france_map
 
 Now we can visualize the plots selected:
 
-```{r ffi_plots_loc, eval = TRUE}
+```{r ffi_plots_loc, eval = FALSE}
 ggplot(south_france_map) +
   geom_sf() +
   geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
@@ -103,7 +104,7 @@ ggplot(south_france_map) +
 Seems like we have the plots we need, so we are going to create a *filter list*
 to use it to retrieve those plots data from the inventory files:
 
-```{r ffi_filter_list_creation, eval = TRUE}
+```{r ffi_filter_list_creation, eval = FALSE}
 ffi_filter_list <- mediterranean_plots_2012 |>
   create_filter_list()
 
@@ -118,7 +119,7 @@ And we are ready for retrieving the data from the plots with `ffi_to_tibble()`. 
 that we need the department codes, the year, the filter list we obtained before and
 the path to the folder containing the inventory files.
 
-```{r ffi_data_2012, eval = TRUE}
+```{r ffi_data_2012, eval = FALSE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -317,8 +318,8 @@ ifn_data <- ifn_to_tibble(
 tictoc::toc()
 
 density_map_ifn <- ifn_data |>
-  esus:::clean_empty(c("tree", "regen")) |>
-  esus:::inventory_as_sf() |>
+  clean_empty(c("tree", "regen")) |>
+  inventory_as_sf() |>
   # dplyr::filter(!purrr::map_lgl(ifn_data$tree, rlang::is_empty)) |>
   # dplyr::group_by(crs) |>
   # dplyr::group_modify(

@@ -92,7 +92,7 @@ ifn_to_tibble <- function(
     msg = cli::cli_abort("provinces must be a character vector with at least one province code")
   )
   # provinces are valid
-  valid_provinces <- esus:::ifn_plots_thesaurus |>
+  valid_provinces <- ifn_plots_thesaurus |>
     dplyr::pull(.data$PROVINCIA) |>
     unique() |>
     sort()
@@ -697,7 +697,7 @@ ifn_regen_table_process <- function(
         "ID_UNIQUE_PLOT", "province_code", "PLOT", "SP_CODE",
         "SP_NAME", "DBH", "Height", "DENSITY", "N"
       ) |>
-      dplyr::filter(complete.cases(.data$DBH, .data$Height, .data$N))
+      dplyr::filter(stats::complete.cases(.data$DBH, .data$Height, .data$N))
 
     # Return regen
     return(regeneration)
@@ -865,7 +865,7 @@ ifn_plot_table_process <- function(
     # "03", A is 7, B is 6 and C is 2
     plot_coord_fixed_data <- plot_filtered_data |>
       dplyr::filter(!is.na(.data$COORDEX), !is.na(.data$COORDEY)) |>
-      dplyr:::mutate(
+      dplyr::mutate(
         # debug vars, will be removed in the output object
         coordx_orig = .data$COORDEX,
         coordy_orig = .data$COORDEY,

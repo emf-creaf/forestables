@@ -111,7 +111,7 @@ test_ifn4_input <- suppressWarnings(
   )
 )
 
-test_ifn234_plots <- esus:::ifn_plots_thesaurus |>
+test_ifn234_plots <- ifn_plots_thesaurus |>
   dplyr::filter(dplyr::if_all(dplyr::starts_with("class_"), ~ . != "xx")) |>
   dplyr::select(id_code, PROVINCIA) |>
   dplyr::group_by(PROVINCIA) |>
@@ -126,8 +126,8 @@ test_ifn234_plots$tururu <- c("tururu_0355_NN_A1_A1")
 test_ifn234_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 test_ifn234_provinces <- names(test_ifn234_plots)
 test_ifn234_folder <- Sys.getenv("ifn_path")
-test_ifn234_especies <- esus:::species_ifn_internal
-test_ifn234_provinces_dictionary <- esus:::ifn_provinces_dictionary
+test_ifn234_especies <- species_ifn_internal
+test_ifn234_provinces_dictionary <- ifn_provinces_dictionary
 test_ifn234_versions <- c("ifn2", "ifn3", "ifn4")
 
 # individual tables ---------------------------------------------------------------------------
