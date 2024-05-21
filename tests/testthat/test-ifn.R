@@ -1241,6 +1241,8 @@ test_that("ifn_tables_process ifn2 works as intended", {
     purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
+  test_ifn2_plots$tururu <- c("tururu_0355_NN_A1_A1")
+  test_ifn2_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 
   # tests data
   expected_names <- c(
@@ -1317,6 +1319,8 @@ test_that("ifn_tables_process ifn3 works as intended", {
     purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
+  test_ifn3_plots$tururu <- c("tururu_0355_NN_A1_A1")
+  test_ifn3_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 
   # tests data
   expected_names <- c(
@@ -1394,6 +1398,8 @@ test_that("ifn_tables_process ifn4 works as intended", {
     purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
+  test_ifn4_plots$tururu <- c("tururu_0355_NN_A1_A1")
+  test_ifn4_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 
   # tests data
   expected_names <- c(
@@ -1468,6 +1474,8 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
     purrr::map(\(x) {
       sample(x, 5, replace = TRUE) |> unique()
     })
+  test_ifn234_plots$tururu <- c("tururu_0355_NN_A1_A1")
+  test_ifn234_plots$`91` <- c("91_6115_NN_A1_A1", "91_0000_NN_A1_A1")
 
   # tests data
   expected_names <- c(
