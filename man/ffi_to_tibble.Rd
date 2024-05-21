@@ -91,3 +91,16 @@ to \code{\link[future.callr]{callr}}, will allow \code{ffi_to_tibble} to use par
 when retrieving the data.
 }
 
+\examples{
+\donttest{
+\dontrun{
+library(esus)
+ffi_to_tibble(
+  departments = c("01"), years = c(2019),
+  filter_list = list("01" = c(1404119)),
+  folder = "path/to/ffi/data"
+)
+}
+}
+
+}

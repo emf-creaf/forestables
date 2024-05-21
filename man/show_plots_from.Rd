@@ -48,6 +48,8 @@ the provinces and \code{versions}, a character vector with the IFN versions to l
 }
 
 \examples{
+\donttest{
+\dontrun{
 library(esus)
 
 # FIA
@@ -56,5 +58,7 @@ show_plots_from("FIA", folder = ".", states = "OR")
 show_plots_from("FFI", folder = ".", departments = "21")
 # IFN
 show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
+}
+}
 
 }

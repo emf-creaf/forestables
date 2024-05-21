@@ -58,6 +58,18 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
+#' 
+#' @examples
+#' \donttest{
+#' \dontrun{
+#' library(esus)
+#' fia_to_tibble(
+#'   years = 2014, states = c("OR"),
+#'   filter_list = list("OR" = list("59" = c(76413))),
+#'   folder = "path/to/fia/data"
+#' )
+#' }
+#' }
 #'
 #' @export
 fia_to_tibble <- function(

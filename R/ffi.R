@@ -58,6 +58,18 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, and herbs
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
+#' 
+#' @examples
+#' \donttest{
+#' \dontrun{
+#' library(esus)
+#' ffi_to_tibble(
+#'   departments = c("01"), years = c(2019),
+#'   filter_list = list("01" = c(1404119)),
+#'   folder = "path/to/ffi/data"
+#' )
+#' }
+#' }
 #'
 #' @export
 ffi_to_tibble <- function(

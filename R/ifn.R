@@ -56,6 +56,18 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
+#' 
+#' @examples
+#' \donttest{
+#' \dontrun{
+#' library(esus)
+#' ifn_to_tibble(
+#'   provinces = c("24"), versions = c("ifn3"),
+#'   filter_list = list("24" = c("24_0270_xx_A4_xx")),
+#'   folder = "path/to/ifn/data"
+#' )
+#' }
+#' }
 #'
 #' @export
 ifn_to_tibble <- function(

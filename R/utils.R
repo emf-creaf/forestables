@@ -50,6 +50,8 @@ verbose_msg <- function(msg, .verbose) {
 #'   provincia (IFN) and year/date/IFN version
 #'
 #' @examples
+#' \donttest{
+#' \dontrun{
 #' library(esus)
 #'
 #' # FIA
@@ -58,6 +60,8 @@ verbose_msg <- function(msg, .verbose) {
 #' show_plots_from("FFI", folder = ".", departments = "21")
 #' # IFN
 #' show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
+#' }
+#' }
 #'
 #' @export
 show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ...) {
@@ -104,7 +108,8 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 #'   \code{\link{ffi_to_tibble}}, \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}
 #'
 #' @examples
-#'
+#' \donttest{
+#' \dontrun{
 #' library(esus)
 #'
 #' # FIA
@@ -116,6 +121,8 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 #' # IFN
 #' show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4") |>
 #'   create_filter_list()
+#' }
+#' }
 #'
 #' @export
 create_filter_list <- function(plots_info) {
@@ -237,6 +244,37 @@ create_filter_list <- function(plots_info) {
 #'
 #' @return A tibble the same as \code{inventory_data} with the
 #'   empty data removed for the columns selected.
+#' 
+#' @examples
+#' \donttest{
+#' \dontrun{
+#' library(esus)
+#' 
+#' # FFI
+#' ffi_to_tibble(
+#'   departments = c("01"), years = c(2019),
+#'   filter_list = list("01" = c(1404119)),
+#'   folder = "path/to/ffi/data"
+#' ) |>
+#'   clean_empty(c("tree", "regen", "understory"))
+#' 
+#' # FIA
+#' fia_to_tibble(
+#'   years = 2019, states = c("OR"),
+#'   filter_list = list("OR" = list("59" = c(76413))),
+#'   folder = "path/to/fia/data"
+#' ) |>
+#'   clean_empty(c("tree", "regen", "understory"))
+#' 
+#' # IFN
+#' ifn_to_tibble(
+#'   provinces = c("24"), versions = c("ifn3"),
+#'   filter_list = list("24" = c("24_0270_xx_A4_xx")),
+#'   folder = "path/to/ifn/data"
+#' ) |>
+#'   clean_empty(c("tree", "regen", "understory"))
+#' }
+#' }
 #'
 #' @export
 clean_empty <- function(inventory_data, cols) {
@@ -282,6 +320,37 @@ clean_empty <- function(inventory_data, cols) {
 #'
 #' @return An sf object with the same data as \code{inventory_data}
 #'   and a new column with the original crs for traceability.
+#' 
+#' @examples
+#' \donttest{
+#' \dontrun{
+#' library(esus)
+#' 
+#' # FFI
+#' ffi_to_tibble(
+#'   departments = c("01"), years = c(2019),
+#'   filter_list = list("01" = c(1404119)),
+#'   folder = "path/to/ffi/data"
+#' ) |>
+#'   inventory_as_sf()
+#' 
+#' # FIA
+#' fia_to_tibble(
+#'   years = 2019, states = c("OR"),
+#'   filter_list = list("OR" = list("59" = c(76413))),
+#'   folder = "path/to/fia/data"
+#' ) |>
+#'   inventory_as_sf()
+#' 
+#' # IFN
+#' ifn_to_tibble(
+#'   provinces = c("24"), versions = c("ifn3"),
+#'   filter_list = list("24" = c("24_0270_xx_A4_xx")),
+#'   folder = "path/to/ifn/data"
+#' ) |>
+#'   inventory_as_sf()
+#' }
+#' }
 #'
 #' @export
 inventory_as_sf <- function(inventory_data) {

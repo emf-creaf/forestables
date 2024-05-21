@@ -89,3 +89,16 @@ to \code{\link[future.callr]{callr}}, will allow \code{ifn_to_tibble} to use par
 when retrieving the data.
 }
 
+\examples{
+\donttest{
+\dontrun{
+library(esus)
+ifn_to_tibble(
+  provinces = c("24"), versions = c("ifn3"),
+  filter_list = list("24" = c("24_0270_xx_A4_xx")),
+  folder = "path/to/ifn/data"
+)
+}
+}
+
+}

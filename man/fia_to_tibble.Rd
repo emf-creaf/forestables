@@ -91,3 +91,16 @@ to \code{\link[future.callr]{callr}}, will allow \code{fia_to_tibble} to use par
 when retrieving the data.
 }
 
+\examples{
+\donttest{
+\dontrun{
+library(esus)
+fia_to_tibble(
+  years = 2019, states = c("OR"),
+  filter_list = list("OR" = list("59" = c(76413))),
+  folder = "path/to/fia/data"
+)
+}
+}
+
+}

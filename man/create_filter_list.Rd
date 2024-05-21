@@ -24,7 +24,8 @@ creates a \code{filter_list} object ready to be use with \code{\link{ffi_to_tibb
 inventory from the data supplied.
 }
 \examples{
-
+\donttest{
+\dontrun{
 library(esus)
 
 # FIA
@@ -36,5 +37,7 @@ show_plots_from("FFI", folder = ".", departments = "21") |>
 # IFN
 show_plots_from("IFN", folder = ".", provinces = "24", version = "ifn4") |>
   create_filter_list()
+}
+}
 
 }
