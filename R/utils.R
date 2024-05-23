@@ -167,10 +167,8 @@ create_filter_list <- function(plots_info) {
 
   # check if we are reading IFN data
   if (isTRUE(.ifn)) {
-    res <- .read_ifn_data(input, ...) |>
-      dtplyr::lazy_dt(immutable = TRUE)
-
-    return(res)
+    res <- .read_ifn_data(input, ...)
+    return(dtplyr::lazy_dt(res, immutable = TRUE))
   }
 
   # check if special input is provided
