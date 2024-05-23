@@ -348,12 +348,22 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
     # read the table
     res <- Hmisc::mdb.get(input, tables = table_name)
   } else {
-    res <- RODBC::odbcConnectAccess2007(input) |>
+    file_conn <- RODBC::odbcConnectAccess2007(input)
+    # If drivers are not found in the system file_conn will be -1 (numeric)
+    if (fs::file_exists(input) & is.numeric(file_conn) & file_conn < 0) {
+      cli::cli_warn(c(
+        "x" = "Driver for {.emph accdb} files not found",
+        "i" = "If both R and Microsoft Access are installed, ensure they are in the same architecture (32 or 64 bits)",
+        "i" = "If no installation of Microsoft Access is desired, check {.link https://www.microsoft.com/en-us/download/details.aspx?id=54920} to install only the necessary drivers"
+      ))
+      cli::cli_abort("Aborting")
+    }
+
+    res <- file_conn |>
       RODBC::sqlFetch(table_name)
   }
 
   return(res)
-
 }
 
 #' Helper to translate province code to IFN 4 province/autnomous community name
