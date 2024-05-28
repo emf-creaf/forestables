@@ -902,7 +902,7 @@ test_that("fia_to_tibble works as intended", {
   # object
   expect_s3_class(
     test_res <- suppressWarnings(fia_to_tibble(
-      test_years, test_states, test_plots, test_folder,
+      test_states, test_years, test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     )),
@@ -932,7 +932,7 @@ test_that("fia_to_tibble works as intended", {
   )
   expect_s3_class(
     sf_res <- suppressWarnings(fia_to_tibble(
-      test_years, test_states, test_plots, test_folder,
+      test_states, test_years, test_plots, test_folder,
       as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
@@ -950,7 +950,7 @@ test_that("fia_to_tibble works as intended", {
   # states
   expect_error(
     fia_to_tibble(
-      test_years, 1:7, test_plots, test_folder,
+      1:7, test_years, test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -958,7 +958,7 @@ test_that("fia_to_tibble works as intended", {
   )
   expect_error(
     fia_to_tibble(
-      test_years, character(), test_plots, test_folder,
+      character(), test_years, test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -967,7 +967,7 @@ test_that("fia_to_tibble works as intended", {
   # years
   expect_error(
     fia_to_tibble(
-      as.character(test_years), test_states, test_plots, test_folder,
+      test_states, as.character(test_years), test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -975,7 +975,7 @@ test_that("fia_to_tibble works as intended", {
   )
   expect_error(
     fia_to_tibble(
-      numeric(), test_states, test_plots, test_folder,
+      test_states, numeric(), test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -984,7 +984,7 @@ test_that("fia_to_tibble works as intended", {
   # folder
   expect_error(
     fia_to_tibble(
-      test_years, test_states, test_plots, "nonexistentfolder",
+      test_states, test_years, test_plots, "nonexistentfolder",
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -994,7 +994,7 @@ test_that("fia_to_tibble works as intended", {
   # parallel options
   expect_error(
     fia_to_tibble(
-      test_years, test_states, test_plots, test_folder,
+      test_states, test_years, test_plots, test_folder,
       .parallel_options = list(scheduling = 1L, stdout = TRUE),
       .verbose = FALSE
     ),
@@ -1003,7 +1003,7 @@ test_that("fia_to_tibble works as intended", {
   # verbose
   expect_error(
     fia_to_tibble(
-      test_years, test_states, test_plots, test_folder,
+      test_states, test_years, test_plots, test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = "FALSE"
     ),
@@ -1012,7 +1012,7 @@ test_that("fia_to_tibble works as intended", {
   # ancillary data (tested just by providing an existing wrong folder)
   expect_error(
     fia_to_tibble(
-      test_years, test_states, test_plots, ".",
+      test_states, test_years, test_plots, ".",
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     ),
@@ -1022,7 +1022,7 @@ test_that("fia_to_tibble works as intended", {
   # what to expect if states or filter list are all wrong
   expect_error(
     suppressWarnings(fia_to_tibble(
-      test_years, test_states[7], test_plots[7], test_folder,
+      test_states[7], test_years, test_plots[7], test_folder,
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     )),

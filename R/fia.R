@@ -6,18 +6,16 @@
 #' for the states and plots provided. For that, csv files from FIA must reside in the folder
 #' indicated in the \code{folder} argument.
 #'
-#' @param years A numeric vector with the years to extract de data from.
 #' @param states A character vector with the two letters code for the states to extract the data
 #'   from.
+#' @param years A numeric vector with the years to extract de data from.
 #' @param filter_list A nested list of states, counties and plots to extract the data from.
 #'   If left \code{NULL} all plots for the state for all years will be extracted, which can use a
 #'   big amount of memory. See details.
 #' @param folder The path to the folder containing the FIA csv files, as character.
-#' @param clean_empty Vector with column names from where to remove empty
-#'   results. Can be one or more of \code{"tree"},
-#'   \code{"understory"} and \code{"regen"}. If more than one,
-#'   only plots with data in all columns selected will be
-#'   retained.
+#' @param clean_empty Vector with column names from where to remove empty results. Can be one or
+#'   more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
+#'   with data in all columns selected will be retained.
 #' @param as_sf Logical indicating if the data must be returned as an spatial object. This always
 #'   can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.
 #' @param ... Not used at the moment
@@ -40,7 +38,7 @@
 #'   )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
-#'   \code{vignette("filtering_plots", pkg = "esus")} for more details.
+#'   \code{vignette("selecting_plots", pkg = "esus")} for more details.
 #'
 #' @section Parallel:
 #'   Processing the plots from within a year can be done in parallel (\code{esus} uses internally
@@ -73,8 +71,8 @@
 #'
 #' @export
 fia_to_tibble <- function(
-  years,
   states,
+  years,
   filter_list = NULL,
   folder,
   clean_empty = NULL,
