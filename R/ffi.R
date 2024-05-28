@@ -443,8 +443,6 @@ ffi_tables_process <- function(
 #' @return A tibble with one or more rows (depending on the data retrieved) for each plot for that
 #'   year.
 #'
-#' @importFrom dplyr desc
-#'
 #' @name ffi_tables_processing
 #' @noRd
 NULL

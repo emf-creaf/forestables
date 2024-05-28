@@ -16,8 +16,6 @@ utils::globalVariables(".data")
 #' @return A data frame with departments, plot and table file names
 #'
 #' @noRd
-#'
-#' @importFrom rlang .data
 .build_ffi_input_with <- function(
   departments, year, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
@@ -379,7 +377,6 @@ create_filter_list_ffi <- function(plots_info) {
 #' @return A data frame with variables in \code{var} values for the desired year and for the
 #'   most recent year with value.
 #'
-#' @importFrom rlang `:=`
 #' @noRd
 .extract_ffi_metadata <- function(
   data_processed, vars, plot, year,
