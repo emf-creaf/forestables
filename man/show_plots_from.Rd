@@ -26,7 +26,8 @@ Show plots with minimal metadata from any inventory
 \details{
 This function show the plots available in any inventory for the given administrative units.
 Take into account that this can potentially show all plots in any inventory, so the object
-returned can be memory heavy.
+returned can be memory heavy. This also will return all plots recorded, but it doesn't mean
+that those plots have associated data (tree, understory...), just that they exist.
 }
 \section{FIA}{
 
@@ -53,11 +54,11 @@ the provinces and \code{versions}, a character vector with the IFN versions to l
 library(esus)
 
 # FIA
-show_plots_from("FIA", folder = ".", states = "OR")
+show_plots_from("FIA", folder = "path/to/fia/data", states = "OR")
 # FFI
-show_plots_from("FFI", folder = ".", departments = "21")
+show_plots_from("FFI", folder = "path/to/ffi/data", departments = "21")
 # IFN
-show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
+show_plots_from("IFN", folder = "path/to/ifn/data", provinces = "24", versions = "ifn4")
 }
 }
 

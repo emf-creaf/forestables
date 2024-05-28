@@ -26,11 +26,9 @@ ifn_to_tibble(
 
 \item{folder}{The path to the folder containing the IFN db files, as character.}
 
-\item{clean_empty}{Vector with column names from where to remove empty
-results. Can be one or more of \code{"tree"},
-\code{"understory"} and \code{"regen"}. If more than one,
-only plots with data in all columns selected will be
-retained.}
+\item{clean_empty}{Vector with column names from where to remove empty results. Can be one or
+more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
+with data in all columns selected will be retained.}
 
 \item{as_sf}{Logical indicating if the data must be returned as an spatial object. This always
 can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.}
@@ -71,7 +69,7 @@ narrow the process. This \code{filter_list} should have the following structure:
   )
   }
 \code{esus} package offers workflows to create this automatically, see
-\code{vignette("filtering_plots", pkg = "esus")} for more details.
+\code{vignette("selecting_plots", pkg = "esus")} for more details.
 }
 
 \section{Parallel}{

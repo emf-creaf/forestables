@@ -5,8 +5,8 @@
 \title{Raw FIA data to tibble}
 \usage{
 fia_to_tibble(
-  years,
   states,
+  years,
   filter_list = NULL,
   folder,
   clean_empty = NULL,
@@ -17,10 +17,10 @@ fia_to_tibble(
 )
 }
 \arguments{
-\item{years}{A numeric vector with the years to extract de data from.}
-
 \item{states}{A character vector with the two letters code for the states to extract the data
 from.}
+
+\item{years}{A numeric vector with the years to extract de data from.}
 
 \item{filter_list}{A nested list of states, counties and plots to extract the data from.
 If left \code{NULL} all plots for the state for all years will be extracted, which can use a
@@ -28,11 +28,9 @@ big amount of memory. See details.}
 
 \item{folder}{The path to the folder containing the FIA csv files, as character.}
 
-\item{clean_empty}{Vector with column names from where to remove empty
-results. Can be one or more of \code{"tree"},
-\code{"understory"} and \code{"regen"}. If more than one,
-only plots with data in all columns selected will be
-retained.}
+\item{clean_empty}{Vector with column names from where to remove empty results. Can be one or
+more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
+with data in all columns selected will be retained.}
 
 \item{as_sf}{Logical indicating if the data must be returned as an spatial object. This always
 can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.}
@@ -73,7 +71,7 @@ the process. This \code{filter_list} should have the following structure:
   )
   }
 \code{esus} package offers workflows to create this automatically, see
-\code{vignette("filtering_plots", pkg = "esus")} for more details.
+\code{vignette("selecting_plots", pkg = "esus")} for more details.
 }
 
 \section{Parallel}{

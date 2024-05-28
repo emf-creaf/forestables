@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{create_filter_list}
 \alias{create_filter_list}
-\title{Create a compatible filter_list object}
+\title{Create a compatible plots filter list object}
 \usage{
 create_filter_list(plots_info)
 }
@@ -15,11 +15,11 @@ A list object compatible with the \code{filter_list} argument of
 \code{\link{ffi_to_tibble}}, \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}
 }
 \description{
-Create a compatible filter_list object from the result of \code{link{show_plots_from}}
+Create a compatible plots filter list from the result of \code{link{show_plots_from}}
 }
 \details{
 This function takes the result of \code{link{show_plots_from}}, or a compatible object and
-creates a \code{filter_list} object ready to be use with \code{\link{ffi_to_tibble}},
+creates a filter list ready to be use with \code{\link{ffi_to_tibble}},
 \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}. Internal heuristics determine the
 inventory from the data supplied.
 }
