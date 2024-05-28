@@ -13,13 +13,11 @@
 #'   plots for the department for all years will be extracted, which can use a big amount of memory.
 #'   See details.
 #' @param folder The path to the folder containing the FFI csv files, as character.
-#' @param clean_empty Vector with column names from where to remove empty
-#'   results. Can be one or more of \code{"tree"},
-#'   \code{"understory"} and \code{"regen"}. If more than one,
-#'   only plots with data in all columns selected will be
-#'   retained.
-#' @param as_sf Logical indicating if the data must be returned as an spatial object. This always
-#'   can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.
+#' @param clean_empty Vector with column names from where to remove empty results. Can be one or
+#'   more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
+#'   with data in all columns selected will be retained. Default to NULL, no cleaning is done.
+#' @param as_sf Logical indicating if the data must be returned as an spatial object. Default to
+#'   \code{FALSE}.
 #' @param ... Not used at the moment
 #' @param .parallel_options An object of class \code{furrr_options}. See
 #'   \code{\link[furrr]{furrr_options}}.
@@ -40,7 +38,7 @@
 #'    )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
-#'   \code{vignette("filtering_plots", pkg = "esus")} for more details.
+#'   \code{vignette("selecting_plots", pkg = "esus")} for more details.
 #'
 #' @section Parallel:
 #'   Processing the plots from within a year can be done in parallel (\code{esus} uses internally
@@ -58,7 +56,7 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, and herbs
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
-#' 
+#'
 #' @examples
 #' \donttest{
 #' \dontrun{
@@ -316,8 +314,8 @@ ffi_tables_process <- function(
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees, .call)
       tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref, .call) |>
         dplyr::select(!dplyr::any_of(c(
-          "id_unique_code", "country", "dep", "dep_name", "plot", "year", 
-          "visite","coord_sys", "coordx", "coordy", "aspect", "slope",
+          "id_unique_code", "country", "dep", "dep_name", "plot", "year",
+          "visite", "coord_sys", "coordx", "coordy", "aspect", "slope",
           "lign1_pct", "lign2_pct", "herb_pct"
         )))
       #this table has information for both regen after 2015 and shrub (origin FLORE)
@@ -326,8 +324,8 @@ ffi_tables_process <- function(
         shrub_table, plots, year, cd_ref, growth_form_lignified_france, idp_dep_ref, .call
       ) |>
         dplyr::select(!dplyr::any_of(c(
-          "id_unique_code", "country", "dep", "dep_name", "plot", "year", 
-          "visite","coord_sys", "coordx", "coordy", "aspect", "slope",
+          "id_unique_code", "country", "dep", "dep_name", "plot", "year",
+          "visite", "coord_sys", "coordx", "coordy", "aspect", "slope",
           "lign1_pct", "lign2_pct", "herb_pct"
         )))
       shrub <- tibble::tibble()
@@ -355,8 +353,8 @@ ffi_tables_process <- function(
           regen_table, plots, year, espar_cdref, idp_dep_ref, .call
         ) |>
           dplyr::select(!dplyr::any_of(c(
-            "id_unique_code", "country", "dep", "dep_name", "plot", "year", 
-            "visite","coord_sys", "coordx", "coordy", "aspect", "slope",
+            "id_unique_code", "country", "dep", "dep_name", "plot", "year",
+            "visite", "coord_sys", "coordx", "coordy", "aspect", "slope",
             "lign1_pct", "lign2_pct", "herb_pct"
           )))
       } else {
@@ -403,8 +401,8 @@ ffi_tables_process <- function(
           regen = list(regen)
         ) |>
         dplyr::select(
-          "id_unique_code", "country", "dep", "dep_name", "plot", "year", 
-          "visite","coord_sys",  "crs", "coordx", "coordy", "aspect", "slope",
+          "id_unique_code", "country", "dep", "dep_name", "plot", "year",
+          "visite", "coord_sys",  "crs", "coordx", "coordy", "aspect", "slope",
           "tree", "understory", "regen"
         )
 
@@ -581,7 +579,6 @@ ffi_plot_table_process <- function(
       lign2_pct = dplyr::if_else(is.na(.data$LIGN2), .data$LIGN2_last_recorded, .data$LIGN2),
       herb_pct = dplyr::if_else(is.na(.data$HERB), .data$HERB_last_recorded, .data$HERB),
     ) |>
-   
     tibble::as_tibble()
 
   plot_info <- dplyr::left_join(
@@ -595,8 +592,8 @@ ffi_plot_table_process <- function(
     ) |>
     dplyr::as_tibble() |>
     dplyr::select(
-      "id_unique_code", "country", dep = "DEP", "dep_name", plot = "PLOT", year = "YEAR", 
-      "visite","coord_sys", "coordx", "coordy", "aspect", "slope",
+      "id_unique_code", "country", dep = "DEP", "dep_name", plot = "PLOT", year = "YEAR",
+      "visite", "coord_sys", "coordx", "coordy", "aspect", "slope",
       "lign1_pct", "lign2_pct", "herb_pct"
     )
 
@@ -692,7 +689,7 @@ ffi_tree_table_process <- function(
     ) |>
     #selection of final variables
     dplyr::select(
-      "id_unique_code","PLOT", "DEP",  "YEAR",  "TREE", "ESPAR",
+      "id_unique_code", "PLOT", "DEP",  "YEAR",  "TREE", "ESPAR",
       "SP_CODE", "SP_NAME", "STATUS", "STATUS5", "DIA", "height", "density_factor"
     ) |>
     # homogeneization

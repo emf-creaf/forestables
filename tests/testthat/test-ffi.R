@@ -603,7 +603,7 @@ test_that("ffi_to_tibble works as intended", {
   expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
   expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
 
-  ### test all assertions done in fia_to_tibble
+  ### test all assertions done in ffi_to_tibble
   # departments
   expect_error(
     ffi_to_tibble(
