@@ -11,11 +11,9 @@
 #'   \code{"ifn3"} and \code{"ifn4"}.
 #' @param filter_list A list of provinces and plots to extract the data from.
 #' @param folder The path to the folder containing the IFN db files, as character.
-#' @param clean_empty Vector with column names from where to remove empty
-#'   results. Can be one or more of \code{"tree"},
-#'   \code{"understory"} and \code{"regen"}. If more than one,
-#'   only plots with data in all columns selected will be
-#'   retained.
+#' @param clean_empty Vector with column names from where to remove empty results. Can be one or
+#'   more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
+#'   with data in all columns selected will be retained.
 #' @param as_sf Logical indicating if the data must be returned as an spatial object. This always
 #'   can be done later, as the data contains coordinates and crs info. Default to \code{FALSE}.
 #' @param ... Not used at the moment
@@ -38,7 +36,7 @@
 #'   )
 #'   }
 #'   \code{esus} package offers workflows to create this automatically, see
-#'   \code{vignette("filtering_plots", pkg = "esus")} for more details.
+#'   \code{vignette("selecting_plots", pkg = "esus")} for more details.
 #'
 #' @section Parallel:
 #'   Processing the plots from within an IFN version can be done in parallel (\code{esus} uses
