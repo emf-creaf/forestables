@@ -23,7 +23,8 @@ verbose_msg <- function(msg, .verbose) {
 #'
 #' This function show the plots available in any inventory for the given administrative units.
 #' Take into account that this can potentially show all plots in any inventory, so the object
-#' returned can be memory heavy.
+#' returned can be memory heavy. This also will return all plots recorded, but it doesn't mean
+#' that those plots have associated data (tree, understory...), just that they exist.
 #'
 #' @param inventory Character indicating the inventory. Allowed values are \code{"FIA"} for the
 #'   USA forest inventory, \code{"FFI"} for the French \emph{Inventaire Forestier} and
@@ -55,11 +56,11 @@ verbose_msg <- function(msg, .verbose) {
 #' library(esus)
 #'
 #' # FIA
-#' show_plots_from("FIA", folder = ".", states = "OR")
+#' show_plots_from("FIA", folder = "path/to/fia/data", states = "OR")
 #' # FFI
-#' show_plots_from("FFI", folder = ".", departments = "21")
+#' show_plots_from("FFI", folder = "path/to/ffi/data", departments = "21")
 #' # IFN
-#' show_plots_from("IFN", folder = ".", provinces = "24", versions = "ifn4")
+#' show_plots_from("IFN", folder = "path/to/ifn/data", provinces = "24", versions = "ifn4")
 #' }
 #' }
 #'
@@ -92,12 +93,12 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
   return(res)
 }
 
-#' Create a compatible filter_list object
+#' Create a compatible plots filter list object
 #'
-#' Create a compatible filter_list object from the result of \code{link{show_plots_from}}
+#' Create a compatible plots filter list from the result of \code{link{show_plots_from}}
 #'
 #' This function takes the result of \code{link{show_plots_from}}, or a compatible object and
-#' creates a \code{filter_list} object ready to be use with \code{\link{ffi_to_tibble}},
+#' creates a filter list ready to be use with \code{\link{ffi_to_tibble}},
 #' \code{\link{fia_to_tibble}} or \code{\link{ifn_to_tibble}}. Internal heuristics determine the
 #' inventory from the data supplied.
 #'
@@ -228,26 +229,22 @@ create_filter_list <- function(plots_info) {
 #'
 #' Cleaning inventory results to filter out empty data
 #'
-#' This functions remove plot rows with empty data in the desired
-#' nested columns
+#' This functions remove plot rows with empty data in the desired nested columns.
 #'
-#' @param inventory_data Data from an inventory as obtained from
-#'   \code{\link{ifn_to_tibble}}, \code{\link{fia_to_tibble}} or
-#'   \code{\link{ffi_to_tibble}}.
-#' @param cols vector with column names to clean from empty
-#'   results. Can be one or more of \code{"tree"},
-#'   \code{"understory"} and \code{"regen"}. If more than one,
-#'   only plots with data in all columns selected will be
-#'   retained.
+#' @param inventory_data Data from an inventory as obtained from \code{\link{ifn_to_tibble}},
+#'   \code{\link{fia_to_tibble}} or \code{\link{ffi_to_tibble}}.
+#' @param cols vector with column names to clean from empty results. Can be one or more of
+#'   \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots with
+#'   data in all columns selected will be retained.
 #'
-#' @return A tibble the same as \code{inventory_data} with the
-#'   empty data removed for the columns selected.
-#' 
+#' @return A tibble the same as \code{inventory_data} with the empty data removed for the columns
+#'   selected.
+#'
 #' @examples
 #' \donttest{
 #' \dontrun{
 #' library(esus)
-#' 
+#'
 #' # FFI
 #' ffi_to_tibble(
 #'   departments = c("01"), years = c(2019),
@@ -255,7 +252,7 @@ create_filter_list <- function(plots_info) {
 #'   folder = "path/to/ffi/data"
 #' ) |>
 #'   clean_empty(c("tree", "regen", "understory"))
-#' 
+#'
 #' # FIA
 #' fia_to_tibble(
 #'   years = 2019, states = c("OR"),
@@ -263,7 +260,7 @@ create_filter_list <- function(plots_info) {
 #'   folder = "path/to/fia/data"
 #' ) |>
 #'   clean_empty(c("tree", "regen", "understory"))
-#' 
+#'
 #' # IFN
 #' ifn_to_tibble(
 #'   provinces = c("24"), versions = c("ifn3"),
@@ -318,12 +315,12 @@ clean_empty <- function(inventory_data, cols) {
 #'
 #' @return An sf object with the same data as \code{inventory_data}
 #'   and a new column with the original crs for traceability.
-#' 
+#'
 #' @examples
 #' \donttest{
 #' \dontrun{
 #' library(esus)
-#' 
+#'
 #' # FFI
 #' ffi_to_tibble(
 #'   departments = c("01"), years = c(2019),
@@ -331,7 +328,7 @@ clean_empty <- function(inventory_data, cols) {
 #'   folder = "path/to/ffi/data"
 #' ) |>
 #'   inventory_as_sf()
-#' 
+#'
 #' # FIA
 #' fia_to_tibble(
 #'   years = 2019, states = c("OR"),
@@ -339,7 +336,7 @@ clean_empty <- function(inventory_data, cols) {
 #'   folder = "path/to/fia/data"
 #' ) |>
 #'   inventory_as_sf()
-#' 
+#'
 #' # IFN
 #' ifn_to_tibble(
 #'   provinces = c("24"), versions = c("ifn3"),
