@@ -5,11 +5,12 @@ Authors@R:
     c(
         person(
             given = "Adriana", family = "Tovar",
-            role = c("aut", "cre")
+            role = c("aut", "ctb")
         ),
         person(
             given = "Víctor", family = "Granda",
             role = c("aut", "cre"),
+            email = "victorgrandagarcia@gmail.com",
             comment = c(ORCID = "0000-0002-0469-1991")
         ),
         person(
