@@ -1,5 +1,5 @@
 # libraries
-library(esus)
+library(forestables)
 library(sf)
 library(dplyr)
 library(rnaturalearth)
@@ -13,7 +13,7 @@ ffi_folder <- Sys.getenv("ffi_path")
 fia_folder <- Sys.getenv("fia_path")
 ifn_folder <- Sys.getenv("ifn_path")
 
-# esus:::ifn_provinces_dictionary
+# forestables:::ifn_provinces_dictionary
 
 ne2ifn <- function(dep_name) {
   # browser()
@@ -31,7 +31,7 @@ ne2ifn <- function(dep_name) {
   res <- character()
   
   for (dep in dep_name) {
-    res <- c(res, esus:::ifn_provinces_dictionary |>
+    res <- c(res, forestables:::ifn_provinces_dictionary |>
       dplyr::filter(.data$province_name_original == dep) |>
       dplyr::pull(.data$province_code))
   }
@@ -47,7 +47,7 @@ province_polygons <- ne_states(country = "spain") |>
   )
 
 
-pcodes <- esus:::ifn_provinces_dictionary$province_code |> sort()
+pcodes <- forestables:::ifn_provinces_dictionary$province_code |> sort()
 
 sf_list <- list()
 visual_list <- list()
@@ -61,7 +61,7 @@ for (i in seq_along(pcodes)) {
   sf_list[[i]] <- province_plots
   names(sf_list)[i] <- pcodes[i]
 
-  pcode_name <- esus:::ifn_provinces_dictionary |>
+  pcode_name <- forestables:::ifn_provinces_dictionary |>
      dplyr::filter(province_code == pcodes[i]) |>
      dplyr::pull(province_name_original)
   

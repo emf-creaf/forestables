@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 ```{r doc_setup, include = FALSE}
 # libraries
-library(esus)
+library(forestables)
 library(dplyr)
 library(rnaturalearth)
 library(sf)

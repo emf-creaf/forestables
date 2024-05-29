@@ -26,7 +26,7 @@ inventory from the data supplied.
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 
 # FIA
 show_plots_from("FIA", folder = ".", states = "OR") |>

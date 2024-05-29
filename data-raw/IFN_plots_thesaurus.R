@@ -16,7 +16,7 @@ province_codes <- c(1:50) |>
 plot_paths_ifn2 <- province_codes |>
   purrr::map_chr(
     .f = \(province) {
-      esus:::.build_ifn_file_path(province, "plot", "ifn2", ifn_path)
+      forestables:::.build_ifn_file_path(province, "plot", "ifn2", ifn_path)
     }
   )
 province_codes_ifn2 <- province_codes[which(!is.na(plot_paths_ifn2))]
@@ -31,7 +31,7 @@ plot_paths_ifn2 <- plot_paths_ifn2 |>
 plot_paths_ifn3 <- province_codes |>
   purrr::map_chr(
     .f = \(province) {
-      esus:::.build_ifn_file_path(province, "plot", "ifn3", ifn_path)
+      forestables:::.build_ifn_file_path(province, "plot", "ifn3", ifn_path)
     }
   )
 province_codes_ifn3 <- province_codes[which(!is.na(plot_paths_ifn3))]
@@ -46,7 +46,7 @@ plot_paths_ifn3 <- plot_paths_ifn3 |>
 plot_paths_ifn4 <- province_codes |>
   purrr::map_chr(
     .f = \(province) {
-      esus:::.build_ifn_file_path(province, "plot", "ifn4", ifn_path)
+      forestables:::.build_ifn_file_path(province, "plot", "ifn4", ifn_path)
     }
   )
 province_codes_ifn4 <- province_codes[which(!is.na(plot_paths_ifn4))]
@@ -63,7 +63,7 @@ plot_paths_ifn4 <- plot_paths_ifn4 |>
 plots_ifn2 <- plot_paths_ifn2 |>
   purrr::map(
     .f = \(path) {
-      esus:::.read_inventory_data(
+      forestables:::.read_inventory_data(
         path,
         colnames = c("PROVINCIA", "ESTADILLO"),
         .dry = TRUE, .padding = FALSE,
@@ -83,7 +83,7 @@ plots_ifn2 <- plot_paths_ifn2 |>
 plots_ifn3 <- plot_paths_ifn3 |>
   purrr::imap(
     .f = \(path, province) {
-      esus:::.read_inventory_data(
+      forestables:::.read_inventory_data(
         path,
         colnames = c("Estadillo", "Cla", "Subclase"),
         .dry = TRUE, .padding = FALSE,
@@ -93,7 +93,7 @@ plots_ifn3 <- plot_paths_ifn3 |>
         dplyr::mutate(
           PROVINCIA = province,
           ESTADILLO = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
-          Subclase = esus:::.ifn_subclass_fixer(Subclase)
+          Subclase = forestables:::.ifn_subclass_fixer(Subclase)
         ) |>
         dplyr::select(PROVINCIA, ESTADILLO, Cla, Subclase)
     }
@@ -106,7 +106,7 @@ plots_ifn3 <- plot_paths_ifn3 |>
 plots_ifn4 <- plot_paths_ifn4 |>
   purrr::imap(
     .f = \(path, province) {
-      esus:::.read_inventory_data(
+      forestables:::.read_inventory_data(
         path,
         colnames = c("Provincia", "Estadillo", "Cla", "Subclase"),
         .dry = TRUE, .padding = FALSE,
@@ -117,7 +117,7 @@ plots_ifn4 <- plot_paths_ifn4 |>
         dplyr::mutate(
           PROVINCIA = province,
           ESTADILLO = stringr::str_pad(Estadillo, width = 4, side = "left", pad = "0"),
-          Subclase = esus:::.ifn_subclass_fixer(Subclase)
+          Subclase = forestables:::.ifn_subclass_fixer(Subclase)
         ) |>
         dplyr::select(PROVINCIA, ESTADILLO, Cla, Subclase)
     }

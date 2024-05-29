@@ -53,7 +53,7 @@ verbose_msg <- function(msg, .verbose) {
 #' @examples
 #' \donttest{
 #' \dontrun{
-#' library(esus)
+#' library(forestables)
 #'
 #' # FIA
 #' show_plots_from("FIA", folder = "path/to/fia/data", states = "OR")
@@ -111,7 +111,7 @@ show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ..
 #' @examples
 #' \donttest{
 #' \dontrun{
-#' library(esus)
+#' library(forestables)
 #'
 #' # FIA
 #' show_plots_from("FIA", folder = ".", states = "OR") |>
@@ -243,7 +243,7 @@ create_filter_list <- function(plots_info) {
 #' @examples
 #' \donttest{
 #' \dontrun{
-#' library(esus)
+#' library(forestables)
 #'
 #' # FFI
 #' ffi_to_tibble(
@@ -319,7 +319,7 @@ clean_empty <- function(inventory_data, cols) {
 #' @examples
 #' \donttest{
 #' \dontrun{
-#' library(esus)
+#' library(forestables)
 #'
 #' # FFI
 #' ffi_to_tibble(

@@ -51,7 +51,7 @@ the provinces and \code{versions}, a character vector with the IFN versions to l
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 
 # FIA
 show_plots_from("FIA", folder = "path/to/fia/data", states = "OR")

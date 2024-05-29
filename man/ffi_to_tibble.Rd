@@ -45,7 +45,7 @@ with data in all columns selected will be retained. Default to NULL, no cleaning
 \value{
 A nested tibble. This tibble contains a row per plot/year combination, with the plot
 metadata included, as well as columns containing tibbles with tree, shrub, and herbs
-information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
+information. See \code{vignette("inventory_data_tibble", pkg = "forestables")}
 }
 \description{
 Transform raw FFI plot data into tidy data for easier use
@@ -70,13 +70,13 @@ the process. This \code{filter_list} should have the following structure:
    "11" = c(1436508, 1410492))
    )
   }
-\code{esus} package offers workflows to create this automatically, see
-\code{vignette("selecting_plots", pkg = "esus")} for more details.
+\code{forestables} package offers workflows to create this automatically, see
+\code{vignette("selecting_plots", pkg = "forestables")} for more details.
 }
 
 \section{Parallel}{
 
-Processing the plots from within a year can be done in parallel (\code{esus} uses internally
+Processing the plots from within a year can be done in parallel (\code{forestables} uses internally
 the \code{\link[furrr]{furrr}} package for this). This means that, if parallelization is
 active, several processes are launched to retrieve the plots data for that year. This is
 repeated for all years provided.
@@ -92,7 +92,7 @@ when retrieving the data.
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 ffi_to_tibble(
   departments = c("01"), years = c(2019),
   filter_list = list("01" = c(1404119)),

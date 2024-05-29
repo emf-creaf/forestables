@@ -43,7 +43,7 @@ can be done later, as the data contains coordinates and crs info. Default to \co
 \value{
 A nested tibble. This tibble contains a row per plot/year combination, with the plot
 metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
-information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
+information. See \code{vignette("inventory_data_tibble", pkg = "forestables")}
 }
 \description{
 Transform raw IFN plot data into tidy data for easier use
@@ -68,13 +68,13 @@ narrow the process. This \code{filter_list} should have the following structure:
    "24" = c("24_0270_xx_A4_xx")
   )
   }
-\code{esus} package offers workflows to create this automatically, see
-\code{vignette("selecting_plots", pkg = "esus")} for more details.
+\code{forestables} package offers workflows to create this automatically, see
+\code{vignette("selecting_plots", pkg = "forestables")} for more details.
 }
 
 \section{Parallel}{
 
-Processing the plots from within an IFN version can be done in parallel (\code{esus} uses
+Processing the plots from within an IFN version can be done in parallel (\code{forestables} uses
 internally the \code{\link[furrr]{furrr}} package for this). This means that, if
 parallelization is active, several processes are launched to retrieve the plots data for that
 IFN version. This is repeated for all versions provided.
@@ -90,7 +90,7 @@ when retrieving the data.
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 ifn_to_tibble(
   provinces = c("24"), versions = c("ifn3"),
   filter_list = list("24" = c("24_0270_xx_A4_xx")),

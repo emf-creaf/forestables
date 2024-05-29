@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(esus)
+library(forestables)
 ```
 
 # Introduction
@@ -857,11 +857,11 @@ growth_form_lignified_france <- growth_form |>
 ```
 
 ```{r}
-head(esus:::fr_species_cdref) 
+head(forestables:::fr_species_cdref) 
 ```
 
 ```{r}
-head(esus:::growth_form_lignified_france)
+head(forestables:::growth_form_lignified_france)
 ```
 
 ``` r

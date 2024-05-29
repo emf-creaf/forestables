@@ -21,7 +21,7 @@ Use coords vars and crs to convert to sf
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 
 # FFI
 ffi_to_tibble(

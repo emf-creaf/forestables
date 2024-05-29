@@ -27,7 +27,7 @@ This functions remove plot rows with empty data in the desired nested columns.
 \examples{
 \donttest{
 \dontrun{
-library(esus)
+library(forestables)
 
 # FFI
 ffi_to_tibble(

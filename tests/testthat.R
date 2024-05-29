@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(esus)
+library(forestables)
 
-test_check("esus")
+test_check("forestables")
