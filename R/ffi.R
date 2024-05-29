@@ -585,7 +585,7 @@ ffi_plot_table_process <- function(
   ) |>
     dplyr::mutate(
       PLOT = plot, YEAR = year,
-      id_unique_code = paste("FR", .data$DEP, .data$PLOT, sep = "_"), 
+      id_unique_code = paste("FR", .data$DEP, .data$PLOT, sep = "_"),
       country = "FR"
     ) |>
     dplyr::as_tibble() |>
@@ -848,17 +848,18 @@ ffi_shrub_table_process <- function(
       by = "SP_NAME"
     ) |>
     dplyr::rename(
-    DEP = "DEP",
-    YEAR = "YEAR",
-    sp_code = "SP_CODE",
-    sp_name = "SP_NAME", 
-    cover = "COVER",
-    height = "height",
-    growth_form = "GrowthForm"
-    ) |> 
+      DEP = "DEP",
+      YEAR = "YEAR",
+      sp_code = "SP_CODE",
+      sp_name = "SP_NAME",
+      cover = "COVER",
+      height = "height",
+      growth_form = "GrowthForm"
+    ) |>
     # selection of final variables
     dplyr::select(
-      "id_unique_code", plot = "PLOT", dep = "DEP", year = "YEAR", "sp_code", "sp_name", "cover", "height", "growth_form"
+      "id_unique_code", plot = "PLOT", dep = "DEP", year = "YEAR",
+      "sp_code", "sp_name", "cover", "height", "growth_form"
     ) |>
     dplyr::as_tibble()
 
@@ -938,7 +939,7 @@ ffi_regen_table_process <- function(
       height = NA,
       growth_form = "tree"
     ) |>
-    dplyr::rename(plot = "IDP", dep = "DEP" , year = "YEAR", sp_name = "lib_cdref", 
+    dplyr::rename(plot = "IDP", dep = "DEP", year = "YEAR", sp_name = "lib_cdref",
                   sp_code = "CD_REF") |>
     # selection of final variables
     dplyr::select("id_unique_code", "plot", "dep", "year", "sp_code", "sp_name",

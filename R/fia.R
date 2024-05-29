@@ -56,7 +56,7 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
-#' 
+#'
 #' @examples
 #' \donttest{
 #' \dontrun{
@@ -338,7 +338,8 @@ fia_tables_process <- function(
 #'
 #' These functions retrieve the data for a plot in one year.
 #'
-#' @param plot_data,survey_data,cond_data,tree_data,understory_data,understory_p2,seedling_data,subplot_data,soils_lab,soils_loc Paths to the files with the corresponding data
+#' @param plot_data,survey_data,cond_data,tree_data,understory_data,understory_p2,seedling_data,subplot_data,soils_lab,soils_loc Paths
+#'   to the files with the corresponding data
 #' @param plot Numeric, plot code
 #' @param county COUNTYCD code
 #' @param year Numeric, year to extract
@@ -547,20 +548,20 @@ fia_plot_table_process <- function(
       year = "INVYR",
       id_unique_code = "id_unique_code",
       country = "COUNTRY",
-      state_code  = "STATECD", 
+      state_code  = "STATECD",
       state_ab = "STATEAB",
-      state_name = "STATENM", 
+      state_name = "STATENM",
       county_code = "COUNTYCD",
-      plot = "PLOT", 
-      p3panel = "P3PANEL", 
+      plot = "PLOT",
+      p3panel = "P3PANEL",
       p2veg_sampling_status_cd = "P2VEG_SAMPLING_STATUS_CD",
       p2veg_sampling_level_detail_cd = "P2VEG_SAMPLING_LEVEL_DETAIL_CD",
       rscd = "RSCD",
       design_code = "DESIGNCD",
       coordx = "LON",
       coordy = "LAT",
-      coord_sys = "COORD_SYS", 
-      "crs", 
+      coord_sys = "COORD_SYS",
+      "crs",
       elev = "ELEV",
       aspect = "ASPECT",
       slope = "SLOPE"
@@ -639,7 +640,7 @@ fia_tree_table_process <- function(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD", "PLOT",
       "TREE", "STATUSCD", "DIA", "Height", "SP_NAME", "SPCD", "DENSITY"
     ) |>
-    dplyr::rename(plot = "PLOT", dia = "DIA", year = "INVYR", status = "STATUSCD", 
+    dplyr::rename(plot = "PLOT", dia = "DIA", year = "INVYR", status = "STATUSCD",
                   sp_code = "SPCD", height = "Height", sp_name = "SP_NAME",
                   state_code = "STATECD", county_code = "COUNTYCD", tree = "TREE",
                   density_factor = "DENSITY", ) |>
@@ -826,10 +827,11 @@ fia_p3_understory_table_process <- function(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP",
       "SPECIES_SYMBOL", "SP_NAME", "Height", "COVER_PCT", "GROWTH_HABIT"
     ) |>
-    dplyr::rename(year = "INVYR",state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
-                  subplot = "SUBP", sp_name = "SP_NAME", height = "Height",
-                  cover = "COVER_PCT", growth_form = "GROWTH_HABIT", sp_code = "SPECIES_SYMBOL"
-                  ) |>
+    dplyr::rename(
+      year = "INVYR", state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
+      subplot = "SUBP", sp_name = "SP_NAME", height = "Height",
+      cover = "COVER_PCT", growth_form = "GROWTH_HABIT", sp_code = "SPECIES_SYMBOL"
+    ) |>
     dplyr::distinct() |>
     dplyr::as_tibble()
 
@@ -946,11 +948,12 @@ fia_p2_understory_table_process <- function(
       "SP_NAME", "GROWTH_HABIT_CD", "Height", "COVER_PCT", "GROWTH_HABIT",
       "SPECIES_SYMBOL"
     ) |>
-    dplyr::rename( year = "INVYR",state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
-                  subplot = "SUBP", sp_name = "SP_NAME", 
-                  height = "Height",cover = "COVER_PCT", growth_form = "GROWTH_HABIT",
-                  growth_form_code = "GROWTH_HABIT_CD", sp_code = "SPECIES_SYMBOL",
-                  ) |>
+    dplyr::rename(
+      year = "INVYR", state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
+      subplot = "SUBP", sp_name = "SP_NAME",
+      height = "Height", cover = "COVER_PCT", growth_form = "GROWTH_HABIT",
+      growth_form_code = "GROWTH_HABIT_CD", sp_code = "SPECIES_SYMBOL"
+    ) |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
     dplyr::distinct() |>
@@ -1033,9 +1036,9 @@ fia_seedling_table_process <- function(
       "SP_NAME", "TREECOUNT_CALC", "TPA_UNADJ", "N", "Height", "DBH"
     ) |>
     dplyr::rename(year = "INVYR", sp_code = "SPCD", density_factor = "TPA_UNADJ",
-                  state_code= "STATECD", county_code = "COUNTYCD", plot = "PLOT",
+                  state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
                   subplot = "SUBP", sp_name = "SP_NAME", treecount_calc = "TREECOUNT_CALC",
-                  n= "N", dbh = "DBH", height = "Height") |>
+                  n = "N", dbh = "DBH", height = "Height") |>
     # # We have repeated rows after the selection because we summarised shrubs species.
     # We remove with distinct
     dplyr::distinct() |>
@@ -1100,7 +1103,7 @@ fia_subplot_table_process <- function(
     ) |>
     dplyr::rename(
       year = "INVYR", subplot = "SUBP", slope_subplot = "SLOPE", aspect_subplot = "ASPECT",
-      state_code = "STATECD", county_code = "COUNTYCD", plot =  "PLOT", 
+      state_code = "STATECD", county_code = "COUNTYCD", plot =  "PLOT",
       subplot_cond = "SUBPCOND", micro_cond =  "MICRCOND", macro_cond = "MACRCOND"
     ) |>
     # We have repeated rows after the selection because we summarized

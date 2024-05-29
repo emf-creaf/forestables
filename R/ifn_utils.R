@@ -350,7 +350,7 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
   } else {
     file_conn <- RODBC::odbcConnectAccess2007(input)
     # If drivers are not found in the system file_conn will be -1 (numeric)
-    if (fs::file_exists(input) & is.numeric(file_conn) & file_conn < 0) {
+    if (fs::file_exists(input) && is.numeric(file_conn) && file_conn < 0) {
       cli::cli_warn(c(
         "x" = "Driver for {.emph accdb} files not found",
         "i" = "If both R and Microsoft Access are installed, ensure they are in the same architecture (32 or 64 bits)",

@@ -54,7 +54,7 @@
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
 #'   information. See \code{vignette("inventory_data_tibble", pkg = "esus")}
-#' 
+#'
 #' @examples
 #' \donttest{
 #' \dontrun{
@@ -225,9 +225,9 @@ ifn_tables_process <- function(
       )
 
       redundant_vars <- c(
-        "id_unique_code", "country", "year", "ca_name_original", 
-        "province_code","province_name_original", "plot", "Clase",
-        "Subclase", "version", "type","aspect", "slope","crs", 
+        "id_unique_code", "country", "year", "ca_name_original",
+        "province_code", "province_name_original", "plot", "Clase",
+        "Subclase", "version", "type", "aspect", "slope", "crs",
         "coord_sys", "COORDEX",  "COORDEY", "sheet_ntm", "huso"
       )
 
@@ -388,8 +388,8 @@ ifn_tree_table_process <- function(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "CALIDAD",
-        cubing_form = "FORMA"  
-      ) |> 
+        cubing_form = "FORMA"
+      ) |>
       dplyr::select(
         "id_unique_code", "province_code", "plot", "sp_code", "sp_name",
         "tree",
@@ -416,13 +416,13 @@ ifn_tree_table_process <- function(
       .ifn = TRUE
     ) |>
       dplyr::filter(.data$id_unique_code == plot) |>
-      dplyr::rename(any_of(c(
+      dplyr::rename(dplyr::any_of(c(
         tree = "nArbol",
         tree_ifn2 = "OrdenIf2",
         tree_ifn4 = "OrdenIf4",
         tree_ifn3 = "OrdenIf3"
       ))
-      ) |> 
+      ) |>
       tibble::as_tibble()
 
     # IFN3 doesn't have Provincia, so we check
@@ -470,14 +470,14 @@ ifn_tree_table_process <- function(
       dplyr::rename(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME"
-      ) |> 
+      ) |>
       dplyr::rename(
         quality_wood = "Calidad",
         cubing_form = "Forma"
-      ) |> 
+      ) |>
       dplyr::select(
         dplyr::any_of(c(
-          "id_unique_code", "province_code", "Clase", "Subclase", 
+          "id_unique_code", "province_code", "Clase", "Subclase",
           "plot", "sp_code", "sp_name",
           #tree number id in ifn4
           "tree",
@@ -561,7 +561,7 @@ ifn_shrub_table_process <- function(
       dplyr::rename(
         sp_name  = "SP_NAME",
         sp_code = "SP_CODE"
-      ) |> 
+      ) |>
       dplyr::select("id_unique_code", "province_code", "plot", "sp_name",
                     "sp_code", "height", "cover")
     # Return shrub
@@ -628,7 +628,7 @@ ifn_shrub_table_process <- function(
       dplyr::rename(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME"
-      ) |> 
+      ) |>
       dplyr::select(
         "id_unique_code", "province_code", "Clase", "Subclase",
         "plot", "sp_name", "sp_code", "height", "cover"
@@ -814,7 +814,7 @@ ifn_regen_table_process <- function(
       dplyr::rename(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
-      ) |> 
+      ) |>
       dplyr::select(
         "id_unique_code", "province_code", "Clase", "Subclase", "plot",
         "sp_code", "sp_name", "dbh", "height", "n", "density_factor"
@@ -948,28 +948,7 @@ ifn_plot_table_process <- function(
           .data$PROVINCIA == "11" & stringr::str_detect(coordy_orig, "[Bb]") ~
             stringr::str_replace_all(.data$COORDEY, "B", "4"),
           TRUE ~ .data$COORDEY
-        ) 
-          
-
-
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "A", "1"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "B", "2"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "C", "3"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "D", "4"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "E", "5"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "F", "6"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "G", "7"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "H", "8"),
-        # COORDEX = stringr::str_replace_all(.data$COORDEX, "I", "9"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "A", "1"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "B", "2"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "C", "3"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "D", "4"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "E", "5"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "F", "6"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "G", "7"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "H", "8"),
-        # COORDEY = stringr::str_replace_all(.data$COORDEY, "I", "9")
+        )
       )
 
     # we add the id code
@@ -1204,7 +1183,7 @@ ifn_plot_table_process <- function(
     coords_data <- coords_fixed_data |>
       dplyr::rename(
         plot = "Estadillo", COORDEX = "CoorX", COORDEY = "CoorY",
-        sheet_ntm = "Hoja50", 
+        sheet_ntm = "Hoja50",
         Clase = dplyr::any_of(c("Clase", "Cla"))
       ) |>
       dplyr::mutate(
@@ -1289,9 +1268,9 @@ ifn_plot_table_process <- function(
       ) |>
       dplyr::select(
         dplyr::any_of(c(
-          "id_unique_code", "country", "year", "ca_name_original", 
-          "province_code","province_name_original", "plot", "Clase",
-          "Subclase", "version", "type","aspect", "slope","crs", 
+          "id_unique_code", "country", "year", "ca_name_original",
+          "province_code", "province_name_original", "plot", "Clase",
+          "Subclase", "version", "type", "aspect", "slope", "crs",
           "coord_sys", "COORDEX",  "COORDEY", "sheet_ntm", "huso"
         ))
       )
