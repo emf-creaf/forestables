@@ -3,7 +3,6 @@
 
 ## usethis namespace: start
 #' @importFrom dplyr desc
-#' @importFrom rlang :=
 #' @importFrom rlang .data
 #' @importFrom tidyr unnest
 #' @import data.table dtplyr

@@ -435,10 +435,15 @@ create_filter_list_ffi <- function(plots_info) {
       }
 
       # build the tibble
+      # dplyr::tibble(
+      #   "{var}" := var_orig_value,
+      #   "{var_orig}" := var_value
+      # )
       dplyr::tibble(
-        "{var}" := var_orig_value,
-        "{var_orig}" := var_value
-      )
+        orig_value = var_orig_value,
+        value = var_value
+      ) |>
+        purrr::set_names(c(var, var_orig))
     }
   ) |>
     purrr::list_cbind() |>

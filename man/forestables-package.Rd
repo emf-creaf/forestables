@@ -4,12 +4,22 @@
 \name{forestables-package}
 \alias{forestables}
 \alias{forestables-package}
-\title{forestables: What the Package Does (One Line, Title Case)}
+\title{forestables: Making Forest Inventory Data Tidy}
 \description{
-What the package does (one paragraph).
+The `forestables` package converts raw forest inventory files from the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and the USA Forest Inventory (FIA) into tidy tables to be used in analyses and modelling.
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Víctor Granda \email{victorgrandagarcia@gmail.com} (\href{https://orcid.org/0000-0002-0469-1991}{ORCID})
+
+Authors:
+\itemize{
+  \item Adriana Tovar [contributor]
+}
+
+Other contributors:
+\itemize{
+  \item Miquel de Cáceres (\href{https://orcid.org/0000-0001-7132-2080}{ORCID}) [contributor]
+}
 
 }
 \keyword{internal}
