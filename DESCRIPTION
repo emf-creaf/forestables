@@ -1,10 +1,27 @@
 Package: forestables
-Title: What the Package Does (One Line, Title Case)
+Title: Making Forest Inventory Data Tidy
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Authors@R:
+    c(
+        person(
+            given = "Adriana", family = "Tovar",
+            role = c("aut", "cre")
+        ),
+        person(
+            given = "Víctor", family = "Granda",
+            role = c("aut", "cre"),
+            comment = c(ORCID = "0000-0002-0469-1991")
+        ),
+        person(
+            given = "Miquel", family = "de Cáceres",
+            role = "ctb",
+            comment = c(ORCID = "0000-0001-7132-2080")
+        )
+    )
+Description: The `forestables` package converts raw forest inventory files from
+    the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and
+    the USA Forest Inventory (FIA) into tidy tables to be used in analyses and
+    modelling.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
