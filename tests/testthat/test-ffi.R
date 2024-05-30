@@ -167,7 +167,6 @@ test_that("ffi_plot_table_process works as intended", {
     )),
     "tbl"
   )
-  expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
   # error in plot name, gives an empty tibble
   expect_s3_class(
@@ -180,7 +179,6 @@ test_that("ffi_plot_table_process works as intended", {
     )),
     "tbl"
   )
-  expect_s3_class(test_error, "tbl")
   expect_true(nrow(test_error) < 1)
 })
 

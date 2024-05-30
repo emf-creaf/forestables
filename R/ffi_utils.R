@@ -404,7 +404,7 @@ create_filter_list_ffi <- function(plots_info) {
     .f = \(var, var_orig) {
 
       filter_nas <- TRUE
-      if (!.soil_mode) {
+      if (.soil_mode) {
         # filter_nas <- rlang::expr(!is.na(!!rlang::sym(var)))
         filter_nas <- rlang::expr(!is.na({{ var }}))
       }
@@ -415,7 +415,9 @@ create_filter_list_ffi <- function(plots_info) {
           .data$PLOT == plot,
           {{ filter_nas }}
         ) |>
-        dplyr::filter(.data$YEAR == .year_fun(.data$YEAR, na.rm = TRUE)) |>
+        dplyr::filter(
+          .data$YEAR == suppressWarnings(.year_fun(.data$YEAR, na.rm = TRUE))
+        ) |>
         dplyr::pull({{ var }})
 
       # value at queried year

@@ -10,12 +10,16 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
+readRenviron("../.Renviron")
+eval_code <- Sys.getenv("fia_path") != "" &&
+  Sys.getenv("ffi_path") != "" &&
+  Sys.getenv("ifn_path") != "" &&
+  Sys.getenv("forestables_eval_articles") == "true"
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = eval_code
 )
-readRenviron("../.Renviron")
 ```
 
 ## Setup

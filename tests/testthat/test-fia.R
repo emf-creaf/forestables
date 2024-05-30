@@ -142,18 +142,17 @@ test_that("fia_plot_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
-    test_no_plot_error <- fia_plot_table_process(
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_plot_table_process(
       test_input$plot_table[30],
       test_input$survey_table[30],
       test_input$cond_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year
-    ),
-    "There is no plot data"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 })
 
@@ -203,17 +202,16 @@ test_that("fia_tree_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
-    test_no_plot_error <- fia_tree_table_process(
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_tree_table_process(
       test_input$tree_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year,
       test_ref_species
-    ),
-    "combination of plot, county and year"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 })
 
@@ -305,18 +303,17 @@ test_that("fia_p3_understory_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
-    test_no_plot_error <- fia_p3_understory_table_process(
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_p3_understory_table_process(
       test_input$p3_understory_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year,
       "Shrub",
       test_ref_plant_dictionary
-    ),
-    "combination of plot, county and year"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 
   ### TODO
@@ -454,18 +451,17 @@ test_that("fia_p2_understory_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
-    test_no_plot_error <- fia_p2_understory_table_process(
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_p2_understory_table_process(
       test_input$p2_veg_subplot_table[1],
       test_input$plots[1],
       test_input$county[1],
       test_year,
       "SH",
       test_ref_plant_dictionary
-    ),
-    "combination of plot, county and year"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 
 
@@ -557,8 +553,8 @@ test_that("fia_understory_table_process works as intended", {
   )
 
   # no p2 no p3 warnings
-  expect_warning(
-    test_empty <- fia_understory_table_process(
+  expect_s3_class(
+    test_empty <- suppressWarnings(fia_understory_table_process(
       test_input$p3_understory_table[1],
       test_input$p2_veg_subplot_table[1],
       test_input$plots[1],
@@ -566,8 +562,8 @@ test_that("fia_understory_table_process works as intended", {
       test_year,
       "Shrub", "SH",
       test_ref_plant_dictionary
-    ),
-    "Skipping understory data for plot"
+    )),
+    "tbl"
   )
   expect_true(nrow(test_empty) < 1)
 
@@ -680,17 +676,16 @@ test_that("fia_seedling_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
-    test_no_plot_error <- fia_seedling_table_process(
+  expect_s3_class(
+    test_no_plot_error <- suppressWarnings(fia_seedling_table_process(
       test_input$seedling_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year,
       test_ref_species
-    ),
-    "combination of plot, county and year"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 })
 
@@ -738,16 +733,15 @@ test_that("fia_subplot_table_process works as intended", {
   expect_true(nrow(test_error) < 1)
 
   # No plot
-  expect_warning(
+  expect_s3_class(
     test_no_plot_error <- fia_subplot_table_process(
       test_input$subplot_table[30],
       test_input$plots[30],
       test_input$county[30],
       test_year
-    ),
-    "combination of plot, county and year"
+    )),
+    "tbl"
   )
-  expect_s3_class(test_no_plot_error, "tbl")
   expect_true(nrow(test_no_plot_error) < 1L)
 })
 

@@ -347,11 +347,14 @@ ifn_tree_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(tree_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Tree data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}} "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -433,11 +436,14 @@ ifn_tree_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(tree_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Tree data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}} "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -531,11 +537,14 @@ ifn_shrub_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(shrub_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Shrub data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -597,11 +606,14 @@ ifn_shrub_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(shrub_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
         "Shrub data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -672,11 +684,14 @@ ifn_regen_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(regen_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Regeneration data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -761,11 +776,14 @@ ifn_regen_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(regen_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Regeneration data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -878,11 +896,14 @@ ifn_plot_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(plot_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "plot data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -1077,11 +1098,14 @@ ifn_plot_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(plot_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "plot data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 
@@ -1159,11 +1183,14 @@ ifn_plot_table_process <- function(
 
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(coords_filtered_data) < 1) {
-      # warn the user
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "Coordinates data missing for plot {.var {plot}}",
         "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(dplyr::tibble())
     }
 

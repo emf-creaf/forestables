@@ -354,9 +354,9 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       cli::cli_warn(c(
         "x" = "Driver for {.emph accdb} files not found",
         "i" = "If both R and Microsoft Access are installed, ensure they are in the same architecture (32 or 64 bits)",
-        "i" = "If no installation of Microsoft Access is desired, check {.link https://www.microsoft.com/en-us/download/details.aspx?id=54920} to install only the necessary drivers"
+        "i" = "If no installation of Microsoft Access is desired, check {.link https://www.microsoft.com/en-us/download/details.aspx?id=54920} to install only the necessary drivers",
+        "x" = "Aborting"
       ))
-      cli::cli_abort("Aborting")
     }
 
     res <- file_conn |>

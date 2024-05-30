@@ -419,12 +419,15 @@ fia_plot_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data_plot_raw) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no plot data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -607,12 +610,15 @@ fia_tree_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no tree data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -680,11 +686,15 @@ fia_understory_table_process <- function(
     if (p2_rows > 0) {
       return(p2_info)
     } else {
-      cli::cli_warn(c(
+      # if we warn the user everytime this happens, soon we will have dozens of
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
         "No understory data found",
         "i" = "Skipping understory data for plot {.var {plot}} at county {.var {county}} for
         {.var {year}}"
-      ), call = .call)
+      ), call = .call), .verbose = FALSE)
       return(tibble::tibble())
     }
   } else {
@@ -746,12 +756,15 @@ fia_p3_understory_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no p3 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -809,12 +822,15 @@ fia_p3_understory_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(understory_filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no p3 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -879,12 +895,15 @@ fia_p2_understory_table_process <- function(
 
   # We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -926,12 +945,15 @@ fia_p2_understory_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(understory_p2_filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no p2 understory data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -996,12 +1018,15 @@ fia_seedling_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no seedling data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -1080,12 +1105,15 @@ fia_subplot_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "There is no subplot data for that combination of plot, county and year",
       "i" = "Returning empty tibble for plot {.var {plot}} in year {.var {year}} at county
       {.var {county}}"
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 

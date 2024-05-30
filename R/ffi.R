@@ -476,11 +476,15 @@ ffi_plot_table_process <- function(
 
   # We check before continuing, because maybe we don't have rows
   if (nrow(plot_raw) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "Data missing for that combination of plot and year",
       "i" = "Returning empty plot info for plot {.var {plot}} in year {.var {year}} "
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
+    
     return(dplyr::tibble())
   }
 
@@ -637,11 +641,14 @@ ffi_tree_table_process <- function(
 
   # ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(tree_filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "Data missing for that combination of plot and year",
       "i" = "Returning empty tree info for plot {.var {plot}} in year {.var {year}} "
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
   # browser()
@@ -654,12 +661,12 @@ ffi_tree_table_process <- function(
     # transformations and filters
     dplyr::mutate(
       density_factor = .data$W,
-      C13 = as.numeric(.data$C13),
+      C13 = suppressWarnings(as.numeric(.data$C13)),
       DIA = (.data$C13 / pi) * 100, # transformation to diameter
       YEAR = .data$CAMPAGNE,
       # ensure VEGET and VEGET5 are integers
-      VEGET = as.integer(.data$VEGET),
-      VEGET5 = as.integer(.data$VEGET5)
+      VEGET = suppressWarnings(as.integer(.data$VEGET)),
+      VEGET5 = suppressWarnings(as.integer(.data$VEGET5))
     ) |>
     # join with espar_cdref
     dplyr::left_join(
@@ -703,12 +710,6 @@ ffi_tree_table_process <- function(
     dplyr::distinct() |>
     # data.table::as.data.table() |>
     dplyr::as_tibble() |>
-    # dplyr::group_by(
-    #   # needed for later, no effect on the grouping:
-    #   .data$id_unique_code, .data$DEP, .data$density_factor,
-    #   # real grouping ones:
-    #   .data$plot, .data$tree
-    # ) |>
     tidyr::nest(
       .key = ".metadata",
       .by = c(
@@ -793,11 +794,14 @@ ffi_shrub_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(shrub_filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "Data missing for that combination of plot and year",
       "i" = "Returning empty understory info for plot {.var {plot}} in year {.var {year}} "
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
@@ -900,11 +904,14 @@ ffi_regen_table_process <- function(
 
   ## We check before continuing, because if the filter is too restrictive maybe we dont have rows
   if (nrow(data.table::as.data.table(regen_filtered_data)) < 1) {
-    # warn the user
-    cli::cli_warn(c(
+    # if we warn the user everytime this happens, soon we will have dozens of
+    # warnings. I'm gonna let this here for debugging purposes for locating
+    # errors in development (just change .verbose to TRUE), but we will not pass
+    # this warnings to the user
+    verbose_msg(cli::cli_warn(c(
       "Data missing for that combination of plot and year",
       "i" = "Returning empty regeneration info for plot {.var {plot}} in year {.var {year}} "
-    ), call = .call)
+    ), call = .call), .verbose = FALSE)
     return(dplyr::tibble())
   }
 
