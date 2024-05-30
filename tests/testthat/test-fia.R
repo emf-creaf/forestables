@@ -734,7 +734,7 @@ test_that("fia_subplot_table_process works as intended", {
 
   # No plot
   expect_s3_class(
-    test_no_plot_error <- fia_subplot_table_process(
+    test_no_plot_error <- suppressWarnings(fia_subplot_table_process(
       test_input$subplot_table[30],
       test_input$plots[30],
       test_input$county[30],
