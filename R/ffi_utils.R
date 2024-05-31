@@ -1,13 +1,10 @@
-# rlang .data global variable exporting.
-utils::globalVariables(".data")
-
 #' Build the FFI input data frame to iterate by plots for the specified year
 #'
 #' FFI input table creator
 #'
 #' This function takes the user input (departments, year, plots and folder) and build the input to
 #' be able to iterate by plots in a year. If no filter list is provided, this function uses
-#' \code{\link{.get_plots_from_department}} and \code{\link{.trasnsform_plot_summary_ffi}} to create
+#' \code{\link{.get_plots_from_department}} and \code{\link{.transform_plot_summary_ffi}} to create
 #' a \code{filter_list} with all plots for each department for that year.
 #'
 #' @inheritParams ffi_tables_process
@@ -146,7 +143,9 @@ utils::globalVariables(".data")
 #' Obtain an sf of available plots in the specified departments
 #'
 #' This function retrieves all plots for the departments in \code{departments} argument and
-#' return an sf object.
+#' return an sf object. This function seems redundant (as is just a wrapper around
+#' \code{\link{.get_plots_from_department}}), but is here to maintain consistency with the other
+#' inventory workflows/functions.
 #'
 #' @inheritParams ffi_tables_process
 #'
@@ -302,6 +301,7 @@ create_filter_list_ffi <- function(plots_info) {
 #' @param .plot Vector of the same length as \code{departments}, with plot codes
 #'   to build the \code{grep} command if \code{.custom} is \code{TRUE}.
 #' @param .custom Logical indicating that a custom path, with \code{grep} must be created
+#' @param .call caller environment for correct error workflow
 #'
 #' @return Character vector with the paths (or custom command with path) to use with
 #'   \code{\link{.read_inventory_data}}.
@@ -383,8 +383,7 @@ create_filter_list_ffi <- function(plots_info) {
   .soil_mode = TRUE, .year_fun = max
 ) {
 
-  # browser()
-  # ORIGINAL names
+  # last_recorded names
   vars_orig <- paste0(vars, "_last_recorded")
 
   data_processed <- dtplyr::lazy_dt(data_processed, immutable = TRUE)
@@ -409,7 +408,8 @@ create_filter_list_ffi <- function(plots_info) {
         filter_nas <- rlang::expr(!is.na({{ var }}))
       }
 
-      # value at most recent year
+      # value at most recent year, taking into account that can be all NAs, hence a suppress
+      # warnings is needed.
       var_value <- data_processed |>
         dplyr::filter(
           .data$PLOT == plot,
@@ -436,11 +436,6 @@ create_filter_list_ffi <- function(plots_info) {
         var_value <- NA
       }
 
-      # build the tibble
-      # dplyr::tibble(
-      #   "{var}" := var_orig_value,
-      #   "{var_orig}" := var_value
-      # )
       dplyr::tibble(
         orig_value = var_orig_value,
         value = var_value

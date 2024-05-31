@@ -8,3 +8,6 @@
 #' @import data.table dtplyr
 ## usethis namespace: end
 NULL
+
+# rlang .data global variable exporting.
+utils::globalVariables(".data")
