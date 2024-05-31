@@ -248,6 +248,7 @@ ffi_to_tibble <- function(
 #'
 #' @inherit ffi_to_tibble
 #'
+#' @param year Numeric of length 1 with the year to extract de data from.
 #' @param .call Caller environment (\code{\link[rlang]{caller_env}}) to allow informative errors
 #'
 #' @noRd
@@ -270,17 +271,10 @@ ffi_tables_process <- function(
       ESPAR = "// espar",
       Libelle = "lib_espar"
     ) |>
-    #i need to change this because in the file csv it is recorded as "2" and in tree table as "02"
-    dplyr::mutate(ESPAR = dplyr::case_when(
-      ESPAR == "2" ~ "02",
-      ESPAR == "3" ~ "03",
-      ESPAR == "4" ~ "04",
-      ESPAR == "5" ~ "05",
-      ESPAR == "6" ~ "06",
-      ESPAR == "7" ~ "07",
-      ESPAR == "9" ~ "09",
-      TRUE ~ ESPAR
-    )) |>
+    # csv file record ESPAR as "n" but tree table record ESPAR as "0n"
+    dplyr::mutate(
+      ESPAR = stringr::str_pad(.data$ESPAR, 2, side = "left", pad = "0")
+    ) |>
     dplyr::arrange(.data$ESPAR)
 
   metadonnees <- suppressWarnings(
@@ -331,16 +325,20 @@ ffi_tables_process <- function(
       shrub <- tibble::tibble()
       regen <- tibble::tibble()
 
-      #shrub should be the same all time
+      # shrub should be the same all time
       if (nrow(shrub_regen) > 0) {
         # IMPORTANT NOTE: there is an unsolved problem, not all species of french inventory
         #are present  in  growth_form_lignified_france
         #thus we systematically loss some records that are NA  when we apply filter.
         #We could fill missing values of growth form file manually from the list of fr_species
         #and have a static copy!!!
-        shrub <- shrub_regen
+        # shrub <- shrub_regen
         #quitamos filtro temporalmente
         # dplyr::filter(.data$GrowthForm == "shrub")
+
+        # New logic: filter shrubs AND NAs
+        shrub <- shrub_regen |>
+          dplyr::filter(is.na(.data$growth_form) | .data$growth_form == "shrub")
       }
 
       if (nrow(shrub) < 1) {
@@ -360,18 +358,23 @@ ffi_tables_process <- function(
       } else {
         # check if we have data in shrub_regen
         if (nrow(shrub_regen) > 0) {
+          # regen <- shrub_regen |>
+          #   # IMPORTANT note that there is an unsolved problem, not all species are present
+          #   #in  growth_form_lignified_france thus we systematically loss some records that are NA
+          #   #(no here but in ffi tables process when we apply filter).
+          #   #We could fill missing growth form manually from the list of fr_species
+          #   #and have a static copy!!!
+          #   #quitamos filtro temporalmente
+          #   # dplyr::filter(.data$growth_form == "tree") |>
+          #   dplyr::mutate(
+          #     #default dbh, added to be  coherent with table from regen process
+          #     DBH = NA
+          #   )
+
+          # New logic: filter tree AND NAs
           regen <- shrub_regen |>
-            # IMPORTANT note that there is an unsolved problem, not all species are present
-            #in  growth_form_lignified_france thus we systematically loss some records that are NA
-            #(no here but in ffi tables process when we apply filter).
-            #We could fill missing growth form manually from the list of fr_species
-            #and have a static copy!!!
-            #quitamos filtro temporalmente
-            # dplyr::filter(.data$GrowthForm == "tree") |>
-            dplyr::mutate(
-              #default dbh, added to be  coherent with table from regen process
-              DBH = NA
-            )
+            dplyr::filter(is.na(.data$growth_form) | .data$growth_form == "tree")
+          
           # check if both have data
           if (nrow(regen) < 1) {
             regen <- tibble::tibble()
