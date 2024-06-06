@@ -1497,7 +1497,7 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   )
 
   # data integrity
-  expect_named(test_ifn234_res, expected_names)
+  expect_named(test_ifn234_res, expected_names, ignore.order = TRUE)
   expect_false("tururu" %in% unique(test_ifn234_res$province_code))
   expect_identical(
     nrow(test_ifn234_res),

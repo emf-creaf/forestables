@@ -73,7 +73,7 @@
 ffi_to_tibble <- function(
   departments,
   years,
-  filter_list,
+  filter_list = NULL,
   folder,
   clean_empty = NULL,
   as_sf = FALSE,
@@ -228,7 +228,8 @@ ffi_to_tibble <- function(
     .progress = .verbose
   ) |>
     purrr::list_rbind() |>
-    clean_empty(clean_empty)
+    clean_empty(clean_empty) |>
+    dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
 
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>

@@ -71,7 +71,7 @@
 ifn_to_tibble <- function(
   provinces,
   versions,
-  filter_list,
+  filter_list = NULL,
   folder,
   clean_empty = NULL,
   as_sf = FALSE,
@@ -179,7 +179,8 @@ ifn_to_tibble <- function(
     .progress = FALSE
   ) |>
     purrr::list_rbind() |>
-    clean_empty(clean_empty)
+    clean_empty(clean_empty) |>
+    dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
 
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>
@@ -211,7 +212,7 @@ ifn_tables_process <- function(
 
   ## Debugging needs purrr maps, as future maps are in other R processes and we
   ## can't access the objects.
-  ## temp_res <- purrr::pmap(
+  # temp_res <- purrr::pmap(
   temp_res <- furrr::future_pmap(
     .progress = .verbose,
     .l = input_df,
@@ -219,7 +220,6 @@ ifn_tables_process <- function(
       province, plots, version, tree_table, plot_table, shrub_table, regen_table, coord_table
     ) {
 
-      # browser()
       plot_info <- ifn_plot_table_process(
         plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
       )
@@ -1075,8 +1075,6 @@ ifn_plot_table_process <- function(
         "plot", "year", "version", "sheet_ntm", "huso", "COORDEX", "COORDEY", "coord_sys", "crs",
         "slope_mean", "slope", "elev", "aspect" #"coordx_orig", "coordy_orig" # "soils"
       )))
-
-    # return(info_plot)
   }
 
   if (version %in% c("ifn3", "ifn4")) {
@@ -1301,8 +1299,6 @@ ifn_plot_table_process <- function(
           "coord_sys", "COORDEX",  "COORDEY", "sheet_ntm", "huso"
         ))
       )
-
-    # return(info_plot)
   }
 
   # Return plot info

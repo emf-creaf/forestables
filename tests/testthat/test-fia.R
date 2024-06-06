@@ -904,7 +904,7 @@ test_that("fia_to_tibble works as intended", {
   )
 
   # data integrity
-  expect_named(test_res, expected_names)
+  expect_named(test_res, expected_names, ignore.order = TRUE)
   expect_false("tururu" %in% unique(test_res$state_ab))
   expect_identical(nrow(test_res), 52L) # four plots dont exist, so 4x2=8 rows less
   expect_true(all(unique(test_res$state_ab) %in% names(test_plots)))
