@@ -98,10 +98,13 @@ south_france_map
 
 Now we can visualize the plots selected:
 
-```{r ffi_plots_loc}
+```{r ffi_plots_loc, fig.width=6, fig.align="center"}
 ggplot(south_france_map) +
   geom_sf() +
-  geom_sf(aes(color = DEP, alpha = 0.1), data = mediterranean_plots_2012) +
+  geom_sf(
+    aes(color = DEP), alpha = 0.4, data = mediterranean_plots_2012,
+    show.legend = FALSE
+  ) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 ```
 
@@ -123,7 +126,7 @@ And we are ready for retrieving the data from the plots with `ffi_to_tibble()`. 
 that we need the department codes, the year, the filter list we obtained before and
 the path to the folder containing the inventory files.
 
-```{r ffi_data_2012}
+```{r ffi_data_2012, cache=TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -143,7 +146,7 @@ ffi_data_2012
 Now we can explore the data, for example the most abundant species
 and their mean diameter for each plot they are in:
 
-```{r}
+```{r, fig.width = 6, fig.height=12, fig.align="center"}
 ffi_data_2012 |>
   # clean plots without tree data
   clean_empty(c("tree")) |>
@@ -169,9 +172,11 @@ ffi_data_2012 |>
 ```
 
 ## FIA workflow
-plots. The IFN, differently from other inventories, doesn't offer the data by years, but by
-*versions*. We have *"ifn2"* (early 90s), *"ifn3" (early 00s)* and *"ifn4"* (2014-15).  
-We are going o retrive the plots for the latest version (*"ifn4"*):
+
+For the USA forest inventory (FIA) we are going to explore the west coast
+inventory plot for 2012. The steps are very similar to the FFI example. First we
+need the state codes, retrieve the plots metadata for those states and filter for
+the desired year, 2012::
 
 ```{r fia_west_coast_states}
 # choose the provinces, those in the Cantabric area
@@ -189,7 +194,7 @@ west_coast_plots_2012
 Also, if we obtain the states polygons with the `rnaturalearth` library, we
 can visualize the plots:
 
-```{r fia_states_polygons}
+```{r fia_states_polygons, fig.width=6, fig.align="center"}
 # USA map for plotting
 west_coast_map <- ne_states(geounit = "United States of America") |>
   select(state_code = "iso_3166_2", state_name = "gn_name") |>
@@ -198,7 +203,7 @@ west_coast_map <- ne_states(geounit = "United States of America") |>
 
 ggplot(west_coast_map) +
   geom_sf() +
-  geom_sf(aes(color = STATEAB, alpha = 0.1), data = west_coast_plots_2012) +
+  geom_sf(aes(color = STATEAB, alpha = 0.4), data = west_coast_plots_2012) +
   scale_color_manual(values = hcl.colors(3, palette = "Zissou 1"))
 ```
 
@@ -220,7 +225,7 @@ And now we have everything we need for retrieving the data with
 `fia_to_tibble()`. For that we need the state codes, the year, the filter list
 we obtained before and the path to the folder containing the inventory files.
 
-```{r fia_data_2012}
+```{r fia_data_2012, cache=TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -238,7 +243,7 @@ fia_data_2012 <- fia_to_tibble(
 As we did with the French inventory, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
-```{r}
+```{r, fig.height=12, fig.width=6, fig.align="center"}
 fia_data_2012 |>
   # clean plots without tree data
   clean_empty(c("tree")) |>
@@ -288,7 +293,7 @@ north_spain_plots
 Also, we obtain the provinces polygins with `rnaturalearth`, to visualize the
 plots:
 
-```{r ifn_plots_visualization}
+```{r ifn_plots_visualization, fig.width=6, fig.align="center"}
 # spain map for plotting
 north_spain_map <- ne_states(country = "spain") |>
   select(dep_code = "iso_3166_2", dep_name = "name") |>
@@ -299,7 +304,10 @@ north_spain_map <- ne_states(country = "spain") |>
 
 ggplot(north_spain_map) +
   geom_sf() +
-  geom_sf(aes(color = province_name_original), data = north_spain_plots, alpha = 0.1) +
+  geom_sf(
+    aes(color = province_name_original), data = north_spain_plots, alpha = 0.4,
+    show.legend = FALSE
+  ) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 ```
 
@@ -320,7 +328,7 @@ ifn_filter_list <- north_spain_plots |>
 And now we have everything we need for retrieving the data with
 `ifn_to_tibble()`:
 
-```{r, ifn4_data}
+```{r, ifn4_data, cache=TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -338,7 +346,7 @@ ifn_data <- ifn_to_tibble(
 As we did with the French and USA inventories, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
-```{r}
+```{r, fig.height=12, fig.width=6, fig.align="center"}
 ifn_data |>
   # clean plots without tree data
   clean_empty(c("tree")) |>

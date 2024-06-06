@@ -6,3 +6,5 @@
 data-raw/27398.txt
 inst/doc
 .vscode
+vignettes/*_cache
+vignettes/*_files
