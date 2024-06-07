@@ -7,7 +7,7 @@
 ffi_to_tibble(
   departments,
   years,
-  filter_list,
+  filter_list = NULL,
   folder,
   clean_empty = NULL,
   as_sf = FALSE,

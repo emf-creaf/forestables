@@ -133,7 +133,7 @@ ifn_to_tibble <- function(
     if (interactive()) {
       cli::cli_inform(c(
         "You haven't specified any plots in the {.arg filter_list} argument.",
-        "x" = "This will cause to retrieve {.strong ALL} plots  for the selected departments and years",
+        "x" = "This will cause to retrieve {.strong ALL} plots  for the selected provinces and versions",
         "!" = "This will use a lot of memory and time, as hundred of thousands plots will potentially be evaluated",
         "TODO: add info about how to create the filter list",
         ""
@@ -180,7 +180,8 @@ ifn_to_tibble <- function(
   ) |>
     purrr::list_rbind() |>
     clean_empty(clean_empty) |>
-    dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
+    # dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
+    reorder_inventory_output()
 
   if (isTRUE(as_sf)) {
     inventory_data <- inventory_data |>

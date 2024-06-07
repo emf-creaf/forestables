@@ -374,3 +374,46 @@ inventory_as_sf <- function(inventory_data) {
     dplyr::mutate(crs = 4326) |>
     sf::st_as_sf()
 }
+
+#' Reorder inventory output columns to uniformize them
+#'
+#' Reorder inventory output columns to uniformize them
+#'
+#' This function uniformizes de results of different inventories, ordering the variables to all
+#' have the same order in the common columns. The order is:
+#' * id_unique_code
+#' * year
+#' * plot
+#' * coord vars (coordx, coordy, coord_sys, crs)
+#' * topo vars (elev, aspect, slope)
+#' * country
+#' * _inventory unique vars_ (variables that are unique to that inventory)
+#' * tree nested column
+#' * understory nested column
+#' * regen nested column
+#' 
+#' @param inventory inventory nested data frame as obtained from `*_to_tibble` functions.
+#' 
+#' @noRd
+reorder_inventory_output <- function(inventory) {
+  inventory |>
+    dplyr::relocate(dplyr::any_of(c(
+      # common vars
+      "id_unique_code", "year", "plot",
+      "coordx", "coordy", "coord_sys", "crs",
+      "elev", "aspect", "slope",
+      "country",
+      # fia unique
+      "state_code", "state_ab", "state_name", "county_code",
+      "p3panel", "p2veg_sampling_status_cd", "p2veg_sampling_level_detail",
+      "rscd", "design_code", "subplot",
+      # ifn unique
+      "version", "class", "subclass",
+      "province_code", "province_name_original", "ca_name_original",
+      "sheet_ntm", "huso", "slope_mean", "type",
+      # ffi unique
+      "dep", "dep_name", "visite",
+      # nested cols
+      "tree", "understory", "regen"
+    )))
+}

@@ -5,3 +5,5 @@
 ^\.github$
 ^\.vscode$
 ^examples$
+_cache$
+_files$

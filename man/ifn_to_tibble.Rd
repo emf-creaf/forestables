@@ -7,7 +7,7 @@
 ifn_to_tibble(
   provinces,
   versions,
-  filter_list,
+  filter_list = NULL,
   folder,
   clean_empty = NULL,
   as_sf = FALSE,
