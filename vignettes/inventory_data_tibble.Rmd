@@ -103,6 +103,54 @@ ifn_output_example |>
 
 ### `tree` column
 
+`tree` is a *nested column*, meaning that each cell contain the tree data table for that row
+(i.e. the tree data table for that plot that year/version). As with the plot metadata, an effort to
+uniformize the data between inventories has been done.
+
+  * Common metadata among different inventories:  
+    
+
+
+```{r tree_column, eval=FALSE, echo=FALSE}
+ffi_tree_names <- ffi_output_example |>
+  clean_empty("tree") |>
+  dplyr::slice(1) |>
+  dplyr::pull("tree") |>
+  magrittr::extract2(1) |>
+  names()
+
+ifn_tree_names <- ifn_output_example |>
+  clean_empty("tree") |>
+  dplyr::slice(1) |>
+  dplyr::pull("tree") |>
+  magrittr::extract2(1) |>
+  names()
+
+fia_tree_names <- fia_output_example |>
+  clean_empty("tree") |>
+  dplyr::slice(1) |>
+  dplyr::pull("tree") |>
+  magrittr::extract2(1) |>
+  names()
+
+all_tree_names <- c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
+  unique()
+
+common_tree_names <- c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
+  magrittr::extract(
+    c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
+      duplicated() |> which()
+  ) |>
+  unique()
+
+ifn_unique_names <- ifn_tree_names |>
+  magrittr::extract(! ifn_tree_names %in% common_tree_names)
+fia_unique_names <- fia_tree_names |>
+  magrittr::extract(! fia_tree_names %in% common_tree_names)
+ffi_unique_names <- ffi_tree_names |>
+  magrittr::extract(! ffi_tree_names %in% common_tree_names)
+```
+
 ### `understory` column
 
 ### `regen` column

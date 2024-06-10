@@ -229,7 +229,6 @@ ffi_to_tibble <- function(
   ) |>
     purrr::list_rbind() |>
     clean_empty(clean_empty) |>
-    # dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
     reorder_inventory_output()
 
   if (isTRUE(as_sf)) {
@@ -757,7 +756,8 @@ ffi_tree_table_process <- function(
       "sp_code", "sp_name", "status",  "status5", "dia", "density_factor",
       "height", "height_last_recorded"
     ) |>
-    dplyr::ungroup()
+    dplyr::ungroup() |>
+    reorder_inventory_output(inventory_cols = "tree")
 
   return(tree)
 }

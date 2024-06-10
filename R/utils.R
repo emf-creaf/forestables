@@ -396,9 +396,12 @@ inventory_as_sf <- function(inventory_data) {
 #' @param inventory inventory nested data frame as obtained from `*_to_tibble` functions.
 #' 
 #' @noRd
-reorder_inventory_output <- function(inventory) {
-  inventory |>
-    dplyr::relocate(dplyr::any_of(c(
+reorder_inventory_output <- function(inventory, inventory_cols = "metadata") {
+
+  # switch
+  relocated_vars <- switch(
+    inventory_cols,
+    metadata = c(
       # common vars
       "id_unique_code", "year", "plot",
       "coordx", "coordy", "coord_sys", "crs",
@@ -416,5 +419,19 @@ reorder_inventory_output <- function(inventory) {
       "dep", "dep_name", "visite",
       # nested cols
       "tree", "understory", "regen"
-    )))
+    ),
+    tree = c(
+      # common vars
+      "tree", "sp_code", "sp_name", "status", "density_factor", "dia", "height",
+      # fia unique
+      # none
+      # ifn unique
+      "cubing_form", "quality_wood",
+      # ffi unique
+      "height_last_recorded", "status5", "espar"
+    )
+  )
+
+  inventory |>
+    dplyr::relocate(dplyr::any_of(relocated_vars))
 }

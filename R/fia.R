@@ -651,7 +651,8 @@ fia_tree_table_process <- function(
                   sp_code = "SPCD", height = "Height", sp_name = "SP_NAME",
                   state_code = "STATECD", county_code = "COUNTYCD", tree = "TREE",
                   density_factor = "DENSITY", ) |>
-    dplyr::as_tibble()
+    dplyr::as_tibble() |>
+    reorder_inventory_output(inventory_cols = "tree")
 
   # Return tree
   return(tree)

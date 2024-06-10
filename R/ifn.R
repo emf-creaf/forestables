@@ -402,10 +402,11 @@ ifn_tree_table_process <- function(
         "density_factor",
         "cubing_form",
         "quality_wood"
-      )
+      ) |>
+      reorder_inventory_output(inventory_cols = "tree")
 
     # Return tree
-    return(tree)
+    # return(tree)
   }
 
   if (version %in% c("ifn3", "ifn4")) {
@@ -499,11 +500,14 @@ ifn_tree_table_process <- function(
           #height in cm
           "height", "density_factor"
         ))
-      )
+      ) |>
+      reorder_inventory_output(inventory_cols = "tree")
 
     # Return tree
-    return(tree)
+    # return(tree)
   }
+
+  return(tree)
 }
 
 #' @describeIn ifn_tables_processing Process to gather needed data from shrub table
