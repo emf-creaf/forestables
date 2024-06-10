@@ -581,7 +581,7 @@ test_that("ffi_to_tibble works as intended", {
   # tests for clean_empty and as_sf arguments
   sf_expected_names <- c(
     "id_unique_code", "plot", "dep", "dep_name", "country",
-    "visite", "year", "crs", "aspect", "slope", "coord_sys",
+    "visite", "year", "crs", "aspect", "slope", "coord_sys_orig",
     "tree", "understory", "regen", "geometry", "crs_orig"
     # "soils"
   )

@@ -919,7 +919,7 @@ test_that("fia_to_tibble works as intended", {
     "year", "id_unique_code", "country", "state_code", "state_ab",
     "state_name", "county_code", "plot", "p3panel",
     "p2veg_sampling_status_cd", "p2veg_sampling_level_detail_cd",
-    "rscd", "design_code", "coord_sys", "crs", "elev", "aspect",
+    "rscd", "design_code", "coord_sys_orig", "crs", "elev", "aspect",
     "slope", "tree", "understory", "regen", "subplot",
     "geometry", "crs_orig"
     # "soils"

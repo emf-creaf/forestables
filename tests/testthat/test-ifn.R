@@ -1509,7 +1509,7 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   # tests for clean_empty and as_sf arguments
   sf_expected_names <- c(
     "id_unique_code", "country", "year", "ca_name_original", "province_name_original",
-    "province_code","plot", "version", "sheet_ntm", "huso", "coord_sys", "crs",
+    "province_code","plot", "version", "sheet_ntm", "huso", "coord_sys_orig", "crs",
     "slope_mean", "slope", "elev", "aspect", "tree", "understory",
     "regen", "class", "subclass", "type", "geometry", "crs_orig"
     # "soils"

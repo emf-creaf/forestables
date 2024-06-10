@@ -367,7 +367,8 @@ inventory_as_sf <- function(inventory_data) {
       .f = \(crs_subset, crs) {
         sf::st_as_sf(crs_subset, coords = c("coordx", "coordy"), crs = unique(crs$crs)) |>
           sf::st_transform(crs = 4326) |>
-          dplyr::mutate(crs_orig = crs$crs)
+          dplyr::mutate(crs_orig = crs$crs) |>
+          dplyr::rename(coord_sys_orig = "coord_sys")
       }
     ) |>
     dplyr::ungroup() |>
