@@ -345,8 +345,12 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       input <- stringr::str_replace(input, "(Ifn4_.* .*\\.accdb)$", "'\\1'")
     }
 
-    # read the table
-    res <- Hmisc::mdb.get(input, tables = table_name)
+    # read the table. Hmisc have some harcoded print statements that can not be muted. So we use a
+    # combination of invisible and capture.output to remove them, as they clutter the console, logs
+    # or documents when ran with lot of provinces
+    invisible(capture.output(
+      res <- Hmisc::mdb.get(input, tables = table_name)
+    ))
   } else {
     file_conn <- RODBC::odbcConnectAccess2007(input)
     # If drivers are not found in the system file_conn will be -1 (numeric)
