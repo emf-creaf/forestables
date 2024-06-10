@@ -1,0 +1,108 @@
+---
+title: "Inventory data output"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Inventory data output}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+eval_code <- TRUE
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = eval_code
+)
+```
+
+## Inventories outputs
+
+`forestables` tries to uniformize, when possible, the outputs of different inventories. This makes
+easier to design workflows that work with different inventories. This vignette shows and explains
+the `forestables` output tibble.
+
+### Example objects
+
+`forestables` ships with some output examples:
+
+```{r example_objects}
+# load the library
+library(forestables)
+
+# fia example
+fia_output_example
+
+# ffi example
+ffi_output_example
+
+# ifn example
+ifn_output_example
+```
+
+We are going to use these examples to explain the estructure of the output.
+
+### Output estructure
+
+Inventories outputs are dataframes (tibbles) in which each row is a plot/year combination
+(plot/version in the IFN). Metadata for the plot is presented in the first columns (plot IDs,
+coordinates info, topography...). The last three columns are always nested columns with the
+`tree` table for that plot/year, `understory` table for that plot/year and `regen` table for that
+plot/year.
+
+![]("inventory_row.svg")
+
+  * Common metadata among different inventories:  
+    `id_unique_code`, `year`, `plot`, `coordx`, `coordy`, `coord_sys`, `crs`, `elev`, `aspect`,
+    `slope`, `country`
+  
+  * FIA unique metadata:  
+    `state_code`, `state_ab`, `state_name`, `county_code`, `p3panel`, `p2veg_sampling_status_cd`,
+    `p2veg_sampling_level_detail`, `rscd`, `design_code`, `subplot`
+  
+  * IFN unique metadata:  
+    `version`, `class`, `subclass`, `province_code`, `province_name_original`, `ca_name_original`,
+    `sheet_ntm`, `huso`, `slope_mean`, `type`
+  
+  * FFI unique metadata:  
+    `dep`, `dep_name`, `visite`
+  
+  * Nested columns common to all inventories:  
+    `tree`, `understory`, `regen`
+
+To know more about each variable, you can check the ????? vignette.
+
+### Post-processing outputs
+
+  1. **Cleaning empty data**. By default, `ifn_`, `fia_` and `ffi_to_tibble` functions return all
+     plots requested, even if they don't have data for that year or version. The `clean_empty()`
+     function can be used after retrieving the data to remove empty plots in `tree`, `understory`
+     and/or `regen` columns:
+
+```{r clean_empty}
+# FIA plots in AK for the 2015-2018 period
+nrow(fia_output_example)
+# FIA plots in AK for the 2015-2018 period with tree data
+nrow(clean_empty(fia_output_example, c("tree")))
+# FIA plots in AK for the 2015-2018 period with tree AND understory AND regen data
+nrow(clean_empty(fia_output_example, c("tree", "understory", "regen")))
+```
+
+  2. **Transforming to spatial object**. By default, `ifn_`, `fia_` and `ffi_to_tibble` functions
+     all return a tibble (data frame). These tibbles have the spatial information to be able to
+     convert plots to spatial points. But this conversion is not straightforward as sometimes plots
+     from the same inventory have different coordinate systems or projections. To do this
+     `inventory_to_sf()` function can be used directly and it will make the necessary coordinate
+     transformations to return plots as points in latitude-longitude format (CRS = 4326):
+
+```{r inventory_as_sf}
+ifn_output_example |>
+  clean_empty("tree") |>
+  inventory_as_sf()
+```
+
+### `tree` column
+
+### `understory` column
+
+### `regen` column
