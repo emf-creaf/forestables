@@ -76,8 +76,8 @@ To know more about each variable, you can check the ????? vignette.
 
   1. **Cleaning empty data**. By default, `ifn_`, `fia_` and `ffi_to_tibble` functions return all
      plots requested, even if they don't have data for that year or version. The `clean_empty()`
-     function can be used after retrieving the data to remove empty plots in `tree`, `understory`
-     and/or `regen` columns:
+     function can be used after retrieving the data to remove empty plots in `tree`, `shrub`,
+     `herbs` and/or `regen` columns:
 
 ```{r clean_empty}
 # FIA plots in AK for the 2015-2018 period
@@ -195,7 +195,7 @@ The `herbs` data is different in each inventory, and is not present in the IFN.
 
 The easiest way to access the understory data is with `unnest()`:
 
-```{r tree_unnest}
+```{r understory_unnest}
 ffi_output_example |>
   clean_empty("shrub") |>
   unnest("understory") |>
