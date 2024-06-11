@@ -588,7 +588,7 @@ test_that("ffi_to_tibble works as intended", {
   expect_s3_class(
     sf_res <- suppressWarnings(ffi_to_tibble(
       test_departments, test_years, test_plots, test_folder,
-      as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
+      as_sf = TRUE, clean_empty = c("tree", "shrub", "herbs", "regen"),
       .parallel_options = test_parallel_conf,
       .verbose = FALSE
     )),
@@ -600,6 +600,16 @@ test_that("ffi_to_tibble works as intended", {
   expect_false(any(purrr::map_lgl(sf_res$tree, rlang::is_empty)))
   expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
   expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
+  expect_false(any(
+    sf_res$understory |>
+      purrr::map("shrub") |>
+      purrr::map_lgl(.f = rlang::is_empty)
+  ))
+  expect_false(any(
+    sf_res$understory |>
+      purrr::map("herbs") |>
+      purrr::map_lgl(.f = rlang::is_empty)
+  ))
 
   ### test all assertions done in ffi_to_tibble
   # departments

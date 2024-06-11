@@ -234,8 +234,10 @@ create_filter_list <- function(plots_info) {
 #' @param inventory_data Data from an inventory as obtained from \code{\link{ifn_to_tibble}},
 #'   \code{\link{fia_to_tibble}} or \code{\link{ffi_to_tibble}}.
 #' @param cols vector with column names to clean from empty results. Can be one or more of
-#'   \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots with
-#'   data in all columns selected will be retained.
+#'   \code{"tree"}, \code{"shrubs"}, \code{"herbs"} and \code{"regen"}. If more than one, only
+#'   plots with data in all columns selected will be retained. \code{"shrubs"} and \code{"herbs"}
+#'   are inside \code{"understory"} column, and should be noted that IFN inventory never have
+#'   \code{"herbs"} data, so cleaning by it will always return an empty tibble.
 #'
 #' @return A tibble the same as \code{inventory_data} with the empty data removed for the columns
 #'   selected.
@@ -251,7 +253,7 @@ create_filter_list <- function(plots_info) {
 #'   filter_list = list("01" = c(1404119)),
 #'   folder = "path/to/ffi/data"
 #' ) |>
-#'   clean_empty(c("tree", "regen", "understory"))
+#'   clean_empty(c("tree", "regen", "shrub", "herbs"))
 #'
 #' # FIA
 #' fia_to_tibble(
@@ -259,15 +261,15 @@ create_filter_list <- function(plots_info) {
 #'   filter_list = list("OR" = list("59" = c(76413))),
 #'   folder = "path/to/fia/data"
 #' ) |>
-#'   clean_empty(c("tree", "regen", "understory"))
+#'   clean_empty(c("tree", "regen", "shrub", "herbs"))
 #'
-#' # IFN
+#' # IFN (never clean by "herbs", as is always empty)
 #' ifn_to_tibble(
 #'   provinces = c("24"), versions = c("ifn3"),
 #'   filter_list = list("24" = c("24_0270_xx_A4_xx")),
 #'   folder = "path/to/ifn/data"
 #' ) |>
-#'   clean_empty(c("tree", "regen", "understory"))
+#'   clean_empty(c("tree", "regen", "shrub"))
 #' }
 #' }
 #'
@@ -286,9 +288,9 @@ clean_empty <- function(inventory_data, cols) {
   )
   # cols
   assertthat::assert_that(
-    is.null(cols) || all(cols %in% c("tree", "regen", "understory")),
+    is.null(cols) || all(cols %in% c("tree", "regen", "shrub", "herbs")),
     msg = cli::cli_abort(
-      "{.arg cols} must be one or more of 'tree', 'regen' or 'understory'"
+      "{.arg cols} must be one or more of 'tree', 'regen', 'shrub' or 'herbs'"
     )
   )
 
@@ -296,13 +298,39 @@ clean_empty <- function(inventory_data, cols) {
     return(inventory_data)
   }
 
+  # we create a filter vector for each column (outer for main columns, inner for understory columns)
+  # and combine them to know the rows (plots) that have data in all of them
+  filter_vector <- cols |>
+    purrr::map(
+      .f = \(data_col) {
+        # outer cols
+        if (data_col %in% c("tree", "regen")) {
+          inventory_data[[data_col]] |>
+            purrr::map_lgl(.f = rlang::is_empty)
+        } else {
+          # inner understory cols
+          inventory_data[["understory"]] |>
+            purrr::map(data_col) |>
+            purrr::flatten() |>
+            purrr::map_lgl(.f = rlang::is_empty)
+        }
+      }
+    ) |>
+    # we have empty rows in each data, we need the opposite, non empty rows to filter by
+    purrr::map(.f = `!`) |>
+    # combine the filters with & to have the rows that have data in all columns
+    purrr::reduce(.f = `&`)
+
   inventory_data |>
-    dplyr::filter(
-      dplyr::if_all(
-        dplyr::contains(cols),
-        ~ !purrr::map_lgl(.x, rlang::is_empty)
-      )
-    )
+    dplyr::filter(filter_vector)
+
+  # inventory_data |>
+  #   dplyr::filter(
+  #     dplyr::if_all(
+  #       dplyr::contains(cols),
+  #       ~ !purrr::map_lgl(.x, rlang::is_empty)
+  #     )
+  #   )
 }
 
 #' Convert inventory data to sf based on coords and crs present

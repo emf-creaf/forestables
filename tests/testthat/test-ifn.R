@@ -1520,7 +1520,7 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   expect_s3_class(
     sf_res <- suppressWarnings(ifn_to_tibble(
       test_ifn234_provinces, test_ifn234_versions, test_ifn234_plots, test_ifn234_folder,
-      as_sf = TRUE, clean_empty = c("tree", "understory", "regen"),
+      as_sf = TRUE, clean_empty = c("tree", "shrub", "regen"),
       .parallel_options = test_ifn234_parallel_conf,
       .verbose = FALSE
     )),
@@ -1532,6 +1532,11 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
   expect_false(any(purrr::map_lgl(sf_res$tree, rlang::is_empty)))
   expect_false(any(purrr::map_lgl(sf_res$understory, rlang::is_empty)))
   expect_false(any(purrr::map_lgl(sf_res$regen, rlang::is_empty)))
+  expect_false(any(
+    sf_res$understory |>
+      purrr::map("shrub") |>
+      purrr::map_lgl(.f = rlang::is_empty)
+  ))
 
   ## test assertions in ifn_to_tibble
   # provinces

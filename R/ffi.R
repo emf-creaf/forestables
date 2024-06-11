@@ -14,8 +14,9 @@
 #'   See details.
 #' @param folder The path to the folder containing the FFI csv files, as character.
 #' @param clean_empty Vector with column names from where to remove empty results. Can be one or
-#'   more of \code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots
-#'   with data in all columns selected will be retained. Default to NULL, no cleaning is done.
+#'   more of \code{"tree"}, \code{"shrub"}, \code{"herbs"} and \code{"regen"}. If more than one,
+#'   only plots with data in all columns selected will be retained. Default to NULL, no cleaning is
+#'   done.
 #' @param as_sf Logical indicating if the data must be returned as an spatial object. Default to
 #'   \code{FALSE}.
 #' @param ... Not used at the moment

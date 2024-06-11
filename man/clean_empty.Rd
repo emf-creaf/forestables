@@ -11,8 +11,10 @@ clean_empty(inventory_data, cols)
 \code{\link{fia_to_tibble}} or \code{\link{ffi_to_tibble}}.}
 
 \item{cols}{vector with column names to clean from empty results. Can be one or more of
-\code{"tree"}, \code{"understory"} and \code{"regen"}. If more than one, only plots with
-data in all columns selected will be retained.}
+\code{"tree"}, \code{"shrubs"}, \code{"herbs"} and \code{"regen"}. If more than one, only
+plots with data in all columns selected will be retained. \code{"shrubs"} and \code{"herbs"}
+are inside \code{"understory"} column, and should be noted that IFN inventory never have
+\code{"herbs"} data, so cleaning by it will always return an empty tibble.}
 }
 \value{
 A tibble the same as \code{inventory_data} with the empty data removed for the columns
@@ -35,7 +37,7 @@ ffi_to_tibble(
   filter_list = list("01" = c(1404119)),
   folder = "path/to/ffi/data"
 ) |>
-  clean_empty(c("tree", "regen", "understory"))
+  clean_empty(c("tree", "regen", "shrub", "herbs"))
 
 # FIA
 fia_to_tibble(
@@ -43,15 +45,15 @@ fia_to_tibble(
   filter_list = list("OR" = list("59" = c(76413))),
   folder = "path/to/fia/data"
 ) |>
-  clean_empty(c("tree", "regen", "understory"))
+  clean_empty(c("tree", "regen", "shrub", "herbs"))
 
-# IFN
+# IFN (never clean by "herbs", as is always empty)
 ifn_to_tibble(
   provinces = c("24"), versions = c("ifn3"),
   filter_list = list("24" = c("24_0270_xx_A4_xx")),
   folder = "path/to/ifn/data"
 ) |>
-  clean_empty(c("tree", "regen", "understory"))
+  clean_empty(c("tree", "regen", "shrub"))
 }
 }
 
