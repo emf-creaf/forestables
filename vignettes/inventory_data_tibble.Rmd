@@ -84,8 +84,8 @@ To know more about each variable, you can check the ????? vignette.
 nrow(fia_output_example)
 # FIA plots in AK for the 2015-2018 period with tree data
 nrow(clean_empty(fia_output_example, c("tree")))
-# FIA plots in AK for the 2015-2018 period with tree AND understory AND regen data
-nrow(clean_empty(fia_output_example, c("tree", "understory", "regen")))
+# FIA plots in AK for the 2015-2018 period with tree AND shrub AND herbs AND regen data
+nrow(clean_empty(fia_output_example, c("tree", "shrub",, "herbs", "regen")))
 ```
 
   2. **Transforming to spatial object**. By default, `ifn_`, `fia_` and `ffi_to_tibble` functions
