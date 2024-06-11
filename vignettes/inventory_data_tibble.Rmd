@@ -85,7 +85,7 @@ nrow(fia_output_example)
 # FIA plots in AK for the 2015-2018 period with tree data
 nrow(clean_empty(fia_output_example, c("tree")))
 # FIA plots in AK for the 2015-2018 period with tree AND shrub AND herbs AND regen data
-nrow(clean_empty(fia_output_example, c("tree", "shrub",, "herbs", "regen")))
+nrow(clean_empty(fia_output_example, c("tree", "shrub", "herbs", "regen")))
 ```
 
   2. **Transforming to spatial object**. By default, `ifn_`, `fia_` and `ffi_to_tibble` functions
@@ -111,7 +111,8 @@ uniformize the data between inventories has been done.
     `tree`, `sp_code`, `sp_name`, `status`, `density_factor`, `dia`, `height`.
   
   * IFN unique tree variables:  
-    `cubing_form`, `quality_wood`. Also, IFN lack the `status` variable.
+    `tree_ifn2`, `tree_ifn3`, `tree_ifn4` `cubing_form`, `quality_wood`. Also, IFN lack the `status`
+    variable.
   
   * FFI unique tree variables:  
     `height_last_recorded`, `status5`, `espar`.
@@ -128,23 +129,20 @@ fia_output_example |>
 ```{r tree_column, eval=FALSE, echo=FALSE}
 ffi_tree_names <- ffi_output_example |>
   clean_empty("tree") |>
-  dplyr::slice(1) |>
   dplyr::pull("tree") |>
-  magrittr::extract2(1) |>
+  purrr::list_rbind() |>
   names()
 
 ifn_tree_names <- ifn_output_example |>
   clean_empty("tree") |>
-  dplyr::slice(1) |>
   dplyr::pull("tree") |>
-  magrittr::extract2(1) |>
+  purrr::list_rbind() |>
   names()
 
 fia_tree_names <- fia_output_example |>
   clean_empty("tree") |>
-  dplyr::slice(1) |>
   dplyr::pull("tree") |>
-  magrittr::extract2(1) |>
+  purrr::list_rbind() |>
   names()
 
 all_tree_names <- c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
@@ -172,34 +170,66 @@ found in the inventory plot.
 
   * Common understory variables among different inventories:  
     `shrub`, `herbs`. Both are also nested columns, as each kindo of understory has different data
-    estructure.  
-
-      - `shrub`:  
-        tur
+    estructure.
   
   * FFI unique understory variables:  
     `lign1_pct`, `lign2_pct`.
 
+#### `shrub` column
+
+  * Common shrub variables among different inventories:  
+    `sp_code`, `sp_name`, `cover`, `height`, `growth_form`
+  
+  * FIA unique shrub variables:  
+    `subplot`, `growth_form_code`.
+
+#### `herbs` column
+
+The `herbs` data is different in each inventory, and is not present in the IFN.
+
+  * FIA unique herbs variables:  
+    `subplot`, `sp_name`, `growth_form_code`, `height`, `cover`, `growth_form`, `sp_code`
+  
+  * FFI unique herbs variables:  
+    `herb_pct`
+
+The easiest way to access the understory data is with `unnest()`:
+
+```{r tree_unnest}
+ffi_output_example |>
+  clean_empty("shrub") |>
+  unnest("understory") |>
+  unnest("shrub", names_sep = "_")
+
+ffi_output_example |>
+  clean_empty("herbs") |>
+  unnest("understory") |>
+  unnest("herbs", names_sep = "_")
+```
+
 ```{r understory_column, eval=FALSE, echo=FALSE}
 ffi_understory_names <- ffi_output_example |>
   clean_empty("herbs") |>
-  dplyr::slice(1) |>
   dplyr::pull("understory") |>
-  magrittr::extract2(1) |>
+  purrr::map("herbs") |>
+  purrr::flatten() |>
+  purrr::list_rbind() |>
   names()
 
 ifn_understory_names <- ifn_output_example |>
-  clean_empty("understory") |>
-  dplyr::slice(1) |>
+  clean_empty("herbs") |>
   dplyr::pull("understory") |>
-  magrittr::extract2(1) |>
+  purrr::map("herbs") |>
+  purrr::flatten() |>
+  purrr::list_rbind() |>
   names()
 
 fia_understory_names <- fia_output_example |>
-  clean_empty("understory") |>
-  dplyr::slice(1) |>
+  clean_empty("herbs") |>
   dplyr::pull("understory") |>
-  magrittr::extract2(1) |>
+  purrr::map("herbs") |>
+  purrr::flatten() |>
+  purrr::list_rbind() |>
   names()
 
 all_understory_names <- c(ifn_understory_names, ffi_understory_names, fia_understory_names) |>
@@ -221,3 +251,62 @@ ffi_unique_names <- ffi_understory_names |>
 ```
 
 ### `regen` column
+
+`regen` is a *nested column*, meaning that each cell contain the regen data table for that row
+(i.e. the regen data table for that plot that year/version). As with the plot metadata, an effort to
+uniformize the data between inventories has been done.
+
+  * Common regen variables among different inventories:  
+    `sp_code`, `sp_name`, `density_factor`, `dbh`, `height`, `n`.
+  
+  * FIA unique regen variables:  
+    `subplot`, `treecount_calc`.
+  
+  * FFI unique regen variables:  
+    `cover`, `growth_form`
+
+The easiest way to access the regen data is with `unnest()`:
+
+```{r regen_unnest}
+ifn_output_example |>
+  clean_empty("regen") |>
+  unnest("regen", names_sep = "_")
+```
+
+
+```{r regen_column, eval=FALSE, echo=FALSE}
+ffi_regen_names <- ffi_output_example |>
+  clean_empty("regen") |>
+  dplyr::pull("regen") |>
+  purrr::list_rbind() |>
+  names()
+
+ifn_regen_names <- ifn_output_example |>
+  clean_empty("regen") |>
+  dplyr::pull("regen") |>
+  purrr::list_rbind() |>
+  names()
+
+fia_regen_names <- fia_output_example |>
+  clean_empty("regen") |>
+  dplyr::pull("regen") |>
+  purrr::list_rbind() |>
+  names()
+
+all_regen_names <- c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
+  unique()
+
+common_regen_names <- c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
+  magrittr::extract(
+    c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
+      duplicated() |> which()
+  ) |>
+  unique()
+
+ifn_unique_names <- ifn_regen_names |>
+  magrittr::extract(! ifn_regen_names %in% common_regen_names)
+fia_unique_names <- fia_regen_names |>
+  magrittr::extract(! fia_regen_names %in% common_regen_names)
+ffi_unique_names <- ffi_regen_names |>
+  magrittr::extract(! ffi_regen_names %in% common_regen_names)
+```

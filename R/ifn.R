@@ -383,7 +383,10 @@ ifn_tree_table_process <- function(
           .data$dia >= 12.5 & .data$dia < 22.5 ~ 31.83098865,
           .data$dia >= 22.5 & .data$dia < 42.5 ~ 14.14710607,
           .data$dia >= 42.5 ~ 5.092958185
-        )
+        ),
+        tree = as.character(.data$tree),
+        FORMA = as.character(.data$FORMA),
+        CALIDAD = as.character(.data$CALIDAD)
       )  |>
       # add species info ---> WHAT REFERENCE SHOULD I USEE???
       dplyr::left_join(
@@ -470,7 +473,10 @@ ifn_tree_table_process <- function(
           .data$dia >= 12.5 & .data$dia < 22.5 ~ 31.83098865,
           .data$dia >= 22.5 & .data$dia < 42.5 ~ 14.14710607,
           .data$dia >= 42.5 ~ 5.092958185
-        )
+        ),
+        tree = as.character(.data$tree),
+        Forma = as.character(.data$Forma),
+        Calidad = as.character(.data$Calidad)
       ) |>
       # add species info
       dplyr::left_join(
@@ -481,9 +487,7 @@ ifn_tree_table_process <- function(
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(
         sp_code = "SP_CODE",
-        sp_name = "SP_NAME"
-      ) |>
-      dplyr::rename(
+        sp_name = "SP_NAME",
         quality_wood = "Calidad",
         cubing_form = "Forma"
       ) |>
