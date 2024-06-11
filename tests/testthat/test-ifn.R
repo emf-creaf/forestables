@@ -1284,6 +1284,7 @@ test_that("ifn_tables_process ifn2 works as intended", {
   # data integrity
   expect_named(test_ifn2_res, expected_names)
   expect_true(all(unique(test_ifn2_res$province_code) %in% names(test_ifn2_plots)))
+  expect_named(test_ifn2_res$understory[[1]], c("shrub", "herbs"), ignore.order = TRUE)
 
   ### missing tables/plots
   # tururu and "91" province shouldn't appear
@@ -1363,6 +1364,7 @@ test_that("ifn_tables_process ifn3 works as intended", {
   # data integrity
   expect_named(test_ifn3_res, expected_names, ignore.order = TRUE)
   expect_true(all(unique(test_ifn3_res$province_code) %in% names(test_ifn3_plots)))
+  expect_named(test_ifn3_res$understory[[1]], c("shrub", "herbs"), ignore.order = TRUE)
 
   # ### missing tables/plots
   # # tururu state shouldn't appear
@@ -1442,6 +1444,7 @@ test_that("ifn_tables_process ifn4 works as intended", {
   # data integrity
   expect_named(test_ifn4_res, expected_names, ignore.order = TRUE)
   expect_true(all(unique(test_ifn4_res$province_code) %in% names(test_ifn4_plots)))
+  expect_named(test_ifn4_res$understory[[1]], c("shrub", "herbs"), ignore.order = TRUE)
 
   ### missing tables/plots
   # tururu state shouldn't appear, inexistent plots (91-0) shouldn't be present,

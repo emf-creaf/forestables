@@ -240,6 +240,9 @@ ifn_tables_process <- function(
         shrub_table, version, plots, province, species_ifn_internal, .call
       ) |>
         dplyr::select(!dplyr::any_of(redundant_vars))
+      # in IFN there is no herbs info, but for consistency with other inventories we are gonna add
+      # an empty tibble. That way we can implement herbs and shrubs empty cleaning methods
+      herbs <- tibble::tibble()
       regen <- ifn_regen_table_process(
         regen_table, version, plots, province, species_ifn_internal, .call
       ) |>
@@ -251,7 +254,7 @@ ifn_tables_process <- function(
       }
 
       # we put together all tables in a data frame
-      understory <- tibble::tibble(shrub = list(shrub))
+      understory <- tibble::tibble(shrub = list(shrub), herbs = list(herbs))
 
       plot_info |>
         dplyr::rename(coordx = "COORDEX", coordy = "COORDEY") |>
