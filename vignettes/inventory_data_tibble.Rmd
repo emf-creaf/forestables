@@ -116,6 +116,14 @@ uniformize the data between inventories has been done.
   * FFI unique tree variables:  
     `height_last_recorded`, `status5`, `espar`.
 
+The easiest way to access the tree data is with `unnest()`:
+
+```{r tree_unnest}
+fia_output_example |>
+  clean_empty("tree") |>
+  unnest("tree", names_sep = "_")
+```
+
 
 ```{r tree_column, eval=FALSE, echo=FALSE}
 ffi_tree_names <- ffi_output_example |>
@@ -159,9 +167,22 @@ ffi_unique_names <- ffi_tree_names |>
 
 ### `understory` column
 
+`understory` is also a *nested* column. It contains the data tables for shrubs and for herbs if
+found in the inventory plot.
+
+  * Common understory variables among different inventories:  
+    `shrub`, `herbs`. Both are also nested columns, as each kindo of understory has different data
+    estructure.  
+
+      - `shrub`:  
+        tur
+  
+  * FFI unique understory variables:  
+    `lign1_pct`, `lign2_pct`.
+
 ```{r understory_column, eval=FALSE, echo=FALSE}
 ffi_understory_names <- ffi_output_example |>
-  clean_empty("understory") |>
+  clean_empty("herbs") |>
   dplyr::slice(1) |>
   dplyr::pull("understory") |>
   magrittr::extract2(1) |>
