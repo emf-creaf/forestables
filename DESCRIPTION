@@ -45,7 +45,8 @@ Imports:
     stats,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    utils
 Depends: 
     data.table,
     dtplyr,

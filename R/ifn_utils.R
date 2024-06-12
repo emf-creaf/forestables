@@ -348,7 +348,7 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
     # read the table. Hmisc have some harcoded print statements that can not be muted. So we use a
     # combination of invisible and capture.output to remove them, as they clutter the console, logs
     # or documents when ran with lot of provinces
-    invisible(capture.output(
+    invisible(utils::capture.output(
       res <- Hmisc::mdb.get(input, tables = table_name)
     ))
   } else {
