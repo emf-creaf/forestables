@@ -2,6 +2,7 @@
 
 export(clean_empty)
 export(create_filter_list)
+export(download_inventory)
 export(ffi_to_tibble)
 export(fia_to_tibble)
 export(ifn_to_tibble)

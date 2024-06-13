@@ -157,6 +157,42 @@ species_ifn_internal <- shrub_codes_ifn4 |>
 
 source("data-raw/IFN_plots_thesaurus.R") # this creates ifn_plots_thesaurus object
 
+# ifn download links --------------------------------------------------------------------------
+
+ifn2_links_raw <- c(
+  rvest::html_attr(rvest::html_nodes(rvest::read_html(
+    "https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_parcelas_1_25.html"
+  ), "a"), "href"),
+  rvest::html_attr(rvest::html_nodes(rvest::read_html(
+    "https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_parcelas_26_50.html"
+  ), "a"), "href")
+)
+
+ifn2_links <- ifn2_links_raw[ifn2_links_raw |> stringr::str_detect("zip$")] |>
+  purrr::discard(.p = is.na)
+
+
+ifn3_links_raw <- c(
+  rvest::html_attr(rvest::html_nodes(rvest::read_html(
+    "https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_base_datos_1_25.html"
+  ), "a"), "href"),
+  rvest::html_attr(rvest::html_nodes(rvest::read_html(
+    "https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_base_datos_26_50.html"
+  ), "a"), "href")
+)
+
+ifn3_links <- ifn3_links_raw[ifn3_links_raw |> stringr::str_detect("Ifn3")] |>
+  purrr::discard(.p = is.na)
+
+ifn4_links_raw <- c(
+  rvest::html_attr(rvest::html_nodes(rvest::read_html(
+    "https://www.miteco.gob.es/es/biodiversidad/temas/inventarios-nacionales/inventario-forestal-nacional/cuarto_inventario.html"
+  ), "a"), "href")
+)
+
+ifn4_links <- ifn4_links_raw[ifn4_links_raw |> stringr::str_detect("ifn4_")] |>
+  purrr::discard(.p = is.na)
+
 # use internal data ---------------------------------------------------------------------------
 
 usethis::use_data(
@@ -166,5 +202,6 @@ usethis::use_data(
   ifn_provinces_dictionary,
   species_ifn_internal,
   ifn_plots_thesaurus,
+  ifn2_links, ifn3_links, ifn4_links,
   overwrite = TRUE, internal = TRUE
 )
