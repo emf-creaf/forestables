@@ -44,8 +44,12 @@ test_input <- .build_ffi_input_with(
   .verbose = FALSE
 )
 
+skip_lines <- readr::read_lines(file = fs::path(folder, "metadonnees.csv")) |>
+    stringr::str_detect("// Unit\u00e9") |>
+    which()
+
 test_metadonnees <- suppressWarnings(
-  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = 331) |>
+  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = skip_lines - 1) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 )
