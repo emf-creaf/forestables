@@ -637,7 +637,7 @@ We use maximum cover percentage of a species in different layers (SP_CANOPY_COVE
 | Layer 3       | 340 cm         |
 | Layer 4       | 500 cm         |
 
-All information about is at subplot level.
+All information is at subplot level.
 
 Since *P2VEG_SUBPLOT_SPP* collects data from different growth forms (*growth_form*), we use the *REF_PLANT_DICTIONARY* to select data from shrubs ( code = "Shrub").
 
@@ -679,7 +679,7 @@ Height is approximated by using the LAYER info.
 | LAYER 3 | 335 cm         |
 | LAYER 4 | 500 cm         |
 
-All information about is at subplot level.
+All information is at subplot level.
 
 If there is data in both files ( *P2VEG_SUBPLOT_SPP and \_VEG_SUBPLOT_SPP)* , P3 data is prioritized and P2 data is added if gives additional information on certain species.
 
