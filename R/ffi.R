@@ -278,7 +278,7 @@ ffi_tables_process <- function(
       ESPAR = stringr::str_pad(.data$ESPAR, 2, side = "left", pad = "0")
     ) |>
     dplyr::arrange(.data$ESPAR)
-  
+
   skip_lines <- readr::read_lines(file = fs::path(folder, "metadonnees.csv")) |>
     stringr::str_detect("// Unit\u00e9") |>
     which()
@@ -311,7 +311,7 @@ ffi_tables_process <- function(
     .progress = .verbose,
     .l = input_df,
     .f = \(department, plots, tree_table, plot_table, shrub_table, soils_table, regen_table) {
-      
+
       plot_info <- ffi_plot_table_process(plot_table, soils_table, plots, year, metadonnees, .call)
       tree <- ffi_tree_table_process(tree_table, plots, year, espar_cdref, idp_dep_ref, .call) |>
         dplyr::select(!dplyr::any_of(c(
@@ -381,7 +381,7 @@ ffi_tables_process <- function(
           # New logic: filter tree AND NAs
           regen <- shrub_regen |>
             dplyr::filter(is.na(.data$growth_form) | .data$growth_form == "tree")
-          
+
           # check if both have data
           if (nrow(regen) < 1) {
             regen <- tibble::tibble()
@@ -494,7 +494,7 @@ ffi_plot_table_process <- function(
       "Data missing for that combination of plot and year",
       "i" = "Returning empty plot info for plot {.var {plot}} in year {.var {year}} "
     ), call = .call), .verbose = FALSE)
-    
+
     return(dplyr::tibble())
   }
 
@@ -758,8 +758,8 @@ ffi_tree_table_process <- function(
       dia = dplyr::if_else(is.na(.data$DIA), .data$DIA_last_recorded, .data$DIA)
     ) |>
     dplyr::select(
-      "id_unique_code", plot = "PLOT", dep = "DEP", year = "YEAR", tree = "TREE", "espar",
-      "sp_code", "sp_name", "status",  "status5", "dia", "density_factor",
+      "id_unique_code", plot = "PLOT", dep = "DEP", year = "YEAR", tree_id = "TREE", "espar",
+      "sp_code", "sp_name", "status",  "status5", dbh = "dia", "density_factor",
       "height", "height_last_recorded"
     ) |>
     dplyr::ungroup() |>

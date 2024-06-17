@@ -140,8 +140,8 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
     "plot",
     "sp_code",
     "sp_name",
-    "tree",
-    "dia",
+    "tree_id",
+    "dbh",
     "height",
     "density_factor",
     "cubing_form",
@@ -230,7 +230,7 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     "sp_code",
     "sp_name",
     #tree number id in ifn4
-    "tree",
+    "tree_id",
     #CUALIDAD 6 = dead but providing functions
     "quality_wood",
     "cubing_form",
@@ -238,7 +238,7 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     "tree_ifn2",
     "tree_ifn3",
     #diameter in cm
-    "dia",
+    "dbh",
     #height in m
     "height",
     "density_factor"
@@ -329,7 +329,7 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
     "sp_code",
     "sp_name",
     # #tree number id in ifn4
-    "tree",
+    "tree_id",
     #CUALIDAD 6 = dead but providing functions
     "quality_wood",
     "cubing_form",
@@ -337,7 +337,7 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
     "tree_ifn3",
     "tree_ifn4",
     #diameter in cm
-    "dia",
+    "dbh",
     #height in m
     "height",
     "density_factor"

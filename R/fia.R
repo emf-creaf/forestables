@@ -648,9 +648,9 @@ fia_tree_table_process <- function(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD", "PLOT",
       "TREE", "STATUSCD", "DIA", "Height", "SP_NAME", "SPCD", "DENSITY"
     ) |>
-    dplyr::rename(plot = "PLOT", dia = "DIA", year = "INVYR", status = "STATUSCD",
+    dplyr::rename(plot = "PLOT", dbh = "DIA", year = "INVYR", status = "STATUSCD",
                   sp_code = "SPCD", height = "Height", sp_name = "SP_NAME",
-                  state_code = "STATECD", county_code = "COUNTYCD", tree = "TREE",
+                  state_code = "STATECD", county_code = "COUNTYCD", tree_id = "TREE",
                   density_factor = "DENSITY", ) |>
     dplyr::as_tibble() |>
     reorder_inventory_output(inventory_cols = "tree")
@@ -1130,12 +1130,15 @@ fia_subplot_table_process <- function(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD",
       "PLOT", "SUBP", "SLOPE", "ASPECT", "MACRCOND",
       # Condition number for the condition at the center of the subplot.
-      "SUBPCOND", "MICRCOND"
+      "SUBPCOND", "MICRCOND",
+      "SUBP_STATUS_CD",
+      "P2VEG_SUBP_STATUS_CD"
     ) |>
     dplyr::rename(
       year = "INVYR", subplot = "SUBP", slope_subplot = "SLOPE", aspect_subplot = "ASPECT",
       state_code = "STATECD", county_code = "COUNTYCD", plot =  "PLOT",
-      subplot_cond = "SUBPCOND", micro_cond =  "MICRCOND", macro_cond = "MACRCOND"
+      subplot_cond = "SUBPCOND", micro_cond =  "MICRCOND", macro_cond = "MACRCOND",
+      subplot_status = "SUBP_STATUS_CD",  psveg_subplot_status = "P2VEG_SUBP_STATUS_CD"
     ) |>
     # We have repeated rows after the selection because we summarized
     # shrubs species. We remove with distinct

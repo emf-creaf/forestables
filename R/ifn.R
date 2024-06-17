@@ -396,6 +396,8 @@ ifn_tree_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(
+        tree_id = "tree",
+        dbh = "dia",
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "CALIDAD",
@@ -403,8 +405,8 @@ ifn_tree_table_process <- function(
       ) |>
       dplyr::select(
         "id_unique_code", "province_code", "plot", "sp_code", "sp_name",
-        "tree",
-        "dia", # diameter in cm
+        "tree_id",
+        "dbh", # diameter in cm
         "height", # height in m
         "density_factor",
         "cubing_form",
@@ -486,6 +488,8 @@ ifn_tree_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(
+        tree_id = "tree",
+        dbh = "dia",
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "Calidad",
@@ -496,7 +500,7 @@ ifn_tree_table_process <- function(
           "id_unique_code", "province_code", "Clase", "Subclase",
           "plot", "sp_code", "sp_name",
           #tree number id in ifn4
-          "tree",
+          "tree_id",
           "tree_ifn2",
           "tree_ifn3",
           "tree_ifn4",
@@ -504,7 +508,7 @@ ifn_tree_table_process <- function(
           "quality_wood", "cubing_form",
           #check codes to understand origin and trace of individuals
           #diameter in cm
-          "dia",
+          "dbh",
           #height in cm
           "height", "density_factor"
         ))

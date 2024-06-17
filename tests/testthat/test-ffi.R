@@ -44,7 +44,7 @@ test_input <- .build_ffi_input_with(
   .verbose = FALSE
 )
 
-skip_lines <- readr::read_lines(file = fs::path(folder, "metadonnees.csv")) |>
+skip_lines <- readr::read_lines(file = fs::path(test_folder, "metadonnees.csv")) |>
     stringr::str_detect("// Unit\u00e9") |>
     which()
 
@@ -189,8 +189,8 @@ test_that("ffi_plot_table_process works as intended", {
 test_that("ffi_tree_table_process works as intended", {
 
   expected_names <- c(
-    "id_unique_code", "plot", "dep", "year", "tree", "espar",
-    "sp_code", "sp_name", "status", "status5", "dia", "height",
+    "id_unique_code", "plot", "dep", "year", "tree_id", "espar",
+    "sp_code", "sp_name", "status", "status5", "dbh", "height",
     "height_last_recorded", "density_factor"
   )
 

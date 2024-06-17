@@ -420,9 +420,9 @@ inventory_as_sf <- function(inventory_data) {
 #' * tree nested column
 #' * understory nested column
 #' * regen nested column
-#' 
+#'
 #' @param inventory inventory nested data frame as obtained from `*_to_tibble` functions.
-#' 
+#'
 #' @noRd
 reorder_inventory_output <- function(inventory, inventory_cols = "metadata") {
 
@@ -450,7 +450,7 @@ reorder_inventory_output <- function(inventory, inventory_cols = "metadata") {
     ),
     tree = c(
       # common vars
-      "tree", "sp_code", "sp_name", "status", "density_factor", "dia", "height",
+      "tree_id", "sp_code", "sp_name", "status", "density_factor", "dbh", "height",
       # fia unique
       # none
       # ifn unique

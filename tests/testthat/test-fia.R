@@ -68,7 +68,7 @@ test_that("fia_plot_table_process works as intended", {
   expected_names <- c(
     "year", "id_unique_code", "country", "state_code", "state_ab", "state_name",
     "county_code", "plot", "p3panel", "p2veg_sampling_status_cd", "p2veg_sampling_level_detail_cd",
-    "rscd", "design_code", "coordx",  "coordy", 
+    "rscd", "design_code", "coordx",  "coordy",
     "coord_sys", "crs", "elev",  "aspect", "slope"
   )
 
@@ -159,8 +159,8 @@ test_that("fia_plot_table_process works as intended", {
 test_that("fia_tree_table_process works as intended", {
 
   expected_names <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "tree",
-    "status", "dia", "height", "sp_name", "sp_code", "density_factor"
+    "id_unique_code", "year", "state_code", "county_code", "plot", "tree_id",
+    "status", "dbh", "height", "sp_name", "sp_code", "density_factor"
   )
 
   # object
@@ -693,7 +693,8 @@ test_that("fia_subplot_table_process works as intended", {
 
   expected_names <- c(
     "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
-    "slope_subplot", "aspect_subplot", "macro_cond", "subplot_cond", "micro_cond"
+    "slope_subplot", "aspect_subplot", "macro_cond", "subplot_cond", "micro_cond",
+    "subplot_status", "psveg_subplot_status"
   )
 
   # object

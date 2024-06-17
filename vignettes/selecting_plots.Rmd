@@ -154,10 +154,10 @@ ffi_data_2012 |>
   inventory_as_sf() |>
   # unnest the tree data
   unnest("tree") |>
-  # calculate dia by species in each plot
+  # calculate dbh by species in each plot
   dplyr::group_by(id_unique_code, sp_name) |>
-  dplyr::summarise(dia = mean(dia, na.rm = TRUE), dep = unique(dep), n = n()) |>
-  dplyr::filter(!is.nan(dia)) |>
+  dplyr::summarise(dbh = mean(dbh, na.rm = TRUE), dep = unique(dep), n = n()) |>
+  dplyr::filter(!is.nan(dbh)) |>
   # filter species with 25 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
@@ -165,7 +165,7 @@ ffi_data_2012 |>
   # let's plot
   ggplot() +
   geom_sf(data = south_france_map, alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry, color = dia), size = 2.2, alpha = 0.8) +
+  geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 3) +
   theme_minimal()
@@ -251,13 +251,13 @@ fia_data_2012 |>
   inventory_as_sf() |>
   # unnest the tree data
   unnest("tree") |>
-  # calculate dia by species in each plot
+  # calculate dbh by species in each plot
   dplyr::group_by(id_unique_code, sp_name) |>
   dplyr::summarise(
-    dia = mean(dia, na.rm = TRUE),
+    dbh = mean(dbh, na.rm = TRUE),
     state_ab = unique(state_ab), n = n()
   ) |>
-  dplyr::filter(!is.nan(dia)) |>
+  dplyr::filter(!is.nan(dbh)) |>
   # filter species with 100 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
@@ -265,7 +265,7 @@ fia_data_2012 |>
   # let's plot
   ggplot() +
   geom_sf(data = west_coast_map, alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry, color = dia), size = 2.2, alpha = 0.8) +
+  geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 6) +
   theme_minimal()
@@ -354,13 +354,13 @@ ifn_data |>
   inventory_as_sf() |>
   # unnest the tree data
   unnest("tree") |>
-  # calculate dia by species in each plot
+  # calculate dbh by species in each plot
   dplyr::group_by(id_unique_code, sp_name) |>
   dplyr::summarise(
-    dia = mean(dia, na.rm = TRUE),
+    dbh = mean(dbh, na.rm = TRUE),
     province_name_original = unique(province_name_original), n = n()
   ) |>
-  dplyr::filter(!is.nan(dia)) |>
+  dplyr::filter(!is.nan(dbh)) |>
   # filter species with 100 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
@@ -368,7 +368,7 @@ ifn_data |>
   # let's plot
   ggplot() +
   geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
-  geom_sf(aes(geometry = geometry, color = dia), size = 2.2, alpha = 0.8) +
+  geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 4) +
   theme_minimal()
