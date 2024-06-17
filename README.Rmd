@@ -18,7 +18,8 @@ inventory) and IFN (Spain forest inventory).
 
 ## Installation
 
-You can install the development version of forestables from [GitHub](https://github.com/) with:
+You can install the development version of forestables from
+[GitHub](https://github.com/emf-creaf/forestables) with:
 
 ``` r
 # install.packages("devtools")

@@ -8,7 +8,7 @@ inventory).
 ## Installation
 
 You can install the development version of forestables from
-[GitHub](https://github.com/) with:
+[GitHub](https://github.com/emf-creaf/forestables) with:
 
 ``` r
 # install.packages("devtools")
@@ -67,7 +67,7 @@ library(dplyr)
 ffi_path <- tempdir()
 download_inventory("ffi", destination = ffi_path)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in '/tmp/RtmpaUqiRv'
+#> ℹ Unzipping downloaded data in '/tmp/RtmpogAMBA'
 #> ✔ Done!
 ```
 

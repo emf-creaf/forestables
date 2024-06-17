@@ -48,16 +48,8 @@
     exdir = destination
   )
 
-  failed_files <- extracted_files |>
-    purrr::keep(.p = is.null) |>
-    names() |>
-    basename()
-
-  if (length(failed_files) > 0) {
-    cli::cli_warn(c(
-      "x" = "The following files failed to be unzipped:",
-      "{.file {failed_files}}"
-    ))
+  if (is.null(extracted_files)) {
+    cli::cli_abort(c("x" = "Something went wrong unzipping the file"))
   }
 
   verbose_msg(
@@ -119,16 +111,8 @@
     exdir = destination
   )
 
-  failed_files <- extracted_files |>
-    purrr::keep(.p = is.null) |>
-    names() |>
-    basename()
-
-  if (length(failed_files) > 0) {
-    cli::cli_warn(c(
-      "x" = "The following files failed to be unzipped:",
-      "{.file {failed_files}}"
-    ))
+  if (is.null(extracted_files)) {
+    cli::cli_abort(c("x" = "Something went wrong unzipping the file"))
   }
 
   verbose_msg(
@@ -185,26 +169,51 @@
     .verbose = .verbose
   )
 
-  extracted_files <- fs::dir_ls(destination, regex = "zip$") |>
+  files_to_extract <-
+    is_downloaded$destfile[which((stringr::str_detect(is_downloaded$url, "zip$")))]
+
+  extracted_files <- files_to_extract |>
     purrr::map(
       .f = \(zip_file) {
-        utils::unzip(
+        
+        suppressWarnings(utils::unzip(
           zipfile = zip_file, exdir = destination
-        )
+        ))
+
+        
+        ## renaming problematic files
+        file_names_raw <-
+          utils::unzip(zipfile = zip_file, list = TRUE)[["Name"]]
+        file_names_fixed <-
+          ## bad strings substitutions:
+          # ñ
+          stringr::str_replace_all(file_names_raw, stringr::fixed("\xa4"), "д") |>
+          # ó
+          stringr::str_replace_all(stringr::fixed("\xa2"), "в") #|>
+          # í
+          # stringr::str_replace_all(stringr::fixed("\x"), "б") |>
+          # á
+          # stringr::str_replace_all(stringr::fixed("\x"), "╡")
+        
+        # only rename files if needed
+        if (!identical(file_names_raw, file_names_fixed)) {
+          file.rename(
+            file.path(destination, file_names_raw), file.path(destination, file_names_fixed)
+          )
+        }
       }
     )
 
-  failed_files <- extracted_files |>
-    purrr::keep(.p = is.null) |>
-    names() |>
-    basename()
+  failed_files <- is_downloaded$destfile[which((stringr::str_detect(is_downloaded$url, "404")))]
 
   if (length(failed_files) > 0) {
     cli::cli_warn(c(
       "x" = "The following files failed to be downloaded:",
-      "{.file {failed_files}}"
+      "{.file {basename(failed_files)}}"
     ))
   }
+
+  file.remove(failed_files)
 
   verbose_msg(
     cli::cli_alert_success("Done!"),
