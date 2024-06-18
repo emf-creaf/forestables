@@ -6,11 +6,11 @@ inventories_path <- tempdir()
 ## ffi download
 test_that("ffi download works as expected", {
   # assertions
-  expect_error(download_inventory("ffi", inventories_path, .verbose = "TRUE"))
-  expect_error(download_inventory("ffi", "/tururu/larara", .verbose = TRUE))
+  expect_error(download_inventory("FFI", inventories_path, .verbose = "TRUE"))
+  expect_error(download_inventory("FFI", "/tururu/larara", .verbose = TRUE))
   expect_error(download_inventory("tururu", inventories_path, .verbose = TRUE))
 
-  expect_true(download_inventory("ffi", inventories_path, .verbose = FALSE))
+  expect_true(download_inventory("FFI", inventories_path, .verbose = FALSE))
   # important files
   expect_true(
     fs::file_exists(fs::path(inventories_path, "metadonnees.csv")) &&
@@ -25,11 +25,11 @@ test_that("ffi download works as expected", {
 ## ifn download
 test_that("ifn download works as expected", {
   # assertions
-  expect_error(download_inventory("ifn", inventories_path, .verbose = "TRUE"))
-  expect_error(download_inventory("ifn", "/tururu/larara", .verbose = TRUE))
+  expect_error(download_inventory("IFN", inventories_path, .verbose = "TRUE"))
+  expect_error(download_inventory("IFN", "/tururu/larara", .verbose = TRUE))
 
   expect_true(
-    suppressWarnings(download_inventory("ifn", inventories_path, .verbose = FALSE))
+    suppressWarnings(download_inventory("IFN", inventories_path, .verbose = FALSE))
   )
   # important files (one of each version)
   expect_true(
@@ -42,9 +42,9 @@ test_that("ifn download works as expected", {
 ## fia download
 test_that("fia download works as expected", {
   # assertions
-  expect_error(download_inventory("fia", inventories_path, .verbose = "TRUE"))
-  expect_error(download_inventory("fia", "/tururu/larara", .verbose = TRUE))
+  expect_error(download_inventory("FIA", inventories_path, .verbose = "TRUE"))
+  expect_error(download_inventory("FIA", "/tururu/larara", .verbose = TRUE))
 
   # too big to test :(
-  # expect_true(download_inventory("fia", inventories_path, .verbose = FALSE))
+  # expect_true(download_inventory("FIA", inventories_path, .verbose = FALSE))
 })

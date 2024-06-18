@@ -211,9 +211,8 @@
       "x" = "The following files failed to be downloaded:",
       "{.file {basename(failed_files)}}"
     ))
+    file.remove(failed_files)
   }
-
-  file.remove(failed_files)
 
   verbose_msg(
     cli::cli_alert_success("Done!"),
@@ -247,7 +246,7 @@
 #' }
 #' @export
 download_inventory <- function(
-  inventory = c("fia", "ffi", "ifn"),
+  inventory = c("FIA", "FFI", "IFN"),
   destination = ".",
   .verbose = TRUE
 ) {
@@ -267,9 +266,9 @@ download_inventory <- function(
   # choose the helper function
   download_and_unzip <- switch(
     inventory,
-    fia = .download_fia,
-    ffi = .download_ffi,
-    ifn = .download_ifn
+    FIA = .download_fia,
+    FFI = .download_ffi,
+    IFN = .download_ifn
   )
 
   # process
