@@ -95,20 +95,20 @@ test_that(".build_ffi_input_with and .build_ffi_file_path work as intended", {
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
     glue::glue(
-      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {test_folder}PLACETTE.csv'
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})1404119;((?:[^;]+;){{2}})01" {fs::path(test_folder, "PLACETTE.csv")}'
     )
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
     test_res[["plot_table"]][32],
     glue::glue(
-      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})0;((?:[^;]+;){{2}})91" {test_folder}PLACETTE.csv'
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})0;((?:[^;]+;){{2}})91" {fs::path(test_folder, "PLACETTE.csv")}'
     )
   )
   expect_identical(
     test_res[["plot_table"]][33],
     glue::glue(
-      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {test_folder}PLACETTE.csv'
+      'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}})3555;((?:[^;]+;){{2}})tururu" {fs::path(test_folder, "PLACETTE.csv")}'
     )
   )
 

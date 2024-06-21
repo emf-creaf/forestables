@@ -10,47 +10,12 @@ skip_if(
 
 test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   test_plots <- list(
-    "MN" = list(
-      "137" = c(29396, 25064),
-      "17" = 20005,
-      "31" = 20421,
-      "71" = 20210
-    ),
-    "CA" = list(
-      "15" = c(53519, 63676),
-      "105" = c(70128, 83043),
-      "61" = 69600
-    ),
-    "AL" = list(
-      "121" = 33,
-      "73" = 20,
-      "131" = 73,
-      "1" = 27,
-      "81" = 13
-    ),
-    "MO" = list(
-      "113" = 20144,
-      "119" = 20129,
-      "225" = 20168,
-      "221" = 20084,
-      "88" = 20012
-    ),
-    "OH" = list(
-      "41" = 3878,
-      "167" = 2121,
-      "25" = 5374,
-      "103" = 4704,
-      "53" = 3579
-    ),
-    "OR" = list(
-      "59" = c(76413, 76413),
-      "17" = 63905,
-      "31" = 95724,
-      "71" = 99371
-    ),
-    "tururu" = list(
-      "1" = 2500
-    )
+    "DE" = list("1" = c(454, 148), "5" = c(345, 586, 163)),
+    "HI" = list("1" = c(2630, 2757), "7" = c(1160, 1173), "9" = 2014),
+    "NE" = list("17" = 20277, "31" = 21337, "47" = 20203, "115" = 20210, "183" = 20211),
+    "ND" = list("19" = 20566, "55" = 22311, "57" = 22301, "61" = 22221, "89" = 22241),
+    "OR" = list("9" = 60747),
+    "tururu" = list("1" = 2500)
   )
   test_year <- 2010
   test_states <- names(test_plots)
@@ -77,11 +42,11 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
     "file doesn't exists"
   )
   expect_message(
-    .build_fia_input_with(test_year, test_states, test_plots[-7], test_folder, .verbose = TRUE),
+    .build_fia_input_with(test_year, test_states, test_plots[-6], test_folder, .verbose = TRUE),
     "Getting ready to retrieve"
   )
   expect_no_message(
-    .build_fia_input_with(test_year, test_states, test_plots[-7], test_folder, .verbose = FALSE)
+    .build_fia_input_with(test_year, test_states, test_plots[-6], test_folder, .verbose = FALSE)
   )
 
   ## result tests
@@ -89,8 +54,8 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   expect_s3_class(test_res, "tbl")
   # with the correct names
   expect_named(test_res, expected_names)
-  # and for 31 plots as per the filter list we create
-  expect_true(nrow(test_res) == 31L)
+  # and for 26 plots as per the filter list we create
+  expect_true(nrow(test_res) == test_plots |> purrr::flatten() |> purrr::flatten() |> length())
   # and for the correct counties
   expect_identical(
     unique(test_res[["county"]]) |> sort(),
@@ -110,13 +75,14 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
   # a correct one
   expect_identical(
     test_res[["survey_table"]][1],
-    paste0(test_folder, names(test_plots)[1], "_SURVEY.csv")
+    fs::path(test_folder, paste0(names(test_plots)[1], "_SURVEY.csv")) |>
+      as.character()
   )
   # a correct custom one
   expect_identical(
     test_res[["plot_table"]][1],
     paste0(
-      "grep -P \",INVYR,|,137,(29396|29396.0),\" ", test_folder, names(test_plots)[1], "_PLOT.csv"
+      "grep -P \",INVYR,|,1,(454|454.0),\" ", fs::path(test_folder, paste0(names(test_plots)[1], "_PLOT.csv"))
     )
   )
   # an incorrect one
@@ -138,7 +104,7 @@ test_that(".build_fia_input_with and .build_fia_file_path work as intended", {
 
 test_that(".get_plots_from_state works as intended", {
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "WA", "CA", "tururu")
+  test_states <- c("HI", "RI", "ND", "tururu")
 
   # error
   expect_error(
@@ -156,10 +122,10 @@ test_that(".get_plots_from_state works as intended", {
   # expect rows
   expect_true(nrow(test_res_ok) > 0)
   # expect values
-  expect_identical(unique(test_res_ok$STATECD), 41L)
-  expect_identical(unique(test_res_ok$STATEAB), "OR")
-  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATECD), 6L)
-  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATEAB), "CA")
+  expect_identical(unique(test_res_ok$STATECD), 15L)
+  expect_identical(unique(test_res_ok$STATEAB), "HI")
+  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATECD), 38L)
+  expect_identical(unique(.get_plots_from_state(test_states[3], test_folder)$STATEAB), "ND")
 
   ## wrong state
   expect_error(
@@ -171,7 +137,7 @@ test_that(".get_plots_from_state works as intended", {
 
 test_that("show_plots_from_fia works as intended", {
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "WA", "CA")
+  test_states <- c("HI", "DE", "ND")
 
   # error
   expect_error(
@@ -198,26 +164,26 @@ test_that("show_plots_from_fia works as intended", {
 
 test_that(".transform_plot_summary_fia works as intended", {
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "WA", "CA")
+  test_states <- c("HI", "DE", "ND")
   test_summary <- show_plots_from_fia(test_folder, test_states)
-  test_years <- c(2005, 2010, 2015)
+  test_years <- c(2010, 2019)
 
   # One state, one year
   # correct object
   expect_type(
-    test_res_2005_or <- .transform_plot_summary_fia(test_summary, test_years[1], test_states[1]),
+    test_res_2010_hi <- .transform_plot_summary_fia(test_summary, test_years[1], test_states[1]),
     "list"
   )
   # correct names
-  expect_named(test_res_2005_or, "OR")
+  expect_named(test_res_2010_hi, "HI")
   # expect results
-  expect_length(test_res_2005_or, 1)
-  expect_true(length(test_res_2005_or[[1]]) > 1)
+  expect_length(test_res_2010_hi, 1)
+  expect_true(length(test_res_2010_hi[[1]]) > 1)
   # correct counties
   expect_named(
-    test_res_2005_or[["OR"]],
+    test_res_2010_hi[["HI"]],
     test_summary |>
-      dplyr::filter(STATEAB == "OR", INVYR == test_years[1]) |>
+      dplyr::filter(STATEAB == "HI", INVYR == test_years[1]) |>
       dplyr::pull(COUNTYCD) |>
       unique() |>
       as.character(),
@@ -230,7 +196,7 @@ test_that(".transform_plot_summary_fia works as intended", {
     "list"
   )
   # correct names
-  expect_named(test_res, c("OR", "WA", "CA"), ignore.order = TRUE)
+  expect_named(test_res, test_states, ignore.order = TRUE)
   # expect results
   expect_length(test_res, 3)
   expect_true(length(test_res[[1]]) > 1)
@@ -238,9 +204,9 @@ test_that(".transform_plot_summary_fia works as intended", {
   expect_true(length(test_res[[3]]) > 1)
   # correct counties
   expect_named(
-    test_res[["OR"]],
+    test_res[["HI"]],
     test_summary |>
-      dplyr::filter(STATEAB %in% "OR", INVYR %in% test_years) |>
+      dplyr::filter(STATEAB %in% "HI", INVYR %in% test_years) |>
       dplyr::pull(COUNTYCD) |>
       unique() |>
       as.character(),
@@ -248,9 +214,9 @@ test_that(".transform_plot_summary_fia works as intended", {
   )
 
   expect_named(
-    test_res[["CA"]],
+    test_res[["ND"]],
     test_summary |>
-      dplyr::filter(STATEAB %in% "CA", INVYR %in% test_years) |>
+      dplyr::filter(STATEAB %in% "ND", INVYR %in% test_years) |>
       dplyr::pull(COUNTYCD) |>
       unique() |>
       as.character(),
@@ -276,9 +242,9 @@ test_that(".transform_plot_summary_fia works as intended", {
 test_that("create_filter_list_fia works as inteded", {
   # test data
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "WA", "CA")
+  test_states <- c("HI", "DE", "ND")
   test_summary <- show_plots_from_fia(test_folder, test_states) |>
-    dplyr::filter(INVYR %in% c(2005, 2010, 2015))
+    dplyr::filter(INVYR %in% c(2010, 2019))
 
   # errors
   # object error
@@ -295,11 +261,10 @@ test_that("create_filter_list_fia works as inteded", {
     "list"
   )
   # correct names
-  expect_named(test_res, c("CA", "OR", "WA"))
+  expect_named(test_res, test_states, ignore.order = TRUE)
   # expect results
   expect_length(test_res, 3)
   expect_true(length(test_res[[1]]) > 1)
   expect_true(length(test_res[[2]]) > 1)
   expect_true(length(test_res[[3]]) > 1)
-
 })

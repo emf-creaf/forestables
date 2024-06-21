@@ -95,7 +95,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
-    glue::glue("{test_folder}DATEST06.DBF")
+    glue::glue("{test_folder}/DATEST06.DBF")
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
@@ -206,7 +206,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
-    glue::glue("{test_folder}Ifn3p06.accdb|PCParcelas")
+    glue::glue("{test_folder}/Ifn3p06.accdb|PCParcelas")
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(
@@ -315,7 +315,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
 
   expect_identical(
     as.character(test_res[["plot_table"]][1]),
-    glue::glue("{test_folder}Ifn4_Extremadura.accdb|PCParcelas")
+    glue::glue("{test_folder}/Ifn4_Extremadura.accdb|PCParcelas")
   )
   # incorrect ones, that will be tested later when loading the data
   expect_identical(

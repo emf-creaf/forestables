@@ -42,9 +42,24 @@ test_that("ifn download works as expected", {
 ## fia download
 test_that("fia download works as expected", {
   # assertions
-  expect_error(download_inventory("FIA", inventories_path, .verbose = "TRUE"))
-  expect_error(download_inventory("FIA", "/tururu/larara", .verbose = TRUE))
+  expect_error(
+    download_inventory("FIA", inventories_path, states = c("AK", "HI"), .verbose = "TRUE")
+  )
+  expect_error(
+    download_inventory("FIA", "/tururu/larara", states = c("AK", "HI"), .verbose = TRUE)
+  )
+  expect_error(
+    download_inventory("FIA", inventories_path, .verbose = TRUE)
+  )
 
-  # too big to test :(
-  # expect_true(download_inventory("FIA", inventories_path, .verbose = FALSE))
+  expect_true(
+    download_inventory("FIA", inventories_path, states = c("AK", "HI"), .verbose = FALSE)
+  )
+  # important files (one of each version)
+  expect_true(
+    fs::file_exists(fs::path(inventories_path, "HI_TREE.csv")) &&
+      fs::file_exists(fs::path(inventories_path, "AK_TREE.csv")) &&
+      fs::file_exists(fs::path(inventories_path, "HI_COND.csv")) &&
+      fs::file_exists(fs::path(inventories_path, "AK_COND.csv"))
+  )
 })

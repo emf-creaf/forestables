@@ -460,7 +460,7 @@ test_that("ffi_tables_process works as intended", {
 
   ### missing random files
   # we test here what happens when some files are missing (ARBRE, ECOLOGIE...)
-  test_folder <- fs::path(Sys.getenv("ffi_path"), "missing_files_test")
+  # test_folder <- fs::path(Sys.getenv("ffi_path"), "missing_files_test")
   # FLORE, without flore, the understory should be empty
   fs::file_move(fs::path(test_folder, "FLORE.csv"), fs::path(test_folder, "_FLORE.csv"))
   withr::defer({
