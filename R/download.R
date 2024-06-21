@@ -3,8 +3,25 @@
 #' @inheritParams download_inventory
 #'
 #' @noRd
-.download_fia <- function(destination, .verbose) {
+.download_fia <- function(destination, states, .verbose) {
 
+  ## assertions
+  assertthat::assert_that(
+    !is.null(states),
+    msg = cli::cli_abort(c(
+      "x" = "For downloading FIA data a {.arg states} argument must by provided",
+      "i" = 'i.e. {.code states = c("AK", "AZ", "CA")}'
+    ))
+  )
+
+  assertthat::assert_that(
+    all(states %in% fia_states_dictionary$ABBR),
+    msg = cli::cli_abort(c(
+      "x" = "Invalid {.arg states} detected:",
+      "i" = "{.arg {states[which(!states %in% fia_states_dictionary$ABBR)]}}"
+    ))
+  )
+  
   # downloading
   verbose_msg(
     cli::cli_inform(c(
@@ -13,25 +30,40 @@
     .verbose = .verbose
   )
 
+  # links
+  base_url <- "https://apps.fs.usda.gov/fia/datamart/CSV/"
+  needed_zips <- c(
+    "_TREE.zip", "_PLOT.zip", "_SURVEY.zip", "_COND.zip", "_SUBPLOT.zip",
+    "_VEG_SUBPLOT_SPP.zip", "_SEEDLING.zip", "_VEG_SUBPLOT.zip", "_P2VEG_SUBPLOT_SPP.zip"
+  )
+  file_urls <- purrr::map(states, .f = \(state) {
+    paste0(base_url, state, needed_zips)
+  }) |>
+    purrr::flatten_chr()
+  file_urls <- c(
+    file_urls,
+    paste0(base_url, c("REF_SPECIES.csv", "REF_PLANT_DICTIONARY.csv"))
+  )
+
   # `while` control value
   tries <- 0L
 
   while (tries < 11L) {
     is_downloaded <- curl::multi_download(
-      urls = "https://apps.fs.usda.gov/fia/datamart/CSV/CSV_FIADB_ENTIRE.zip",
-      destfiles = fs::path(destination, "fia.zip"),
+      urls = file_urls,
+      destfiles = fs::path(destination, basename(file_urls)),
       resume = TRUE,
       progress = .verbose
     )
 
-    if (is_downloaded$success == FALSE) {
+    if (any(is_downloaded$success == FALSE)) {
       tries <- tries + 1L
     } else {
       tries <- 11
     }
   }
 
-  if (is_downloaded$success == FALSE) {
+  if (any(is_downloaded$success == FALSE)) {
     cli::cli_abort(c("x" = "Something went wrong during the download"))
   }
 
@@ -43,13 +75,27 @@
     .verbose = .verbose
   )
 
-  extracted_files <- utils::unzip(
-    zipfile = fs::path(destination, "fia.zip"),
-    exdir = destination
-  )
+  files_to_extract <-
+    is_downloaded$destfile[which(stringr::str_detect(is_downloaded$type, "zip"))]
 
-  if (is.null(extracted_files)) {
-    cli::cli_abort(c("x" = "Something went wrong unzipping the file"))
+  extracted_files <- files_to_extract |>
+    purrr::map(
+      .f = \(zip_file) {
+        suppressWarnings(utils::unzip(
+          zipfile = zip_file, exdir = destination
+        ))
+      }
+    )
+
+  failed_files <-
+    is_downloaded$destfile[which(!stringr::str_detect(is_downloaded$type, "zip|octet"))]
+
+  if (length(failed_files) > 0) {
+    cli::cli_warn(c(
+      "x" = "The following files failed to be downloaded:",
+      "{.file {basename(failed_files)}}"
+    ))
+    file.remove(failed_files)
   }
 
   verbose_msg(
@@ -233,6 +279,8 @@
 #'
 #' @param inventory Character with the inventory abbreviation
 #' @param destination Path to the inventory destination folder. This folder must exists.
+#' @param states Character vector indicating the FIA states to download. Only used if FIA
+#'   is selected.
 #' @param .verbose Logical indicating if progress messages should be shown.
 #'
 #' @return Invisible TRUE if the download and unzip was succesful, an error otherwise.
@@ -248,6 +296,7 @@
 download_inventory <- function(
   inventory = c("FIA", "FFI", "IFN"),
   destination = ".",
+  states = NULL,
   .verbose = TRUE
 ) {
   # assertions
@@ -263,14 +312,14 @@ download_inventory <- function(
     msg = cli::cli_abort(".verbose must be logical (TRUE/FALSE)")
   )
 
-  # choose the helper function
-  download_and_unzip <- switch(
+  # run the correct helper function
+  res <- switch(
     inventory,
-    FIA = .download_fia,
-    FFI = .download_ffi,
-    IFN = .download_ifn
+    FIA = .download_fia(destination, states, .verbose),
+    FFI = .download_ffi(destination, .verbose),
+    IFN = .download_ifn(destination, .verbose)
   )
 
-  # process
-  download_and_unzip(destination, .verbose)
+  # return invisible TRUE if everything is ok
+  return(invisible(res))
 }
