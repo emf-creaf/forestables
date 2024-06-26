@@ -223,13 +223,13 @@
       .f = \(zip_file) {
         
         suppressWarnings(utils::unzip(
-          zipfile = zip_file, exdir = destination
+          zipfile = zip_file, exdir = destination, unzip = "unzip"
         ))
 
         
         ## renaming problematic files
         file_names_raw <-
-          utils::unzip(zipfile = zip_file, list = TRUE)[["Name"]]
+          utils::unzip(zipfile = zip_file, list = TRUE, unzip = "unzip")[["Name"]]
         file_names_fixed <-
           ## bad strings substitutions:
           # ñ
