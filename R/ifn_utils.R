@@ -454,8 +454,32 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
 
         # this is a little trickier. We don't always have provinces so, we need to translate the
         # province code to the correct ifn4 label
-        province <- .ifn4_prov_code_translator(province)
-        file_name <- fs::path(folder, glue::glue("Ifn4_{province}.accdb"))
+        ifn4_province <- .ifn4_prov_code_translator(province)
+        file_name <- fs::path(folder, glue::glue("Ifn4_{ifn4_province}.accdb"))
+        # here comes the IFN4 conundrum. Some files have different names depending if
+        # the file has been manually downloaded and unzipped, or using the download methods,
+        # and also the name changes based on OS, so lets find which one
+
+        if (province %in% c("08", "17", "25", "43")) {
+          file_name <- fs::dir_ls(folder, regexp = "Ifn4_Catalu")
+        }
+
+        if (province %in% c("15")) {
+          file_name <- fs::dir_ls(folder, regexp = "Ifn4_A Coru")
+        }
+
+        if (province %in% c("01", "20", "48")) {
+          file_name <- fs::dir_ls(folder, regexp = "Vasco\\.accdb")
+        }
+
+        if (province %in% c("05")) {
+          file_name <- fs::dir_ls(folder, regexp = "vila\\.accdb")
+        }
+
+        if (province %in% c("24")) {
+          file_name <- fs::dir_ls(folder, regexp = "Ifn4_Le")
+        }
+        
         table_name <- switch(
           type,
           "tree" = "PCMayores",
@@ -470,9 +494,11 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       }
 
       # check file exists
-      if (!fs::file_exists(file_name)) {
+      if (!length(file_name) || !fs::file_exists(file_name)) {
         return(NA_character_)
       }
+      
+      # everything ok
       return(table_path)
     }
   )
