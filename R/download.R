@@ -228,25 +228,25 @@
 
         
         ## renaming problematic files
-        file_names_raw <-
-          utils::unzip(zipfile = zip_file, list = TRUE, unzip = "unzip")[["Name"]]
-        file_names_fixed <-
-          ## bad strings substitutions:
-          # ñ
-          stringr::str_replace_all(file_names_raw, stringr::fixed("\xa4"), "д") |>
-          # ó
-          stringr::str_replace_all(stringr::fixed("\xa2"), "в") #|>
-          # í
-          # stringr::str_replace_all(stringr::fixed("\x"), "б") |>
-          # á
-          # stringr::str_replace_all(stringr::fixed("\x"), "╡")
+        # file_names_raw <-
+        #   utils::unzip(zipfile = zip_file, list = TRUE, unzip = "unzip")[["Name"]]
+        # file_names_fixed <-
+        #   ## bad strings substitutions:
+        #   # ñ
+        #   stringr::str_replace_all(file_names_raw, stringr::fixed("\xa4"), "д") |>
+        #   # ó
+        #   stringr::str_replace_all(stringr::fixed("\xa2"), "в") #|>
+        #   # í
+        #   # stringr::str_replace_all(stringr::fixed("\x"), "б") |>
+        #   # á
+        #   # stringr::str_replace_all(stringr::fixed("\x"), "╡")
         
-        # only rename files if needed
-        if (!identical(file_names_raw, file_names_fixed)) {
-          file.rename(
-            file.path(destination, file_names_raw), file.path(destination, file_names_fixed)
-          )
-        }
+        # # only rename files if needed
+        # if (!identical(file_names_raw, file_names_fixed)) {
+        #   file.rename(
+        #     file.path(destination, file_names_raw), file.path(destination, file_names_fixed)
+        #   )
+        # }
       }
     )
 
