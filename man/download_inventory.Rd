@@ -5,8 +5,9 @@
 \title{Download the especified inventory}
 \usage{
 download_inventory(
-  inventory = c("fia", "ffi", "ifn"),
+  inventory = c("FIA", "FFI", "IFN"),
   destination = ".",
+  states = NULL,
   .verbose = TRUE
 )
 }
@@ -14,6 +15,9 @@ download_inventory(
 \item{inventory}{Character with the inventory abbreviation}
 
 \item{destination}{Path to the inventory destination folder. This folder must exists.}
+
+\item{states}{Character vector indicating the FIA states to download. Only used if FIA
+is selected.}
 
 \item{.verbose}{Logical indicating if progress messages should be shown.}
 }

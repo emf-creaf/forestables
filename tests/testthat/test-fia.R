@@ -688,7 +688,7 @@ test_that("fia_table_process works as intended", {
   # inexistent plots (999999) shouldn't
   # be present, so 21 of 25 elements in filter list
   expect_false("tururu" %in% unique(test_res$state_ab))
-  expect_identical(nrow(test_res), length(purrr::flatten(purrr::flatten(test_plots))) - 4)
+  expect_identical(nrow(test_res), as.integer(length(purrr::flatten(purrr::flatten(test_plots))) - 4))
 
   ### missing random files
   # This is done with files in a folder for testing that lacks some files:
@@ -858,7 +858,7 @@ test_that("fia_to_tibble works as intended", {
   # data integrity
   expect_named(test_res, expected_names, ignore.order = TRUE)
   expect_false("tururu" %in% unique(test_res$state_ab))
-  expect_identical(nrow(test_res), length(purrr::flatten(purrr::flatten(test_plots))) - 8) # four plots dont exist, so 4x2=8 rows less
+  expect_identical(nrow(test_res), as.integer((2 * length(purrr::flatten(purrr::flatten(test_plots)))) - (2 * 4))) # four plots dont exist, so 4x2=8 rows less
   expect_true(all(unique(test_res$state_ab) %in% names(test_plots)))
   expect_true(all(
     unique(test_res$county_code) %in%

@@ -12,7 +12,7 @@ test_that("show_plots_from works for FIA", {
   # test data
   test_inventory <- "FIA"
   test_folder <- Sys.getenv("fia_path")
-  test_states <- c("OR", "CA", "WA")
+  test_states <- c("OR", "HI", "ND")
 
   # tests
   expect_no_error(
@@ -20,7 +20,7 @@ test_that("show_plots_from works for FIA", {
   )
   expect_s3_class(test_plots, "sf")
   expect_named(test_plots, c("INVYR", "STATECD", "COUNTYCD", "PLOT", "STATEAB", "geometry"))
-  expect_true(all(unique(test_plots[["STATECD"]]) %in% c(6L, 41L, 53L)))
+  expect_true(all(unique(test_plots[["STATECD"]]) %in% c(15L, 38L, 41L)))
 
   # Now warnings and errors
   expect_error(

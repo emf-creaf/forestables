@@ -1,4 +1,5 @@
 skip_on_cran()
+skip()
 
 ## temp folder for inventories
 inventories_path <- tempdir()

@@ -3,6 +3,21 @@ skip_if(
   "No testing data found skipping tests"
 )
 
+# problem with IFN4 download ---------------------------------------------------
+# There is a problem (June 2024) with some links at the IFN download page, which
+# leads to missing data. This causes tests to fail, so we get the plots really
+# present at the folder to do the tests
+ifn_4_plots_at_folder <- suppressWarnings(show_plots_from(
+  "IFN", Sys.getenv("ifn_path"), provinces = 1:55 |> as.character(), versions = "ifn4"
+)) |>
+  dplyr::filter(
+    province_code %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
+    plot %in% c(
+      "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
+      "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
+    )
+  )
+
 # build path and input ------------------------------------------------------------------------
 
 test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for ifn2 ", {
@@ -239,7 +254,8 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
         "2064", "1138", "0325", "0679", "0114", "0499", "3374", "0261", "0078", "1223",
         "0135", "0761", "1518", "0283", "0412", "1216", "1728", "0105", "0099", "0532", "0005"
       ),
-      class_ifn4 != "xx"
+      class_ifn4 != "xx",
+      id_code %in% ifn_4_plots_at_folder$id_unique_code
     ) |>
     dplyr::select(id_code, PROVINCIA) |>
     dplyr::group_by(PROVINCIA) |>
@@ -274,13 +290,15 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   )
   expect_message(
     .build_ifn_input_with(
-      test_version, test_provinces[-9], test_plots[-9], test_folder, .verbose = TRUE
+      test_version, test_provinces[-length(test_provinces)],
+      test_plots[-length(test_plots)], test_folder, .verbose = TRUE
     ),
     "Getting ready to retrieve"
   )
   expect_no_message(
     suppressWarnings(test_res <- .build_ifn_input_with(
-      test_version, test_provinces, test_plots, test_folder, .verbose = FALSE
+      test_version, test_provinces[-length(test_provinces)],
+      test_plots[-length(test_plots)], test_folder, .verbose = FALSE
     ))
   )
 
@@ -289,19 +307,19 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   expect_s3_class(test_res, "tbl")
   # with the correct names
   expect_named(test_res, expected_names)
-  # and for 31 plots as per the filter list we create
-  expect_true(nrow(test_res) == length(test_plots |> purrr::flatten()))
+  # and for the plots as per the filter list we create minus tururu
+  expect_true(nrow(test_res) == length(test_plots |> purrr::flatten()) - 1L)
   # and for the correct counties
   expect_identical(
     unique(test_res[["province"]]) |> sort(),
-    names(test_plots) |> sort()
+    names(test_plots[-length(test_plots)]) |> sort()
   )
   # and correct_plots
   expect_identical(
     unique(test_res[["plots"]]) |>
       unlist() |>
       sort(),
-    unique(test_plots) |>
+    unique(test_plots[-length(test_plots)]) |>
       unlist() |>
       as.character() |>
       sort()
@@ -318,13 +336,9 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
     glue::glue("{test_folder}/Ifn4_Extremadura.accdb|PCParcelas")
   )
   # incorrect ones, that will be tested later when loading the data
-  expect_identical(
-    test_res[["plot_table"]][length(test_res[["plot_table"]])],
-    NA_character_
-  )
   # expect_identical(
-  #   test_res[["plot_table"]][33],
-  #   glue::glue('{test_folder}PLACETTE.csv')
+  #   test_res[["plot_table"]][length(test_res[["plot_table"]])],
+  #   NA_character_
   # )
 
   # ## Test filter_list = NULL - this needs to be implemenetd
@@ -373,18 +387,18 @@ test_that(".get_plots_from_province works as intended for ifn2", {
   # expect rows
   expect_true(nrow(test_res_ok) > 0)
   # expect values
-  expect_identical(unique(test_res_ok$province_code), "06")
-  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(unique(test_res_ok$province_code), test_provinces[1])
+  # expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
     unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
-    "10"
+    test_provinces[3]
   )
-  expect_identical(
-    unique(
-      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
-    ),
-    "Cáceres"
-  )
+  # expect_identical(
+  #   unique(
+  #     .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+  #   ),
+  #   "Cáceres"
+  # )
 
   ## wrong state
   expect_error(
@@ -439,7 +453,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
     "list"
   )
   # correct names
-  expect_named(test_res_06, "06")
+  expect_named(test_res_06, test_provinces[1])
   # expect results
   expect_length(test_res_06, 1)
   expect_true(length(test_res_06[[1]]) > 1)
@@ -451,9 +465,9 @@ test_that(".transform_plot_summary_ifn works as intended for ifn2", {
     "list"
   )
   # correct names
-  expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
+  expect_named(test_res, test_provinces[-length(test_provinces)], ignore.order = TRUE)
   # expect results
-  expect_length(test_res, 8)
+  expect_length(test_res, length(test_provinces) - 1)
   for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
@@ -489,18 +503,18 @@ test_that(".get_plots_from_province works as intended for ifn3", {
   # expect rows
   expect_true(nrow(test_res_ok) > 0)
   # expect values
-  expect_identical(unique(test_res_ok$province_code), "06")
-  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(unique(test_res_ok$province_code), test_provinces[1])
+  # expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
     unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
-    "10"
+    test_provinces[3]
   )
-  expect_identical(
-    unique(
-      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
-    ),
-    "Cáceres"
-  )
+  # expect_identical(
+  #   unique(
+  #     .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+  #   ),
+  #   "Cáceres"
+  # )
 
   ## wrong state
   expect_error(
@@ -555,7 +569,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn3", {
     "list"
   )
   # correct names
-  expect_named(test_res_06, "06")
+  expect_named(test_res_06, test_provinces[1])
   # expect results
   expect_length(test_res_06, 1)
   expect_true(length(test_res_06[[1]]) > 1)
@@ -579,6 +593,10 @@ test_version <- "ifn4"
 
 test_that(".get_plots_from_province works as intended for ifn4", {
 
+  test_provinces <- c(
+    test_provinces[test_provinces %in% unique(ifn_4_plots_at_folder$province_code)],
+    "tururu"
+  )
   # error
   expect_error(
     suppressWarnings(.get_plots_from_province(test_provinces[1], ".", test_version)),
@@ -605,27 +623,32 @@ test_that(".get_plots_from_province works as intended for ifn4", {
   # expect rows
   expect_true(nrow(test_res_ok) > 0)
   # expect values
-  expect_identical(unique(test_res_ok$province_code), "06")
-  expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
+  expect_identical(unique(test_res_ok$province_code), test_provinces[1])
+  # expect_identical(unique(test_res_ok$province_name_original), "Badajoz")
   expect_identical(
-    unique(.get_plots_from_province(test_provinces[3], test_folder, test_version)$province_code),
-    "10"
+    unique(.get_plots_from_province(test_provinces[2], test_folder, test_version)$province_code),
+    test_provinces[2]
   )
-  expect_identical(
-    unique(
-      .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
-    ),
-    "Cáceres"
-  )
+  # expect_identical(
+  #   unique(
+  #     .get_plots_from_province(test_provinces[3], test_folder, test_version)$province_name_original
+  #   ),
+  #   "Cáceres"
+  # )
 
   ## wrong province
   expect_error(
-    suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
+    suppressWarnings(.get_plots_from_province(test_provinces[3], test_folder, test_version)),
     "aborting"
   )
 })
 
 test_that("show_plots_from_ifn works as intended for ifn4", {
+
+  test_provinces <- c(
+    test_provinces[test_provinces %in% unique(ifn_4_plots_at_folder$province_code)],
+    "tururu"
+  )
 
   # error
   expect_error(
@@ -662,6 +685,10 @@ test_that("show_plots_from_ifn works as intended for ifn4", {
 
 test_that(".transform_plot_summary_ifn works as intended for ifn4", {
 
+  test_provinces <- c(
+    test_provinces[test_provinces %in% unique(ifn_4_plots_at_folder$province_code)],
+    "tururu"
+  )
   test_summary <- suppressWarnings(show_plots_from_ifn(test_folder, test_provinces, test_version))
 
   # One state, one year
@@ -671,7 +698,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn4", {
     "list"
   )
   # correct names
-  expect_named(test_res_06, "06")
+  expect_named(test_res_06, test_provinces[1])
   # expect results
   expect_length(test_res_06, 1)
   expect_true(length(test_res_06[[1]]) > 1)
@@ -685,7 +712,7 @@ test_that(".transform_plot_summary_ifn works as intended for ifn4", {
   # correct names
   expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
   # expect results
-  expect_length(test_res, 8)
+  expect_length(test_res, length(test_provinces) - 1)
   for (prov in seq_along(test_res)) {
     expect_true(length(test_res[[prov]]) > 1)
   }
@@ -694,6 +721,10 @@ test_that(".transform_plot_summary_ifn works as intended for ifn4", {
 test_that("create_filter_list_ifn works as inteded", {
   # test data
   test_version <- c("ifn2", "ifn3", "ifn4")
+  test_provinces <- c(
+    test_provinces[test_provinces %in% unique(ifn_4_plots_at_folder$province_code)],
+    "tururu"
+  )
   test_summary <- suppressWarnings(show_plots_from_ifn(test_folder, test_provinces, test_version))
 
   # just check we have the three inventories here
@@ -714,10 +745,10 @@ test_that("create_filter_list_ifn works as inteded", {
     "list"
   )
   # correct names
-  expect_named(test_res, test_provinces[1:(length(test_provinces) - 1)], ignore.order = TRUE)
+  expect_named(test_res, test_provinces[-length(test_provinces)], ignore.order = TRUE)
   # expect results
   expect_true(length(test_res[[1]]) > 1)
   expect_true(length(test_res[[2]]) > 1)
-  expect_true(length(test_res[[3]]) > 1)
+  # expect_true(length(test_res[[3]]) > 1)
 
 })

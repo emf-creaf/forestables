@@ -49,7 +49,10 @@ skip_lines <- readr::read_lines(file = fs::path(test_folder, "metadonnees.csv"))
     which()
 
 test_metadonnees <- suppressWarnings(
-  readr::read_delim(file = fs::path(test_folder, "metadonnees.csv"), skip = skip_lines - 1) |>
+  readr::read_delim(
+    file = fs::path(test_folder, "metadonnees.csv"), skip = skip_lines - 1,
+    show_col_types = FALSE
+  ) |>
     dplyr::rename(UNITE = "// Unité") |>
     dplyr::as_tibble()
 )

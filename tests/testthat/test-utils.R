@@ -93,7 +93,7 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
   expect_s3_class(
     test_res_ifn2 <- .read_inventory_data(
       test_file_ifn2, test_colnames_ifn2,
-      version = "ifn2", province = "24",
+      version = "ifn2", province = "25",
       .ifn = TRUE
     ),
     "dtplyr_step_first"
@@ -120,7 +120,7 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
   expect_s3_class(
     test_res_ifn3 <- .read_inventory_data(
       test_input_ifn3, test_colnames_ifn3,
-      version = "ifn3", province = "24",
+      version = "ifn3", province = "25",
       .ifn = TRUE
     ),
     "dtplyr_step_first"
@@ -160,8 +160,8 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
 # show_plots_from -----------------------------------------------------------------------------
 test_that("show_plots_from works as intended", {
   test_departments <- c("01", "10")
-  test_provinces <- c("08", "24")
-  test_states <- c("OR", "CA")
+  test_provinces <- c("08", "25")
+  test_states <- c("OR", "HI")
   test_versions <- c("ifn2", "ifn3", "ifn4")
 
   expect_s3_class(
@@ -213,10 +213,10 @@ test_that("show_plots_from works as intended", {
 
 
 # create_filter_list --------------------------------------------------------------------------
-test_that("show_plots_from works as intended", {
+test_that("create_filter_list works as intended", {
   test_departments <- c("01", "10")
-  test_provinces <- c("08", "24")
-  test_states <- c("OR", "CA")
+  test_provinces <- c("08", "25")
+  test_states <- c("OR", "HI")
   test_versions <- c("ifn2", "ifn3", "ifn4")
 
   test_ffi <- show_plots_from("FFI", Sys.getenv("ffi_path"), test_departments)
