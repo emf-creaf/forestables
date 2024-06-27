@@ -11,7 +11,8 @@ inventories_tmp <- tempdir()
 # FFI
 download_inventory("FFI", inventories_tmp, .verbose = TRUE)
 # IFN
-suppressWarnings(download_inventory("IFN", inventories_tmp, .verbose = TRUE))
+# suppressWarnings(download_inventory("IFN", inventories_tmp, .verbose = TRUE))
+download_inventory("IFN", inventories_tmp, .verbose = TRUE)
 # FIA
 download_inventory(
   "FIA", inventories_tmp, .verbose = TRUE,

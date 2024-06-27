@@ -218,18 +218,16 @@
   files_to_extract <-
     is_downloaded$destfile[which((stringr::str_detect(is_downloaded$url, "zip$")))]
   
-  unzip_method <- "unzip"
-  if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
-    unzip_method <- "internal"
-  }
-
   extracted_files <- files_to_extract |>
     purrr::map(
       .f = \(zip_file) {
 
-        suppressWarnings(utils::unzip(
-          zipfile = zip_file, exdir = destination, unzip = unzip_method
-        ))
+        # suppressWarnings(utils::unzip(
+        #   zipfile = zip_file, exdir = destination, unzip = "unzip"
+        # ))
+        utils::unzip(
+          zipfile = zip_file, exdir = destination, unzip = "unzip"
+        )
 
         ## renaming problematic files
         # file_names_raw <-
