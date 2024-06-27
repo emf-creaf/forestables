@@ -230,8 +230,8 @@ test_that("show_plots_from works as intended", {
   # versions
   expect_true(all(test_versions %in% unique(test_ifn$version)))
   expect_identical(
-    fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_Cata"),
-    fs::path(Sys.getenv("ifn_path", "Ifn4_Cataluña.accdb"))
+    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_")),
+    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_"))[-1]
   )
 
   # admin
