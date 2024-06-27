@@ -108,7 +108,7 @@ test_that(".build_ifn_input_with and .build_ifn_file_path work as intended for i
   # a correct custom one
   expect_identical(
     test_res[["plot_table"]][1],
-    fs::path(test_folder, "DATEST06.DBF")
+    as.character(fs::path(test_folder, "DATEST06.DBF"))
     # glue::glue("{test_folder}/DATEST06.DBF")
   )
   # incorrect ones, that will be tested later when loading the data

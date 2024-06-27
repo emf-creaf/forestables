@@ -340,31 +340,25 @@ create_filter_list_ffi <- function(plots_info) {
 
   if (.custom) {
     if (type %in% c("tree", "shrub", "soils", "regen")) {
-      customized_path <- dplyr::if_else(
-        condition = !Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN"),
-        true = glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'),
-        false = glue::glue('grep -E "CAMPAGNE|.*;{.plot};" {table_path}'),
-        missing = glue::glue('grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}')
+      customized_path <- glue::glue(
+        'grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'
       )
-      # customized_path <- glue::glue(
-      #   'grep -P "CAMPAGNE|(^(?:[^;]+;){{1}}){.plot};" {table_path}'
-      # )
-    } else {
-      customized_path <- dplyr::if_else(
-        condition = !Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN"),
-        true = glue::glue(
-          'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
-        ),
-        false = glue::glue(
-          'grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}'
-        ),
-        missing = glue::glue(
-          'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
+      # MacOS has BSD grep, so no -P option is possible
+      if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+        customized_path <- glue::glue(
+          glue::glue('grep -E "CAMPAGNE|.*;{.plot};" {table_path}')
         )
+      }
+    } else {
+      customized_path <- glue::glue(
+        'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
       )
-      # customized_path <- glue::glue(
-      #   'grep -P "CAMPAGNE|(^(?:[^;]+;){{2}}){.plot};((?:[^;]+;){{2}}){departments}" {table_path}'
-      # )
+      # MacOS has BSD grep, so no -P option is possible
+      if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+        customized_path <- glue::glue(
+          glue::glue('grep -E "CAMPAGNE|.*;{.plot};.*;{departments};" {table_path}')
+        )
+      }
     }
     return(customized_path)
   }

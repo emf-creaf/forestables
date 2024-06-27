@@ -171,7 +171,10 @@ test_that("show_plots_from works as intended", {
     test_fia <- show_plots_from("FIA", Sys.getenv("fia_path"), test_states), "sf"
   )
   expect_s3_class(
-    test_ifn <- show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions), "sf"
+    test_ifn <- suppressWarnings(
+      show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions)
+    ),
+    "sf"
   )
 
   # rows
@@ -221,7 +224,7 @@ test_that("create_filter_list works as intended", {
 
   test_ffi <- show_plots_from("FFI", Sys.getenv("ffi_path"), test_departments)
   test_fia <- show_plots_from("FIA", Sys.getenv("fia_path"), test_states)
-  test_ifn <- show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions)
+  test_ifn <- suppressWarnings(show_plots_from("IFN", Sys.getenv("ifn_path"), test_provinces, test_versions))
 
   # list
   expect_type(test_ffi_res <- create_filter_list(test_ffi), "list")
