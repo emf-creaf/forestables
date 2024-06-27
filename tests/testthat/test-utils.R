@@ -233,6 +233,10 @@ test_that("show_plots_from works as intended", {
     as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_")),
     as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_"))[-1]
   )
+  expect_identical(
+    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "ifn4_")),
+    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "ifn4_"))[-1]
+  )
 
   # admin
   expect_identical(test_ffi$DEP |> unique() |> sort(), test_departments |> sort())
