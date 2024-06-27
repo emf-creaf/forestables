@@ -229,9 +229,10 @@ test_that("show_plots_from works as intended", {
 
   # versions
   expect_true(all(test_versions %in% unique(test_ifn$version)))
-  expect_true("ifn2" %in% unique(test_ifn$version))
-  expect_true("ifn3" %in% unique(test_ifn$version))
-  expect_true("ifn4" %in% unique(test_ifn$version))
+  expect_identical(
+    fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_Cata"),
+    fs::path(Sys.getenv("ifn_path", "Ifn4_Cataluña.accdb"))
+  )
 
   # admin
   expect_identical(test_ffi$DEP |> unique() |> sort(), test_departments |> sort())
