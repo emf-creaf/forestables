@@ -1257,7 +1257,7 @@ ifn_plot_table_process <- function(
         by = c("province_code", "plot")
       ) |>
       dplyr::rename(huso = "Huso") |>
-      # sometimes, plots present in data are not present in coords, so weç
+      # sometimes, plots present in data are not present in coords, so we
       # remove them
       dplyr::filter(!is.na(.data$COORDEX)) |>
       dplyr::mutate(
