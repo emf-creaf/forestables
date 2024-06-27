@@ -229,6 +229,9 @@ test_that("show_plots_from works as intended", {
 
   # versions
   expect_true(all(test_versions %in% unique(test_ifn$version)))
+  expect_true("ifn2" %in% unique(test_ifn$version))
+  expect_true("ifn3" %in% unique(test_ifn$version))
+  expect_true("ifn4" %in% unique(test_ifn$version))
 
   # admin
   expect_identical(test_ffi$DEP |> unique() |> sort(), test_departments |> sort())
