@@ -440,9 +440,7 @@ create_filter_list_fia <- function(plots_info) {
           # MacOS has BSD grep, so no -P option is possible
           if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
             customized_path <- glue::glue(
-              glue::glue(
-                "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
-              )
+              "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
             )
           }
         } else {
@@ -454,9 +452,7 @@ create_filter_list_fia <- function(plots_info) {
             # MacOS has BSD grep, so no -P option is possible
             if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
               customized_path <- glue::glue(
-                glue::glue(
-                  "grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"
-                )
+                "grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"
               )
             }
           }
