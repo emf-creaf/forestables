@@ -46,7 +46,7 @@ test_that(".read_inventory_data returns lazy_dt for fia", {
   expect_true(nrow(test_res) > 0)
 
   # wrong one
-  test_cmd <- glue::glue('grep -P ",INVYR,|,25,(tururu|tururu.0)," {test_tile}')
+  test_cmd <- glue::glue('grep -P ",INVYR,|,25,(tururu|tururu.0)," {test_file}')
 
   if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
     test_cmd <- glue::glue('grep -E ",INVYR,|,25,(tururu|tururu.0)," {test_file}')
