@@ -2,6 +2,7 @@ skip_if(
   any(c(Sys.getenv("fia_path"), Sys.getenv("ffi_path"), Sys.getenv("ifn_path")) == ""),
   "No testing data found skipping tests"
 )
+skip()
 
 # problem with IFN4 download ---------------------------------------------------
 # There is a problem (June 2024) with some links at the IFN download page, which
