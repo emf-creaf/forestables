@@ -433,14 +433,32 @@ create_filter_list_fia <- function(plots_info) {
         if (type %in% c(
           "tree", "p3_understory", "veg_subplot", "p2_veg_subplot", "seedling", "subplot"
         )) {
-          customized_path <- glue::glue(
-            'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+          customized_path <- dplyr::if_else(
+            condition = !Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN"),
+            true = glue::glue(
+              'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+            ),
+            false = glue::glue(
+              "grep -E ',INVYR,|,{.year},.*,{county},({plot}|{plot}.0),' {table_path}"
+            ),
+            missing = glue::glue(
+              'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+            )
           )
+          # customized_path <- glue::glue(
+          #   'grep -P ",INVYR,|,{.year},.*,{county},({plot}|{plot}.0)," {table_path}'
+          # )
         } else {
           if (type %in% c("soils_lab", "soils_loc", "veg_subplot", "plot", "survey", "cond")) {
-            customized_path <- glue::glue(
-              'grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}'
+            customized_path <- dplyr::if_else(
+              condition = !Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN"),
+              true = glue::glue('grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}'),
+              false = glue::glue("grep -E ',INVYR,|,{county},({plot}|{plot}.0),' {table_path}"),
+              missing = glue::glue('grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}')
             )
+            # customized_path <- glue::glue(
+            #   'grep -P ",INVYR,|,{county},({plot}|{plot}.0)," {table_path}'
+            # )
           }
         }
 
