@@ -79,7 +79,7 @@
     is_downloaded$destfile[which(stringr::str_detect(is_downloaded$type, "zip"))]
 
   extracted_files <- files_to_extract |>
-    purrr::map(
+    purrr::walk(
       .f = \(zip_file) {
         # suppressWarnings(utils::unzip(
         #   zipfile = zip_file, exdir = destination
@@ -164,9 +164,9 @@
     exdir = destination
   )
 
-  if (is.null(extracted_files)) {
-    cli::cli_abort(c("x" = "Something went wrong unzipping the file"))
-  }
+  # if (is.null(extracted_files)) {
+  #   cli::cli_abort(c("x" = "Something went wrong unzipping the file"))
+  # }
 
   verbose_msg(
     cli::cli_alert_success("Done!"),
@@ -226,7 +226,7 @@
     is_downloaded$destfile[which((stringr::str_detect(is_downloaded$url, "zip$")))]
   
   extracted_files <- files_to_extract |>
-    purrr::map(
+    purrr::walk(
       .f = \(zip_file) {
 
         warning("Unzipping ", zip_file)
