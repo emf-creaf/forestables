@@ -222,12 +222,11 @@
     purrr::map(
       .f = \(zip_file) {
 
+        warning("Unzipping ", zip_file)
+        
         suppressWarnings(utils::unzip(
           zipfile = zip_file, exdir = destination, unzip = "unzip"
         ))
-        # utils::unzip(
-        #   zipfile = zip_file, exdir = destination, unzip = "unzip"
-        # )
 
         ## renaming problematic files
         # file_names_raw <-

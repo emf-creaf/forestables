@@ -229,14 +229,25 @@ test_that("show_plots_from works as intended", {
 
   # versions
   expect_true(all(test_versions %in% unique(test_ifn$version)))
+  
+  ## debugging Mac missing ifn4 plots ########################################
   expect_identical(
     as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_")),
-    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_"))[-1]
+    as.character(1:length(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "Ifn4_")))
   )
   expect_identical(
     as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "ifn4_")),
-    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "ifn4_"))[-1]
+    as.character(1:length(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "ifn4_")))
   )
+  expect_identical(
+    as.character(fs::dir_ls(Sys.getenv("ifn_path"), regexp = "atalu")),
+    as.character(c("zip", "accdb"))
+  )
+  expect_length(
+    fs::dir_ls(Sys.getenv("ifn_path"), regexp = "atalu"), 2
+  )
+  ############################################################################
+
 
   # admin
   expect_identical(test_ffi$DEP |> unique() |> sort(), test_departments |> sort())
