@@ -6,7 +6,6 @@ skip_if(
   Sys.which("grep") == "",
   "grep not found in system commands"
 )
-skip()
 # build path and input ------------------------------------------------------------------------
 
 test_that(".build_fia_input_with and .build_fia_file_path work as intended", {

@@ -6,7 +6,6 @@ skip_if(
   Sys.which("grep") == "",
   "grep not found in system commands"
 )
-skip()
 # test data -----------------------------------------------------------------------------------
 # we prepare the plots also with 3 unexistent plots (999999999)
 test_plots <- list(

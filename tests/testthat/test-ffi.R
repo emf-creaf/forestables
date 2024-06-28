@@ -6,7 +6,6 @@ skip_if(
   Sys.which("grep") == "",
   "grep not found in system commands"
 )
-skip()
 # test data -----------------------------------------------------------------------------------
 
 test_plots <- list(
