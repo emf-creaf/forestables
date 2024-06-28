@@ -185,6 +185,13 @@
     .verbose = .verbose
   )
 
+  if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    cli::cli_warn(c(
+      "!" = "In MacOS is {.strong strongly recommended} to download the IFN files manually from the IFN web",
+      "i" = "Some files have latin characters in the names that can not be automatically unzipped and they will be missing (i.e. Cataluña for IFN4)"
+    ))
+  }
+
   # `while` control value
   tries <- 0L
 
