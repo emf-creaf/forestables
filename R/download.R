@@ -81,7 +81,10 @@
   extracted_files <- files_to_extract |>
     purrr::map(
       .f = \(zip_file) {
-        suppressWarnings(utils::unzip(
+        # suppressWarnings(utils::unzip(
+        #   zipfile = zip_file, exdir = destination
+        # ))
+        suppressWarnings(zip::unzip(
           zipfile = zip_file, exdir = destination
         ))
       }
@@ -152,7 +155,11 @@
     .verbose = .verbose
   )
 
-  extracted_files <- utils::unzip(
+  # extracted_files <- utils::unzip(
+  #   zipfile = fs::path(destination, "ffi.zip"),
+  #   exdir = destination
+  # )
+  extracted_files <- zip::unzip(
     zipfile = fs::path(destination, "ffi.zip"),
     exdir = destination
   )
@@ -224,9 +231,12 @@
 
         warning("Unzipping ", zip_file)
         
-        suppressWarnings(utils::unzip(
-          zipfile = zip_file, exdir = destination, unzip = "unzip"
-        ))
+        # suppressWarnings(utils::unzip(
+        #   zipfile = zip_file, exdir = destination, unzip = "unzip", junkpaths = TRUE
+        # ))
+        zip::unzip(
+          zipfile = zip_file, exdir = destination, junkpaths = TRUE
+        )
 
         ## renaming problematic files
         # file_names_raw <-
