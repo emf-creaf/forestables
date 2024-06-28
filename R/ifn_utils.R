@@ -494,7 +494,7 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       }
 
       # check file exists
-      if (!length(file_name) || !fs::file_exists(file_name)) {
+      if (length(file_name) != 1L || !fs::file_exists(file_name)) {
         return(NA_character_)
       }
       
