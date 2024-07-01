@@ -479,7 +479,7 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
         if (province %in% c("24")) {
           file_name <- fs::dir_ls(folder, regexp = "Ifn4_Le")
         }
-        
+
         table_name <- switch(
           type,
           "tree" = "PCMayores",
@@ -497,7 +497,7 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       if (length(file_name) != 1L || !fs::file_exists(file_name)) {
         return(NA_character_)
       }
-      
+
       # everything ok
       return(table_path)
     }

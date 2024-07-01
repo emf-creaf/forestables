@@ -150,8 +150,7 @@ all_tree_names <- c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
 
 common_tree_names <- c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
   magrittr::extract(
-    c(ifn_tree_names, ffi_tree_names, fia_tree_names) |>
-      duplicated() |> which()
+    c(ifn_tree_names, ffi_tree_names, fia_tree_names) |> duplicated() |> which()
   ) |>
   unique()
 
@@ -237,8 +236,7 @@ all_understory_names <- c(ifn_understory_names, ffi_understory_names, fia_unders
 
 common_understory_names <- c(ifn_understory_names, ffi_understory_names, fia_understory_names) |>
   magrittr::extract(
-    c(ifn_understory_names, ffi_understory_names, fia_understory_names) |>
-      duplicated() |> which()
+    c(ifn_understory_names, ffi_understory_names, fia_understory_names) |> duplicated() |> which()
   ) |>
   unique()
 
@@ -298,8 +296,7 @@ all_regen_names <- c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
 
 common_regen_names <- c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
   magrittr::extract(
-    c(ifn_regen_names, ffi_regen_names, fia_regen_names) |>
-      duplicated() |> which()
+    c(ifn_regen_names, ffi_regen_names, fia_regen_names) |> duplicated() |> which()
   ) |>
   unique()
 

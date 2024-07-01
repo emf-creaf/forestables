@@ -624,14 +624,14 @@ ifn_shrub_table_process <- function(
     # We check before continuing, because if the filter is too restrictive maybe we dont have rows
     if (nrow(shrub_filtered_data) < 1) {
       # if we warn the user everytime this happens, soon we will have dozens of
-    # warnings. I'm gonna let this here for debugging purposes for locating
-    # errors in development (just change .verbose to TRUE), but we will not pass
-    # this warnings to the user
-    verbose_msg(cli::cli_warn(c(
-        "Shrub data missing for plot {.var {plot}}",
-        "i" = "Returning empty tibble for plot {.var {plot}}  "
-      ), call = .call), .verbose = FALSE)
-      return(dplyr::tibble())
+      # warnings. I'm gonna let this here for debugging purposes for locating
+      # errors in development (just change .verbose to TRUE), but we will not pass
+      # this warnings to the user
+      verbose_msg(cli::cli_warn(c(
+          "Shrub data missing for plot {.var {plot}}",
+          "i" = "Returning empty tibble for plot {.var {plot}}  "
+        ), call = .call), .verbose = FALSE)
+        return(dplyr::tibble())
     }
 
     shrub <- shrub_filtered_data |>

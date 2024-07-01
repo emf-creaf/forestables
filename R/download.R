@@ -21,7 +21,7 @@
       "i" = "{.arg {states[which(!states %in% fia_states_dictionary$ABBR)]}}"
     ))
   )
-  
+
   # downloading
   verbose_msg(
     cli::cli_inform(c(
@@ -246,7 +246,6 @@
         #   # stringr::str_replace_all(stringr::fixed("\x"), "б") |>
         #   # á
         #   # stringr::str_replace_all(stringr::fixed("\x"), "╡")
-        
         # # only rename files if needed
         # if (!identical(file_names_raw, file_names_fixed)) {
         #   file.rename(
