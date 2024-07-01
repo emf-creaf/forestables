@@ -9,3 +9,6 @@ _cache$
 _files$
 selecting_plots.Rmd$
 ^README\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
