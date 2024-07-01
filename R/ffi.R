@@ -39,7 +39,7 @@
 #'    )
 #'   }
 #'   \code{forestables} package offers workflows to create this automatically, see
-#'   \code{vignette("selecting_plots", pkg = "forestables")} for more details.
+#'   \code{vignette("selecting_plots", package = "forestables")} for more details.
 #'
 #' @section Parallel:
 #'   Processing the plots from within a year can be done in parallel (\code{forestables} uses internally
@@ -50,13 +50,12 @@
 #'   \code{.parallel_options} controls the finer details of how parallelization is performed (see
 #'   \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first
 #'   a \code{\link[future]{plan}}. By default, the chosen plan is \code{\link[future]{sequential}},
-#'   so no parellelization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
-#'   to \code{\link[future.callr]{callr}}, will allow \code{ffi_to_tibble} to use parallelization
-#'   when retrieving the data.
+#'   so no parellelization is done. Changing the plan, i.e. to \code{\link[future]{multisession}}
+#'   will allow \code{ffi_to_tibble} to use parallelization when retrieving the data.
 #'
 #' @return A nested tibble. This tibble contains a row per plot/year combination, with the plot
 #'   metadata included, as well as columns containing tibbles with tree, shrub, and herbs
-#'   information. See \code{vignette("inventory_data_tibble", pkg = "forestables")}
+#'   information. See \code{vignette("inventory_data_tibble", package = "forestables")}
 #'
 #' @examples
 #' \donttest{

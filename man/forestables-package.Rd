@@ -8,6 +8,13 @@
 \description{
 The `forestables` package converts raw forest inventory files from the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and the USA Forest Inventory (FIA) into tidy tables to be used in analyses and modelling.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://emf-creaf.github.io/forestables/}
+}
+
+}
 \author{
 \strong{Maintainer}: Víctor Granda \email{victorgrandagarcia@gmail.com} (\href{https://orcid.org/0000-0002-0469-1991}{ORCID})
 

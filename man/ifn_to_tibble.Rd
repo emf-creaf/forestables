@@ -44,7 +44,7 @@ can be done later, as the data contains coordinates and crs info. Default to \co
 \value{
 A nested tibble. This tibble contains a row per plot/year combination, with the plot
 metadata included, as well as columns containing tibbles with tree, shrub, herbs and soil
-information. See \code{vignette("inventory_data_tibble", pkg = "forestables")}
+information. See \code{vignette("inventory_data_tibble", package = "forestables")}
 }
 \description{
 Transform raw IFN plot data into tidy data for easier use
@@ -70,7 +70,7 @@ narrow the process. This \code{filter_list} should have the following structure:
   )
   }
 \code{forestables} package offers workflows to create this automatically, see
-\code{vignette("selecting_plots", pkg = "forestables")} for more details.
+\code{vignette("selecting_plots", package = "forestables")} for more details.
 }
 
 \section{Parallel}{
@@ -83,9 +83,8 @@ IFN version. This is repeated for all versions provided.
 \code{.parallel_options} controls the finer details of how parallelization is performed (see
 \code{\link[furrr]{furrr_options}}). But no parallelization can occur without setting first
 a \code{\link[future]{plan}}. By default, the chosen plan is \code{\link[future]{sequential}},
-so no parellization is done. Changing the plan, i.e. to \code{\link[future]{multisession}} or
-to \code{\link[future.callr]{callr}}, will allow \code{ifn_to_tibble} to use parallelization
-when retrieving the data.
+so no parellization is done. Changing the plan, i.e. to \code{\link[future]{multisession}}
+will allow \code{ifn_to_tibble} to use parallelization when retrieving the data.
 }
 
 \examples{
