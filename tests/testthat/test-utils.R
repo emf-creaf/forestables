@@ -230,9 +230,10 @@ test_that("show_plots_from works as intended", {
   # versions.
   # This test, only this one, fails in Mac due to not being able to unzip files with
   # multibyte strings (ñ and accents). So we avoid to running it on Mac
-  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
-    expect_true(all(test_versions %in% unique(test_ifn$version)))
-  }
+  # if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+  #   expect_true(all(test_versions %in% unique(test_ifn$version)))
+  # }
+  expect_true(all(test_versions %in% unique(test_ifn$version)))
 
   ## debugging Mac missing ifn4 plots ########################################
   # expect_identical(

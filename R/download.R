@@ -185,12 +185,12 @@
     .verbose = .verbose
   )
 
-  if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
-    cli::cli_warn(c(
-      "!" = "In MacOS is {.strong strongly recommended} to download the IFN files manually from the IFN web",
-      "i" = "Some files have latin characters in the names that can not be automatically unzipped and they will be missing (i.e. Catalonia for IFN4)"
-    ))
-  }
+  # if (Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+  #   cli::cli_warn(c(
+  #     "!" = "In MacOS is {.strong strongly recommended} to download the IFN files manually from the IFN web",
+  #     "i" = "Some files have latin characters in the names that can not be automatically unzipped and they will be missing (i.e. Catalonia for IFN4)"
+  #   ))
+  # }
 
   # `while` control value
   tries <- 0L
@@ -228,30 +228,81 @@
   extracted_files <- files_to_extract |>
     purrr::walk(
       .f = \(zip_file) {
+        # MacOS is stuck with a different unzip implementation, with no way to indicate encoding, or
+        # anything we can do to avoid the silent error unzipping files with ISO
+        # characters. BUT, debugging in Big Sur I found a way, with an unzip
+        # system command piped to a file:
+        # unzip -p {zip_file} > {destination}/foo.accdb
+        # So, in Mac we need to check if IFN4 with special characters and use
+        # system or system2
+        if (
+          Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN") &&
+            stringr::str_detect(zip_file, "ifn4_")
+        ) {
+            # This should be done only in especial characters files, so:
+            if (stringr::str_detect(zip_file, "cataluna")) {
+              accdb_filename <- "Ifn4_Cataluna.accdb"
+              system2(
+                command = Sys.which("unzip"),
+                args = c(
+                  shQuote(glue::glue("-p {zip_file}"))
+                ),
+                stdout = fs::path(destination, accdb_filename)
+              )
+              return(invisible())
+            }
+            if (stringr::str_detect(zip_file, "acoruna")) {
+              accdb_filename <- "Ifn4_A Coruna.accdb"
+              system2(
+                command = Sys.which("unzip"),
+                args = c(
+                  "-p", shQuote(zip_file)
+                ),
+                stdout = fs::path(destination, accdb_filename)
+              )
+              return(invisible())
+            }
+            if (stringr::str_detect(zip_file, "avila")) {
+              accdb_filename <- "Ifn4_Avila.accdb"
+              system2(
+                command = Sys.which("unzip"),
+                args = c(
+                  shQuote(glue::glue("-p {zip_file}"))
+                ),
+                stdout = fs::path(destination, accdb_filename)
+              )
+              return(invisible())
+            }
+            if (stringr::str_detect(zip_file, "leon")) {
+              accdb_filename <- "Ifn4_Leon.accdb"
+              system2(
+                command = Sys.which("unzip"),
+                args = c(
+                  shQuote(glue::glue("-p {zip_file}"))
+                ),
+                stdout = fs::path(destination, accdb_filename)
+              )
+              return(invisible())
+            }
+            if (stringr::str_detect(zip_file, "vasco")) {
+              accdb_filename <- "Ifn4_Pais Vasco.accdb"
+              system2(
+                command = Sys.which("unzip"),
+                args = c(
+                  shQuote(glue::glue("-p {zip_file}"))
+                ),
+                stdout = fs::path(destination, accdb_filename)
+              )
+              return(invisible())
+            }
+
+        }
 
         suppressWarnings(utils::unzip(
           zipfile = zip_file, exdir = destination, unzip = "unzip", junkpaths = TRUE
         ))
 
-        ## renaming problematic files
-        # file_names_raw <-
-        #   utils::unzip(zipfile = zip_file, list = TRUE, unzip = "unzip")[["Name"]]
-        # file_names_fixed <-
-        #   ## bad strings substitutions:
-        #   # ñ
-        #   stringr::str_replace_all(file_names_raw, stringr::fixed("\xa4"), "д") |>
-        #   # ó
-        #   stringr::str_replace_all(stringr::fixed("\xa2"), "в") #|>
-        #   # í
-        #   # stringr::str_replace_all(stringr::fixed("\x"), "б") |>
-        #   # á
-        #   # stringr::str_replace_all(stringr::fixed("\x"), "╡")
-        # # only rename files if needed
-        # if (!identical(file_names_raw, file_names_fixed)) {
-        #   file.rename(
-        #     file.path(destination, file_names_raw), file.path(destination, file_names_fixed)
-        #   )
-        # }
+        return(invisible())
       }
     )
 
