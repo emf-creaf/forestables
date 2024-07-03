@@ -1,3 +1,7 @@
+# forestables 0.0.3
+
+* Fixed bug in IFN4 download in MacOS
+
 # forestables 0.0.2
 
 * Working version of all inventories (FIA, FFI and IFN)
