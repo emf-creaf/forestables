@@ -245,7 +245,7 @@
               system2(
                 command = Sys.which("unzip"),
                 args = c(
-                  shQuote(glue::glue("-p {zip_file}"))
+                  "-p", shQuote(zip_file)
                 ),
                 stdout = fs::path(destination, accdb_filename)
               )
@@ -267,7 +267,7 @@
               system2(
                 command = Sys.which("unzip"),
                 args = c(
-                  shQuote(glue::glue("-p {zip_file}"))
+                  "-p", shQuote(zip_file)
                 ),
                 stdout = fs::path(destination, accdb_filename)
               )
@@ -278,7 +278,7 @@
               system2(
                 command = Sys.which("unzip"),
                 args = c(
-                  shQuote(glue::glue("-p {zip_file}"))
+                  "-p", shQuote(zip_file)
                 ),
                 stdout = fs::path(destination, accdb_filename)
               )
@@ -289,7 +289,7 @@
               system2(
                 command = Sys.which("unzip"),
                 args = c(
-                  shQuote(glue::glue("-p {zip_file}"))
+                  "-p", shQuote(zip_file)
                 ),
                 stdout = fs::path(destination, accdb_filename)
               )
