@@ -1,0 +1,30 @@
+id: forestables
+emf_type: softwork
+emf_public: true
+emf_automatized: true
+emf_reproducible: false
+emf_draft: true
+emf_data_type: emf_data_product
+data_repository: ''
+model_repository: ''
+nodes: ''
+authors:
+- atovar
+- vgranda
+- emf
+tags:
+- forest inventories
+- data
+- R
+links:
+  url_docs: https://emf-creaf.github.io/forestables
+  url_source: https://github.com/emf-creaf/forestables
+requirements:
+- R (>= 4.0.0)
+description: Making Forest Inventory Data Tidy
+date: '2024-07-05'
+date_lastmod: '2024-07-05'
+title: forestables
+resource_link: softworks/forestables
+thematic: data_access
+

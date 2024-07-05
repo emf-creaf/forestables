@@ -24,6 +24,15 @@ knitr::opts_chunk$set(
 
 ## Setup
 
+```{r warning_message, echo = FALSE, eval = TRUE}
+if (!eval_code) {
+  cli::cli_inform(c(
+    "i" = "Code in this vignette can't be executed without access to the data files",
+    "i" = "For a complete version of this vignette, see https://emf-creaf.github.io/forestables/articles/selecting_plots.html"
+  ))
+}
+```
+
 ```{r doc_setup, include = FALSE}
 # libraries
 library(forestables)
@@ -370,6 +379,6 @@ ifn_data |>
   geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~sp_name, ncol = 4) +
+  facet_wrap(~sp_name, ncol = 3) +
   theme_minimal()
 ```
