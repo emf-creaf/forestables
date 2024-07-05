@@ -1,5 +1,3 @@
-------------------------------------------------------------------------
-
 ---
 title: "Description of functions"
 output: rmarkdown::html_vignette
@@ -847,9 +845,6 @@ head(forestables:::fr_species_cdref)
 
 ```{r}
 head(forestables:::growth_form_lignified_france)
-```
-
-``` r
 ```
 
 # References
