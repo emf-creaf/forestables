@@ -1,6 +1,8 @@
 
 # forestables
 
+[![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check.yaml)
+
 Read and uniformize forest inventories data from the FIA (USA forest
 inventory), FFI (France forest inventory) and IFN (Spain forest
 inventory).
@@ -65,9 +67,9 @@ library(dplyr)
 
 ## Downloading all FFI data (if not already)
 ffi_path <- tempdir()
-download_inventory("ffi", destination = ffi_path)
+download_inventory("FFI", destination = ffi_path)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in '/tmp/RtmpogAMBA'
+#> ℹ Unzipping downloaded data in '/tmp/Rtmp1ykS9x'
 #> ✔ Done!
 ```
 
