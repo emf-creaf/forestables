@@ -11,10 +11,7 @@ editor_options:
 
 ```{r setup, include = FALSE}
 readRenviron("../.Renviron")
-eval_code <- Sys.getenv("fia_path") != "" &&
-  Sys.getenv("ffi_path") != "" &&
-  Sys.getenv("ifn_path") != "" &&
-  Sys.getenv("forestables_eval_articles") == "true"
+eval_code <- Sys.getenv("forestables_eval_articles") == "true"
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -33,7 +30,7 @@ if (!eval_code) {
 }
 ```
 
-```{r doc_setup, include = FALSE}
+```{r doc_setup}
 # libraries
 library(forestables)
 library(dplyr)
@@ -42,11 +39,6 @@ library(sf)
 library(ggplot2)
 library(stringr)
 library(future)
-
-# paths
-ffi_folder <- Sys.getenv("ffi_path")
-fia_folder <- Sys.getenv("fia_path")
-ifn_folder <- Sys.getenv("ifn_path")
 ```
 
 This vignette explains how to retrieve information about available inventory plots
@@ -75,6 +67,10 @@ downloaded inventory files and a vector with the department codes (as created
 above):
 
 ```{r ffi_selection}
+# download the FFI data if not already (In this example the data is downloaded
+# in a temporal folder and is removed after the R session ends)
+ffi_folder <- tempdir()
+download_inventory("FFI", ffi_folder)
 # get the plots for those departments
 mediterranean_plots <- show_plots_from(
   inventory = "FFI",
@@ -155,7 +151,7 @@ ffi_data_2012
 Now we can explore the data, for example the most abundant species
 and their mean diameter for each plot they are in:
 
-```{r, fig.width = 6, fig.height=12, fig.align="center"}
+```{r, fig.width=7, fig.height=10, fig.align="center"}
 ffi_data_2012 |>
   # clean plots without tree data
   clean_empty(c("tree")) |>
@@ -182,51 +178,55 @@ ffi_data_2012 |>
 
 ## FIA workflow
 
-For the USA forest inventory (FIA) we are going to explore the west coast
-inventory plot for 2012. The steps are very similar to the FFI example. First we
-need the state codes, retrieve the plots metadata for those states and filter for
-the desired year, 2012::
+For the USA forest inventory (FIA) we are going to explore the Hawaii
+inventory plots for 2019. The steps are very similar to the FFI example. First we
+need the state code, retrieve the plots metadata and filter for the desired year,
+2019:
 
-```{r fia_west_coast_states}
-# choose the provinces, those in the Cantabric area
-west_coast_states <- c("WA", "CA", "OR")
+```{r fia_hawaii}
+# download the FIA data if not already (In this example the data is downloaded
+# in a temporal folder and is removed after the R session ends)
+fia_folder <- tempdir()
+download_inventory("FIA", fia_folder, states = "HI")
+
 # get the plots for those departments
-west_coast_plots_2012 <- show_plots_from(
+hawaii_plots_2019 <- show_plots_from(
   inventory = "FIA",
   folder = fia_folder,
-  states = west_coast_states
+  states = "HI"
 ) |>
-  filter(INVYR == 2012)
-west_coast_plots_2012
+  filter(INVYR == 2019)
+hawaii_plots_2019
 ```
 
-Also, if we obtain the states polygons with the `rnaturalearth` library, we
+Also, if we obtain the state polygons with the `rnaturalearth` library, we
 can visualize the plots:
 
 ```{r fia_states_polygons, fig.width=6, fig.align="center"}
 # USA map for plotting
-west_coast_map <- ne_states(geounit = "United States of America") |>
+hawaii_map <- ne_states(geounit = "United States of America") |>
   select(state_code = "iso_3166_2", state_name = "gn_name") |>
   mutate(state_code = str_remove(state_code, "US-")) |>
-  filter(state_code %in% west_coast_states)
+  filter(state_code %in% "HI")
 
-ggplot(west_coast_map) +
+ggplot(hawaii_map) +
   geom_sf() +
-  geom_sf(aes(color = STATEAB, alpha = 0.4), data = west_coast_plots_2012) +
-  scale_color_manual(values = hcl.colors(3, palette = "Zissou 1"))
+  geom_sf(aes(color = STATEAB, alpha = 0.4), data = hawaii_plots_2019) +
+  coord_sf(xlim = c(-160.6, -154.5), ylim = c(18.5, 22.5)) +
+  scale_color_manual(values = hcl.colors(1, palette = "Zissou 1"))
 ```
 
 Now that we have the inventory plots selected, we can obtain the *filter list*
 to retrieve the data only from those plots:
 
 ```{r fia_filter_list}
-fia_filter_list <- west_coast_plots_2012 |>
+fia_filter_list <- hawaii_plots_2019 |>
   create_filter_list()
 
 ## we can do all in one pipe:
 # fia_filter_list <-
-#   show_plots_from("FIA", folder = fia_folder, states = west_coast_states) |>
-#   filter(INVYR == 2012) |>
+#   show_plots_from("FIA", folder = fia_folder, states = "HI") |>
+#   filter(INVYR == 2019) |>
 #   create_filter_list()
 ```
 
@@ -234,16 +234,16 @@ And now we have everything we need for retrieving the data with
 `fia_to_tibble()`. For that we need the state codes, the year, the filter list
 we obtained before and the path to the folder containing the inventory files.
 
-```{r fia_data_2012, cache=TRUE}
+```{r fia_data_2019, cache=TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
 plan("multisession", workers = 4)
 
 # get the data
-fia_data_2012 <- fia_to_tibble(
-  states = west_coast_states,
-  years = 2012,
+fia_data_2019 <- fia_to_tibble(
+  states = "HI",
+  years = 2019,
   filter_list = fia_filter_list,
   folder = fia_folder
 )
@@ -252,8 +252,8 @@ fia_data_2012 <- fia_to_tibble(
 As we did with the French inventory, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
-```{r, fig.height=12, fig.width=6, fig.align="center"}
-fia_data_2012 |>
+```{r, fig.height=8, fig.width=7, fig.align="center"}
+fia_data_2019 |>
   # clean plots without tree data
   clean_empty(c("tree")) |>
   # convert inventory table to sf/spatial object
@@ -270,13 +270,14 @@ fia_data_2012 |>
   # filter species with 100 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 100) |>
+  dplyr::filter(n > 20) |>
   # let's plot
   ggplot() +
-  geom_sf(data = west_coast_map, alpha = 0, linewidth = 0.3) +
+  geom_sf(data = hawaii_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
+  coord_sf(xlim = c(-160.6, -154.5), ylim = c(18.5, 22.5)) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~sp_name, ncol = 6) +
+  facet_wrap(~sp_name, ncol = 3) +
   theme_minimal()
 ```
 
@@ -285,16 +286,22 @@ fia_data_2012 |>
 For the Spanish forest inventory (IFN) we will explore the Cantabric coast inventory
 plots. The IFN, differently from other inventories, doesn't offer the data by years, but by
 *versions*. We have *"ifn2"* (early 90s), *"ifn3" (early 00s)* and *"ifn4"* (2014-15).  
-We are going o retrive the plots for the latest version (*"ifn4"*):
+We are going o retrive the plots for the early 00s version (*"ifn3"*):
 
 ```{r ifn_selection}
 # choose the provinces, those in the Cantabric area
 north_spain_provinces <- c("24", "33", "15", "27", "39", "48", "20")
+
+# download the IFN data if not already (In this example the data is downloaded
+# in a temporal folder and is removed after the R session ends)
+ifn_folder <- tempdir()
+download_inventory("IFN", ifn_folder)
+
 # get the plots for those departments
 north_spain_plots <- show_plots_from(
   "IFN",
   folder = ifn_folder,
-  provinces = north_spain_provinces, versions = "ifn4"
+  provinces = north_spain_provinces, versions = "ifn3"
 )
 north_spain_plots
 ```
@@ -329,7 +336,7 @@ ifn_filter_list <- north_spain_plots |>
 
 ## we can do all in one pipe:
 # ifn_filter_list <- show_plots_from(
-#    "IFN", folder = ifn_folder, provinces = north_spain_provinces, versions = "ifn4"
+#    "IFN", folder = ifn_folder, provinces = north_spain_provinces, versions = "ifn3"
 # ) |>
 #   create_filter_list()
 ```
@@ -337,7 +344,7 @@ ifn_filter_list <- north_spain_plots |>
 And now we have everything we need for retrieving the data with
 `ifn_to_tibble()`:
 
-```{r, ifn4_data, cache=TRUE}
+```{r, ifn3_data, cache=TRUE}
 ## We can parallelize the process with the future package.
 ## In this case we use 4 parallel processes
 library(future)
@@ -346,7 +353,7 @@ plan("multisession", workers = 4)
 # get the data
 ifn_data <- ifn_to_tibble(
   provinces = north_spain_provinces,
-  versions = "ifn4",
+  versions = "ifn3",
   filter_list = ifn_filter_list,
   folder = ifn_folder
 )
@@ -355,7 +362,7 @@ ifn_data <- ifn_to_tibble(
 As we did with the French and USA inventories, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
-```{r, fig.height=12, fig.width=6, fig.align="center"}
+```{r, fig.height=7, fig.width=9, fig.align="center"}
 ifn_data |>
   # clean plots without tree data
   clean_empty(c("tree")) |>
@@ -369,7 +376,7 @@ ifn_data |>
     dbh = mean(dbh, na.rm = TRUE),
     province_name_original = unique(province_name_original), n = n()
   ) |>
-  dplyr::filter(!is.nan(dbh)) |>
+  dplyr::filter(!is.nan(dbh), !is.na(sp_name)) |>
   # filter species with 100 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
