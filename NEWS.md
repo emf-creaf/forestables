@@ -2,6 +2,7 @@
 
 * Added metadata for EMF
 * Improved vignettes & README
+* CI tests added
 
 # forestables 0.0.3
 
