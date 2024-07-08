@@ -1,5 +1,8 @@
 # forestables (development version)
 
+* Added metadata for EMF
+* Improved vignettes
+
 # forestables 0.0.3
 
 * Fixed bug in IFN4 download in MacOS
