@@ -17,8 +17,8 @@ tags:
 - data
 - R
 links:
-  url_docs: https://emf-creaf.github.io/forestables
-  url_source: https://github.com/emf-creaf/forestables
+  url_docs: 'https://emf-creaf.github.io/forestables'
+  url_source: 'https://github.com/emf-creaf/forestables'
 requirements:
 - R (>= 4.0.0)
 description: Making Forest Inventory Data Tidy
