@@ -34,7 +34,6 @@ if (!eval_code) {
 # libraries
 library(forestables)
 library(dplyr)
-library(rnaturalearth)
 library(sf)
 library(ggplot2)
 library(stringr)
@@ -89,25 +88,12 @@ mediterranean_plots_2012 <- mediterranean_plots |>
 mediterranean_plots_2012
 ```
 
-Also, we need a the polygons for the departments for plotting results later.
-To obtain them, we are gonna use the [`rnaturalearth`]() R package:
-
-```{r ffi_department_polygons}
-# france map for plotting
-south_france_map <- ne_states(geounit = "france") |>
-  select(dep_code = "iso_3166_2", dep_name = "gn_name") |>
-  mutate(dep_code = str_remove(dep_code, "FR-")) |>
-  filter(dep_code %in% mediterranean_deps)
-south_france_map
-```
-
 Now we can visualize the plots selected:
 
 ```{r ffi_plots_loc, fig.width=6, fig.align="center"}
-ggplot(south_france_map) +
-  geom_sf() +
+ggplot(mediterranean_plots_2012) +
   geom_sf(
-    aes(color = DEP), alpha = 0.4, data = mediterranean_plots_2012,
+    aes(color = DEP), alpha = 0.4,
     show.legend = FALSE
   ) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
@@ -169,7 +155,6 @@ ffi_data_2012 |>
   dplyr::filter(n > 15) |>
   # let's plot
   ggplot() +
-  geom_sf(data = south_france_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 3) +
@@ -199,19 +184,12 @@ hawaii_plots_2019 <- show_plots_from(
 hawaii_plots_2019
 ```
 
-Also, if we obtain the state polygons with the `rnaturalearth` library, we
-can visualize the plots:
+We can visualize the plots:
 
 ```{r fia_states_polygons, fig.width=6, fig.align="center"}
 # USA map for plotting
-hawaii_map <- ne_states(geounit = "United States of America") |>
-  select(state_code = "iso_3166_2", state_name = "gn_name") |>
-  mutate(state_code = str_remove(state_code, "US-")) |>
-  filter(state_code %in% "HI")
-
-ggplot(hawaii_map) +
-  geom_sf() +
-  geom_sf(aes(color = STATEAB, alpha = 0.4), data = hawaii_plots_2019) +
+ggplot(hawaii_plots_2019) +
+  geom_sf(aes(color = STATEAB, alpha = 0.4)) +
   coord_sf(xlim = c(-160.6, -154.5), ylim = c(18.5, 22.5)) +
   scale_color_manual(values = hcl.colors(1, palette = "Zissou 1"))
 ```
@@ -273,7 +251,6 @@ fia_data_2019 |>
   dplyr::filter(n > 20) |>
   # let's plot
   ggplot() +
-  geom_sf(data = hawaii_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   coord_sf(xlim = c(-160.6, -154.5), ylim = c(18.5, 22.5)) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
@@ -306,22 +283,12 @@ north_spain_plots <- show_plots_from(
 north_spain_plots
 ```
 
-Also, we obtain the provinces polygins with `rnaturalearth`, to visualize the
-plots:
+To visualize the plots:
 
 ```{r ifn_plots_visualization, fig.width=6, fig.align="center"}
-# spain map for plotting
-north_spain_map <- ne_states(country = "spain") |>
-  select(dep_code = "iso_3166_2", dep_name = "name") |>
-  mutate(dep_code = str_remove(dep_code, "ES-")) |>
-  filter(dep_name %in% c(
-    "León", "Asturias", "La Coruña", "Lugo", "Cantabria", "Bizkaia", "Gipuzkoa"
-  ))
-
-ggplot(north_spain_map) +
-  geom_sf() +
+ggplot(north_spain_plots) +
   geom_sf(
-    aes(color = province_name_original), data = north_spain_plots, alpha = 0.4,
+    aes(color = province_name_original), alpha = 0.4,
     show.legend = FALSE
   ) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
@@ -383,7 +350,6 @@ ifn_data |>
   dplyr::filter(n > 500) |>
   # let's plot
   ggplot() +
-  geom_sf(data = north_spain_map, alpha = 0, linewidth = 0.3) +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 3) +
