@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 
 # forestables
 
-[![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml)
+[![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml)
 
 Read and uniformize forest inventories data from the FIA (USA forest inventory), FFI (France forest
 inventory) and IFN (Spain forest inventory).

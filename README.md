@@ -1,7 +1,7 @@
 
 # forestables
 
-[![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml)
+[![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml)
 
 Read and uniformize forest inventories data from the FIA (USA forest
 inventory), FFI (France forest inventory) and IFN (Spain forest
@@ -46,9 +46,6 @@ Loire department from 2015:
 library(forestables)
 #> Cargando paquete requerido: data.table
 #> Cargando paquete requerido: dtplyr
-```
-
-``` r
 library(dplyr)
 #> 
 #> Adjuntando el paquete: 'dplyr'
@@ -61,19 +58,13 @@ library(dplyr)
 #> The following objects are masked from 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
-```
-
-``` r
 
 ## Downloading all FFI data (if not already)
 ffi_path <- tempdir()
 download_inventory("FFI", destination = ffi_path)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in '/tmp/RtmpYhyCQr'
+#> ℹ Unzipping downloaded data in '/tmp/RtmpjVkrR8'
 #> ✔ Done!
-```
-
-``` r
 
 ## Get the plots
 ffi_filter_list <-
@@ -99,9 +90,6 @@ loire_plots_2015 <- ffi_to_tibble(
 #> The following object is masked from 'package:data.table':
 #> 
 #>     transpose
-```
-
-``` r
 
 ## Explore the plots
 loire_plots_2015
