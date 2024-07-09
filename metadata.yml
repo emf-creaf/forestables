@@ -3,7 +3,7 @@ emf_type: softwork
 emf_public: true
 emf_automatized: true
 emf_reproducible: false
-emf_draft: true
+emf_draft: false
 emf_data_type: emf_data_product
 data_repository: ''
 model_repository: ''
