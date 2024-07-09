@@ -1,10 +1,10 @@
 ---
-title: "Description of functions"
+title: "Inventory data ingestion process"
 output: rmarkdown::html_vignette
 author: "Adriana Tovar"
 date: "`r Sys.Date()`"
 vignette: >
-  %\VignetteIndexEntry{documentacion}
+  %\VignetteIndexEntry{Inventory data ingestion process}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
