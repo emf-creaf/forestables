@@ -29,8 +29,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      NOT_CRAN: false
       forestables_eval_articles: false
+      full_testing: false
 
     steps:
       - uses: actions/checkout@v4
