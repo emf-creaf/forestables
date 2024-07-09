@@ -5,7 +5,7 @@ skip_on_cran()
 # Also, in main branch in github actions we dont want to run the expensive tests,
 # as the pkgdown already will warn us if something is wrong, and the devel branch
 # is always tested fully
-skip_if(Sys.getenv("full_testing") == "true", message = "Full test skipped")
+skip_if(Sys.getenv("full_testing") == "false", message = "Full test skipped")
 
 ## Temporal folder setup
 inventories_tmp <- tempdir()
