@@ -1,12 +1,11 @@
 pandoc: 3.1.11
-pkgdown: 2.0.9
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   documentacion: documentacion.html
   inventory_data_tibble: inventory_data_tibble.html
   selecting_plots: selecting_plots.html
-last_built: 2024-07-03T10:52Z
+last_built: 2024-07-09T08:10Z
 urls:
   reference: https://emf-creaf.github.io/forestables/reference
   article: https://emf-creaf.github.io/forestables/articles
-

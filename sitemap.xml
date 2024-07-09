@@ -1,75 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/404.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/articles/documentacion.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/articles/inventory_data_tibble.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/articles/selecting_plots.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/index.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/clean_empty.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/create_filter_list.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/download_inventory.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/ffi_output_example.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/ffi_to_tibble.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/fia_output_example.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/fia_to_tibble.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/forestables-package.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/ifn_output_example.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/ifn_to_tibble.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/inventory_as_sf.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/reexports.html</loc>
-  </url>
-  <url>
-    <loc>https://emf-creaf.github.io/forestables/reference/show_plots_from.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://emf-creaf.github.io/forestables/404.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/LICENSE-text.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/LICENSE.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/articles/documentacion.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/articles/index.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/articles/inventory_data_tibble.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/articles/selecting_plots.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/authors.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/index.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/news/index.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/clean_empty.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/create_filter_list.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/download_inventory.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/ffi_output_example.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/ffi_to_tibble.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/fia_output_example.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/fia_to_tibble.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/forestables-package.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/ifn_output_example.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/ifn_to_tibble.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/index.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/inventory_as_sf.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/reexports.html</loc></url>
+<url><loc>https://emf-creaf.github.io/forestables/reference/show_plots_from.html</loc></url>
 </urlset>
+
