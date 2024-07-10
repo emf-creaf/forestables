@@ -1,5 +1,6 @@
 
-# forestables
+\# forestables
+<a href="https://emf-creaf.github.io/forestables/"><img src="man/figures/logo.png" align="right" height="139" alt="forestables website" /></a>
 
 [![R-CMD-check](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml/badge.svg)](https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml)
 
@@ -63,7 +64,7 @@ library(dplyr)
 ffi_path <- tempdir()
 download_inventory("FFI", destination = ffi_path)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in '/tmp/RtmpjVkrR8'
+#> ℹ Unzipping downloaded data in '/tmp/RtmpoTl9Ve'
 #> ✔ Done!
 
 ## Get the plots

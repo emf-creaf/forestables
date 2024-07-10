@@ -1,5 +1,8 @@
 # forestables (development version)
 
+* Updated vignettes
+* Added logo
+
 # forestables 0.0.4
 
 * Added metadata for EMF
