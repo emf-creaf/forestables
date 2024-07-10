@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/documentacion.html">Description of functions</a></li>
+<li><a class="dropdown-item" href="../articles/documentacion.html">Inventory data ingestion process</a></li>
     <li><a class="dropdown-item" href="../articles/inventory_data_tibble.html">Inventory data output</a></li>
     <li><a class="dropdown-item" href="../articles/selecting_plots.html">Selecting plots</a></li>
   </ul>
@@ -56,8 +56,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Selecting plots</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Selecting plots</h1>
             
       
 
@@ -100,9 +99,9 @@ below</p>
 <div class="section level2">
 <h2 id="ffi-workflow">FFI workflow<a class="anchor" aria-label="anchor" href="#ffi-workflow"></a>
 </h2>
-<p>For the French forest inventory (FFI), we are gonna select all
-mediterranean plots sampled in 2012. First step is to select de
-departments the plots we want are in.</p>
+<p>For the French forest inventory (FFI), we are going to select all
+forest plots of the Mediterranean area sampled in 2012. First step is to
+select the departments corresponding to the Mediterranean area.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># choose the departments, those in the mediterranean area</span></span>
 <span><span class="va">mediterranean_deps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -120,7 +119,7 @@ vector with the department codes (as created above):</p>
 <span><span class="va">ffi_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"FFI"</span>, <span class="va">ffi_folder</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading FFI available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpVeKd9v</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpAPJyNO</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Done!</span></span>
 <span><span class="co"># get the plots for those departments</span></span>
 <span><span class="va">mediterranean_plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/show_plots_from.html">show_plots_from</a></span><span class="op">(</span></span>
@@ -173,7 +172,8 @@ but we want 2012 plots, so we filter the results by campaign year:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     <span style="text-decoration: underline;">2</span>012 <span style="text-decoration: underline;">201</span>148 66    (2.253964 42.58809)</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>     <span style="text-decoration: underline;">2</span>012 <span style="text-decoration: underline;">201</span>268 06    (7.670067 44.09328)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1,164 more rows</span></span></span></code></pre></div>
-<p>Now we can visualize the plots selected:</p>
+<p>Now we can visualize the geographic distribution of plots
+selected:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mediterranean_plots_2012</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span></span>
@@ -182,9 +182,9 @@ but we want 2012 plots, so we filter the results by campaign year:</p>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">hcl.colors</a></span><span class="op">(</span><span class="fl">9</span>, palette <span class="op">=</span> <span class="st">"Zissou 1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="selecting_plots_files/figure-html/ffi_plots_loc-1.png" width="576" style="display: block; margin: auto;"></p>
-<p>Seems like we have the plots we need, so we are going to create a
-<em>filter list</em> to use it to retrieve those plots data from the
-inventory files:</p>
+<p>It seems like we have the plots that we need, so we are going to
+create a <em>filter list</em> to use it to retrieve those plots data
+from the inventory files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ffi_filter_list</span> <span class="op">&lt;-</span> <span class="va">mediterranean_plots_2012</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/create_filter_list.html">create_filter_list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -273,7 +273,7 @@ the desired year, 2019:</p>
 <span><span class="va">fia_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"FIA"</span>, <span class="va">fia_folder</span>, states <span class="op">=</span> <span class="st">"HI"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading FIA available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpVeKd9v</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpAPJyNO</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Done!</span></span>
 <span></span>
 <span><span class="co"># get the plots for those departments</span></span>
@@ -303,7 +303,7 @@ the desired year, 2019:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>  <span style="text-decoration: underline;">2</span>019      15        1  <span style="text-decoration: underline;">2</span>149 HI      (-155.7324 20.21962)</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  <span style="text-decoration: underline;">2</span>019      15        1  <span style="text-decoration: underline;">2</span>150 HI      (-155.9376 20.22124)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1,167 more rows</span></span></span></code></pre></div>
-<p>We can visualize the plots:</p>
+<p>We can visualize the geographic distribution of the plots:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># USA map for plotting</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">hawaii_plots_2019</span><span class="op">)</span> <span class="op">+</span></span>
@@ -311,7 +311,7 @@ the desired year, 2019:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">coord_sf</a></span><span class="op">(</span>xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">160.6</span>, <span class="op">-</span><span class="fl">154.5</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18.5</span>, <span class="fl">22.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">hcl.colors</a></span><span class="op">(</span><span class="fl">1</span>, palette <span class="op">=</span> <span class="st">"Zissou 1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="selecting_plots_files/figure-html/fia_states_polygons-1.png" width="576" style="display: block; margin: auto;"></p>
-<p>Now that we have the inventory plots selected, we can obtain the
+<p>Now that we have the forest inventory plots selected, we can create a
 <em>filter list</em> to retrieve the data only from those plots:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fia_filter_list</span> <span class="op">&lt;-</span> <span class="va">hawaii_plots_2019</span> <span class="op">|&gt;</span></span>
@@ -323,9 +323,9 @@ the desired year, 2019:</p>
 <span><span class="co">#   filter(INVYR == 2019) |&gt;</span></span>
 <span><span class="co">#   create_filter_list()</span></span></code></pre></div>
 <p>And now we have everything we need for retrieving the data with
-<code><a href="../reference/fia_to_tibble.html">fia_to_tibble()</a></code>. For that we need the state codes, the
-year, the filter list we obtained before and the path to the folder
-containing the inventory files.</p>
+<code><a href="../reference/fia_to_tibble.html">fia_to_tibble()</a></code>. For that we need to provide the state
+codes, the year, the filter list we obtained before and the path to the
+folder containing the forest inventory files.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## We can parallelize the process with the future package.</span></span>
 <span><span class="co">## In this case we use 4 parallel processes</span></span>
@@ -342,8 +342,9 @@ containing the inventory files.</p>
 <span><span class="co">#&gt; Start</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Processing 1 year</span></span>
 <span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">1177</span> plots for <span style="color: #0000BB;">2019</span></span></span></code></pre></div>
-<p>As we did with the French inventory, we can now explore the data, for
-example, the most abundant species and their mean diameter:</p>
+<p>As we did with the French forest inventory, we can now explore the
+data, for example, the most abundant species and their mean
+diameter:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fia_data_2019</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># clean plots without tree data</span></span>
@@ -378,11 +379,11 @@ example, the most abundant species and their mean diameter:</p>
 <h2 id="ifn-workflow">IFN workflow<a class="anchor" aria-label="anchor" href="#ifn-workflow"></a>
 </h2>
 <p>For the Spanish forest inventory (IFN) we will explore the Cantabric
-coast inventory plots. The IFN, differently from other inventories,
-doesn’t offer the data by years, but by <em>versions</em>. We have
-<em>“ifn2”</em> (early 90s), <em>“ifn3” (early 00s)</em> and
-<em>“ifn4”</em> (2014-15).<br>
-We are going o retrive the plots for the early 00s version
+coast forest plots. The IFN, differently from other national
+inventories, doe not offer the plot data by years, but by
+<em>versions</em>. We have <em>“ifn2”</em> (early 90s), <em>“ifn3”
+(early 00s)</em> and <em>“ifn4”</em> (2014-15).<br>
+We are going o retrieve the plots for the early 00s version
 (<em>“ifn3”</em>):</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># choose the provinces, those in the Cantabric area</span></span>
@@ -393,7 +394,7 @@ We are going o retrive the plots for the early 00s version
 <span><span class="va">ifn_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"IFN"</span>, <span class="va">ifn_folder</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading IFN available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpVeKd9v</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpAPJyNO</span></span></span>
 <span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> The following files failed to be downloaded:</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_avila_tcm30-536598.zip</span>, <span style="color: #0000BB;">ifn4_cantabria_tcm30-536602.zip</span>,</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_leon_tcm30-536581.zip</span>, <span style="color: #0000BB;">ifn4_murcia_tcm30-536584.zip</span>,</span></span>
@@ -437,7 +438,7 @@ We are going o retrive the plots for the early 00s version
 <span><span class="co">#&gt; 8  POINT (-6.650977 42.86757)</span></span>
 <span><span class="co">#&gt; 9  POINT (-6.638745 42.86732)</span></span>
 <span><span class="co">#&gt; 10 POINT (-6.810325 42.86173)</span></span></code></pre></div>
-<p>To visualize the plots:</p>
+<p>To visualize the geographic distribution plots we can use:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">north_spain_plots</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span></span>
@@ -475,9 +476,9 @@ We are going o retrive the plots for the early 00s version
 <span><span class="co">#&gt; Start</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Processing 1 cicle</span></span>
 <span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">14935</span> plots for <span style="color: #0000BB;">"ifn3"</span></span></span></code></pre></div>
-<p>As we did with the French and USA inventories, we can now explore the
-data, for example, the most abundant species and their mean
-diameter:</p>
+<p>As we did with the French and USA national forest inventories, we can
+now explore the data, for example, the most abundant species and their
+mean diameter:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ifn_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># clean plots without tree data</span></span>

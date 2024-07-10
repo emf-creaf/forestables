@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/documentacion.html">Description of functions</a></li>
+<li><a class="dropdown-item" href="../articles/documentacion.html">Inventory data ingestion process</a></li>
     <li><a class="dropdown-item" href="../articles/inventory_data_tibble.html">Inventory data output</a></li>
     <li><a class="dropdown-item" href="../articles/selecting_plots.html">Selecting plots</a></li>
   </ul>
@@ -56,8 +56,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Inventory data output</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Inventory data output</h1>
             
       
 
@@ -67,10 +66,10 @@
     
     
 <div class="section level2">
-<h2 id="inventories-outputs">Inventories outputs<a class="anchor" aria-label="anchor" href="#inventories-outputs"></a>
+<h2 id="forest-inventory-data-outputs">Forest inventory data outputs<a class="anchor" aria-label="anchor" href="#forest-inventory-data-outputs"></a>
 </h2>
-<p><code>forestables</code> tries to uniformize, when possible, the
-outputs of different inventories. This makes easier to design workflows
+<p><code>forestables</code> tries to harmonize, to some extent, the data
+of different forest inventories. This makes easier to design workflows
 that work with different inventories. This vignette shows and explains
 the <code>forestables</code> output tibble.</p>
 <div class="section level3">
@@ -144,22 +143,23 @@ the <code>forestables</code> output tibble.</p>
 <span><span class="co">#&gt; <span style="color: #949494;">#   subclass &lt;chr&gt;, province_code &lt;chr&gt;, province_name_original &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   ca_name_original &lt;chr&gt;, sheet_ntm &lt;chr&gt;, huso &lt;dbl&gt;, slope_mean &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   type &lt;int&gt;, tree &lt;list&gt;, understory &lt;list&gt;, regen &lt;list&gt;</span></span></span></code></pre></div>
-<p>We are going to use these examples to explain the estructure of the
+<p>We are going to use these examples to explain the structure of the
 output.</p>
 </div>
 <div class="section level3">
-<h3 id="output-estructure">Output estructure<a class="anchor" aria-label="anchor" href="#output-estructure"></a>
+<h3 id="output-structure">Output structure<a class="anchor" aria-label="anchor" href="#output-structure"></a>
 </h3>
-<p>Inventories outputs are dataframes (tibbles) in which each row is a
-plot/year combination (plot/version in the IFN). Metadata for the plot
-is presented in the first columns (plot IDs, coordinates info,
-topography…). The last three columns are always nested columns with the
-<code>tree</code> table for that plot/year, <code>understory</code>
-table for that plot/year and <code>regen</code> table for that
-plot/year.</p>
+<p>Forest inventory data outputs in <code>forestables</code> are data
+frames (tibbles) in which each row is a plot/year combination
+(plot/version in the IFN). Metadata for the plot is presented in the
+first columns (plot IDs, coordinates info, topography…). The last three
+columns are always nested columns with the <code>tree</code> table for
+that plot/year, <code>understory</code> table for that plot/year and
+<code>regen</code> table for that plot/year.</p>
 <p><img src="%22inventory_row.svg%22"></p>
 <ul>
-<li><p>Common metadata among different inventories:<br><code>id_unique_code</code>, <code>year</code>, <code>plot</code>,
+<li><p>Common metadata among different national forest inventories
+is:<br><code>id_unique_code</code>, <code>year</code>, <code>plot</code>,
 <code>coordx</code>, <code>coordy</code>, <code>coord_sys</code>,
 <code>crs</code>, <code>elev</code>, <code>aspect</code>,
 <code>slope</code>, <code>country</code>.</p></li>
@@ -173,10 +173,10 @@ plot/year.</p>
 <code>ca_name_original</code>, <code>sheet_ntm</code>,
 <code>huso</code>, <code>slope_mean</code>, <code>type</code>.</p></li>
 <li><p>FFI unique metadata:<br><code>dep</code>, <code>dep_name</code>, <code>visite</code>.</p></li>
-<li><p>Nested columns common to all inventories:<br><code>tree</code>, <code>understory</code>, <code>regen</code></p></li>
+<li><p>Nested columns common to all national forest inventories:<br><code>tree</code>, <code>understory</code>, <code>regen</code></p></li>
 </ul>
-<p>To know more about each variable, you can check the ?????
-vignette.</p>
+<p>To know more about each variable, you can check the <em>Description
+of functions</em> vignette.</p>
 </div>
 <div class="section level3">
 <h3 id="post-processing-outputs">Post-processing outputs<a class="anchor" aria-label="anchor" href="#post-processing-outputs"></a>
@@ -247,9 +247,11 @@ in latitude-longitude format (CRS = 4326):</li>
 <p><code>tree</code> is a <em>nested column</em>, meaning that each cell
 contain the tree data table for that row (i.e. the tree data table for
 that plot that year/version). As with the plot metadata, an effort to
-uniformize the data between inventories has been done.</p>
+harmonize tree data between national forest inventories has been
+done.</p>
 <ul>
-<li><p>Common tree variables among different inventories:<br><code>tree</code>, <code>sp_code</code>, <code>sp_name</code>,
+<li><p>Common tree variables among different national forest
+inventories:<br><code>tree</code>, <code>sp_code</code>, <code>sp_name</code>,
 <code>status</code>, <code>density_factor</code>, <code>dia</code>,
 <code>height</code>.</p></li>
 <li><p>IFN unique tree variables:<br><code>tree_ifn2</code>, <code>tree_ifn3</code>, <code>tree_ifn4</code>
@@ -290,11 +292,12 @@ uniformize the data between inventories has been done.</p>
 <code>understory</code> column<a class="anchor" aria-label="anchor" href="#understory-column"></a>
 </h3>
 <p><code>understory</code> is also a <em>nested</em> column. It contains
-the data tables for shrubs and for herbs if found in the inventory
+data tables for shrubs and for herbs, if found in the forest inventory
 plot.</p>
 <ul>
-<li><p>Common understory variables among different inventories:<br><code>shrub</code>, <code>herbs</code>. Both are also nested columns, as
-each kindo of understory has different data estructure.</p></li>
+<li><p>Common understory variables among different national forest
+inventories:<br><code>shrub</code>, <code>herbs</code>. Both are also nested columns, as
+each kind of understory has different data structure.</p></li>
 <li><p>FFI unique understory variables:<br><code>lign1_pct</code>, <code>lign2_pct</code>.</p></li>
 </ul>
 <div class="section level4">
@@ -302,7 +305,8 @@ each kindo of understory has different data estructure.</p></li>
 <code>shrub</code> column<a class="anchor" aria-label="anchor" href="#shrub-column"></a>
 </h4>
 <ul>
-<li><p>Common shrub variables among different inventories:<br><code>sp_code</code>, <code>sp_name</code>, <code>cover</code>,
+<li><p>Common shrub variables among different national forest
+inventories:<br><code>sp_code</code>, <code>sp_name</code>, <code>cover</code>,
 <code>height</code>, <code>growth_form</code></p></li>
 <li><p>FIA unique shrub variables:<br><code>subplot</code>, <code>growth_form_code</code>.</p></li>
 </ul>
@@ -373,11 +377,13 @@ not present in the IFN.</p>
 <code>regen</code> column<a class="anchor" aria-label="anchor" href="#regen-column"></a>
 </h3>
 <p><code>regen</code> is a <em>nested column</em>, meaning that each
-cell contain the regen data table for that row (i.e. the regen data
-table for that plot that year/version). As with the plot metadata, an
-effort to uniformize the data between inventories has been done.</p>
+cell contains the (tree) regeneration data table for that row (i.e. the
+regeneration data table for that plot that year/version). As with the
+plot metadata, an effort to harmonize regeneration data between
+inventories has been done.</p>
 <ul>
-<li><p>Common regen variables among different inventories:<br><code>sp_code</code>, <code>sp_name</code>, <code>density_factor</code>,
+<li><p>Common regen variables among different national forest
+inventories:<br><code>sp_code</code>, <code>sp_name</code>, <code>density_factor</code>,
 <code>dbh</code>, <code>height</code>, <code>n</code>.</p></li>
 <li><p>FIA unique regen variables:<br><code>subplot</code>, <code>treecount_calc</code>.</p></li>
 <li><p>FFI unique regen variables:<br><code>cover</code>, <code>growth_form</code></p></li>

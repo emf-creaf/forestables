@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Description of functions • forestables</title>
+<title>Inventory data ingestion process • forestables</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Description of functions">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Inventory data ingestion process">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/documentacion.html">Description of functions</a></li>
+<li><a class="dropdown-item" href="../articles/documentacion.html">Inventory data ingestion process</a></li>
     <li><a class="dropdown-item" href="../articles/inventory_data_tibble.html">Inventory data output</a></li>
     <li><a class="dropdown-item" href="../articles/selecting_plots.html">Selecting plots</a></li>
   </ul>
@@ -56,12 +56,11 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Description of functions</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Inventory data ingestion process</h1>
                         <h4 data-toc-skip class="author">Adriana
 Tovar</h4>
             
-            <h4 data-toc-skip class="date">2024-07-09</h4>
+            <h4 data-toc-skip class="date">2024-07-10</h4>
       
 
       <div class="d-none name"><code>documentacion.Rmd</code></div>
@@ -90,21 +89,22 @@ from both a taxonomic and ecological perspective. With a periodicity of
 at least ten years, it has been ongoing for over fifty years.</p>
 <p>The <strong>Second National Forest Inventory (IFN2) was conducted by
 the Forest Inventory Service between 1986 and 1996.</strong> It
-consisted of fixed plots located using a metal grid buried at the center
-of each plot, allowing for the periodic measurement of each tree and the
-comparison of their physical characteristics and condition.</p>
+consisted of permanent forest plots marked using a metal rod buried at
+the center of each plot, allowing for the periodic measurement of each
+tree and the comparison of their physical characteristics and
+condition.</p>
 <p>The <strong>Third cycle</strong> of the <strong>National Forest
 Inventory (IFN3) was carried out between 1997 and 2007</strong>. While
 it followed the methodology established in IFN2, with a focus on
-continuous monitoring of the same plots, it introduced changes by
-considering forest ecosystems for the first time. IFN3 aimed to provide
-insights into the state and evolution of forests at the provincial level
-through over 100 indicators.</p>
+continuous monitoring of the same forest plots, it introduced changes by
+considering forest ecosystems for the first time in Spain. IFN3 aimed to
+provide insights into the state and evolution of forests at the
+provincial level through over 100 indicators.</p>
 <p>The <strong>Fourth cycle of the National Forest Inventory
-(IFN4)</strong> <strong>started in 2008</strong>.While IFN4 continues
-the methodology of its predecessors, it incorporates changes and
-innovations.Among the main novelties of this fourth cycle (IFN4) is the
-use of the Forest Map of Spain at a scale of 1:25,000 (MFE) as the
+(IFN4)</strong> <strong>started in 2008</strong>. While IFN4 continues
+the methodology of its predecessors, it incorporates some changes and
+innovations. Among the main novelties of this fourth cycle (IFN4) is the
+use of the Forest Map of Spain at a scale of 1:25000 (MFE) as the
 cartographic base.</p>
 <div class="section level3">
 <h3 id="data-acquisition">
@@ -112,20 +112,20 @@ cartographic base.</p>
 </h3>
 <ul>
 <li>
-<p>IFN2 : Ficheros de parcelas y procesos de datos:</p>
+<p>IFN2 : Field data bases (DBF files):</p>
 <p>Data is organized in provinces and there are thematic DBF files with
 similar names for all provinces.</p>
 <p><a href="https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_descargas.html" class="external-link uri">https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn2_descargas.html</a></p>
 </li>
 <li>
-<p>IFN 3: Bases de datos (Access 2007 *.accdb)</p>
+<p>IFN 3: Field data bases (Access 2007 *.accdb)</p>
 <p>Data is organized in provinces and each province one has an access
 file. Within the access files there are thematic sheets with similar
 names.</p>
 <p><a href="https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_bbdd_descargas_htm.html" class="external-link uri">https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_bbdd_descargas_htm.html</a></p>
 </li>
 <li>
-<p>IFN4 : Bases de datos de campo. (Access 2007 *.accdb)</p>
+<p>IFN4 : Field data bases (Access 2007 *.accdb)</p>
 <p>Data is organized in provinces/ Autonomous community with an internal
 organization similar to IFN3.</p>
 <p><a href="https://www.miteco.gob.es/es/biodiversidad/temas/inventarios-nacionales/inventario-forestal-nacional/cuarto_inventario.html" class="external-link uri">https://www.miteco.gob.es/es/biodiversidad/temas/inventarios-nacionales/inventario-forestal-nacional/cuarto_inventario.html</a></p>
@@ -137,56 +137,69 @@ organization similar to IFN3.</p>
 </h3>
 <p>Variables have been harmonized between inventories.<br>
 Some variables may appear on multiple tables:</p>
-<table style="width:99%;" class="table">
+<table style="width:98%;" class="table">
 <colgroup>
-<col width="12%">
-<col width="18%">
+<col width="10%">
 <col width="16%">
-<col width="52%">
+<col width="15%">
+<col width="46%">
+<col width="9%">
 </colgroup>
-<thead><tr class="header">
-<th>Harmonized name</th>
-<th>Original name IFN2</th>
-<th>Original name IFN3/ 4</th>
-<th>Description</th>
-</tr></thead>
 <tbody>
 <tr class="odd">
-<td>id_unique_code</td>
-<td>ES_ESTADILLO_ PROVINCIA</td>
-<td>ES_Estadillo_Provincia</td>
-<td>Code to identify plot</td>
+<td rowspan="2">
+<h2 id="harmonized-name">Harmonized name</h2>
+<p>id_unique_code</p>
+</td>
+<td rowspan="2">
+<h2 id="original-name-ifn2">Original name IFN2</h2>
+<p>ES_ESTADILLO_ PROVINCIA</p>
+</td>
+<td rowspan="2">
+<h2 id="original-name-ifn3-4">Original name IFN3/ 4</h2>
+<p>ES_Estadillo_Provincia</p>
+</td>
+<td rowspan="2">
+<h2 id="description">Description</h2>
+<p>Code to identify plot</p>
+</td>
+<td></td>
 </tr>
 <tr class="even">
+<td></td>
+</tr>
+<tr class="odd">
 <td>province_code</td>
 <td>PROVINCIA</td>
 <td>Provincia</td>
 <td>Territorial division</td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>plot</td>
 <td>ESTADILLO</td>
 <td>Estadillo</td>
 <td>Plot ID</td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>class</td>
 <td><em>CLA</em></td>
 <td>Cla</td>
 <td>Code that indicates when the plot was surveyed.</td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>subclass</td>
 <td><em>Subclase</em></td>
 <td>Subclase</td>
-<td>Code that determines the type of plot based on the location of the
-“rejon”.</td>
+<td colspan="2">Code that determines the type of plot based on the
+re-location of the metal rod (“rejon”).</td>
 </tr>
 </tbody>
 </table>
 <div class="section level4">
-<h4 id="ifn-tree-table-process">
-<strong>IFN TREE TABLE PROCESS</strong><a class="anchor" aria-label="anchor" href="#ifn-tree-table-process"></a>
+<h4 id="ifn-tree-table-processing">IFN TREE TABLE PROCESSING<a class="anchor" aria-label="anchor" href="#ifn-tree-table-processing"></a>
 </h4>
 <p>Information is obtained from <em>PCMAYORES</em> table of IFN3-4 and
 <em>PIESMA</em> of IFN2<br><strong>Tree condition:</strong> In the IFN trees must have a diameter
@@ -207,7 +220,7 @@ Some variables may appear on multiple tables:</p>
 <tbody>
 <tr class="odd">
 <td>height (m)</td>
-<td>ALTURA (m?)</td>
+<td>ALTURA (m)</td>
 <td>HT (m)</td>
 <td>Height of tree</td>
 </tr>
@@ -233,7 +246,7 @@ Some variables may appear on multiple tables:</p>
 <td>tree_id</td>
 <td>ARBOL</td>
 <td>nArbol</td>
-<td>number of trees, id</td>
+<td>number of trees</td>
 </tr>
 <tr class="even">
 <td>dbh (cm)</td>
@@ -267,57 +280,62 @@ Some variables may appear on multiple tables:</p>
 <p>The mean of diameters is calculated to obtain the variable dbh
 (diameter/DBH), and it is converted to cm.</p>
 <pre><code>  dbh = ((Dn1 + Dn2) / 2) * 0.1, # From mm to cm</code></pre>
-<p>We add a new variable called <em>density_factor.</em> It is a
-variable i similar to the “FAC” variable in the inventory, which
-corresponds to the Expansion Factor per hectare of the unit values of
-different dendrometric parameters of the measured foot. IFN follows a
-methods called variable-radius plot sampling. Smaller trees are measured
-at smaller radii of the plot, while larger trees are measured within the
+<p>We add a new variable called <em>density_factor</em>, corresponding
+to the Expansion Factor per hectare of the unit values of different
+dendrometric parameters of the measured stem. IFN tree sampling follows
+a variable-radius plot sampling, where smaller trees are measured at
+smaller radii of the plot, while larger trees are measured within the
 larger radii as follows.</p>
 <p><img src="images/clipboard-3909002882.png" width="529"></p>
 <table class="table">
 <thead><tr class="header">
 <th>DBH interval</th>
+<th>Radius sub-plot</th>
 <th>Density value</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>[0, 12.5)</td>
+<td>5</td>
 <td>127.3239546</td>
 </tr>
 <tr class="even">
 <td>[12.5, 22.5)</td>
+<td>10</td>
 <td>31.83098865</td>
 </tr>
 <tr class="odd">
 <td>[22.5, 42.5)</td>
+<td>15</td>
 <td>14.14710607</td>
 </tr>
 <tr class="even">
 <td>[42.5, 999)</td>
+<td>25</td>
 <td>5.092958185</td>
 </tr>
 </tbody>
 </table>
-<p>We also add a new variable: sp_name , with the latin name of the
+<p>We also add a new variable: sp_name , with the scientific name of the
 species that corresponds to the sp_code.<br><br>
-The final variables provided are: “id_unique_code”, “province_code”,
-“class”, “subclass”, “plot”, “sp_code”, “sp_name”, “tree”,
-“wood_quality”, “cubing_form”, “tree_ifn2”, “tre_ifn3”, “tree_ifn4”,
-“dbh”, “height”, “density_factor”</p>
+The final variables provided are <em>id_unique_code</em>,
+<em>province_code</em>, <em>class</em>, <em>subclass</em>,
+<em>plot</em>, <em>sp_code</em>, <em>sp_name</em>, <em>tree</em>,
+<em>wood_quality</em>, <em>cubing_form</em>, <em>tree_ifn2</em>,
+<em>tree_ifn3</em>, <em>tree_ifn4</em>, <em>dbh</em>, <em>height</em>
+and <em>density_factor</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="ifn-shrub-table-process">
-<strong>IFN SHRUB TABLE PROCESS</strong><a class="anchor" aria-label="anchor" href="#ifn-shrub-table-process"></a>
+<h4 id="ifn-shrub-table-processing">IFN SHRUB TABLE PROCESSING<a class="anchor" aria-label="anchor" href="#ifn-shrub-table-processing"></a>
 </h4>
-<p>Information is obtained from the table <em>PCMatorral</em> of the
-IFN3-4 and <em>MATORR</em> of IFN2<br></p>
+<p>Information is obtained from tables <em>PCMatorral</em> of IFN3-4 and
+<em>MATORR</em> of IFN2<br></p>
 <table style="width:98%;" class="table">
 <colgroup>
-<col width="17%">
-<col width="20%">
-<col width="23%">
-<col width="36%">
+<col width="16%">
+<col width="19%">
+<col width="22%">
+<col width="39%">
 </colgroup>
 <thead><tr class="header">
 <th>Harmonized name</th>
@@ -342,17 +360,19 @@ IFN3-4 and <em>MATORR</em> of IFN2<br></p>
 <td>cover</td>
 <td>FRACCAB</td>
 <td>Fcc (%)</td>
-<td>cover in % of a species in the plot</td>
+<td>Percent cover of the species in the plot</td>
 </tr>
 </tbody>
 </table>
-<p>We also add a new variable <em>sp_name</em>, with the latin name of
-the species that corresponds to the <em>sp_code</em>.</p>
-<p>The final variables provided are: “id_unique_code”, “province_code”,
-“class”, “subclass”, “plot”, “sp_name”, “sp_code”, “height”, “cover”</p>
+<p>We also add a new variable <em>sp_name</em>, with the scientific name
+of the species that corresponds to the <em>sp_code</em>.</p>
+<p>The final variables provided are <em>id_unique_code</em>,
+<em>province_code</em>, <em>class</em>, <em>subclass</em>,
+<em>plot</em>, <em>sp_name</em>, <em>sp_code</em>, <em>height</em> and
+<em>cover</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="ifn-regen-table-process">IFN REGEN TABLE PROCESS<a class="anchor" aria-label="anchor" href="#ifn-regen-table-process"></a>
+<h4 id="ifn-regen-table-processing">IFN REGEN TABLE PROCESSING<a class="anchor" aria-label="anchor" href="#ifn-regen-table-processing"></a>
 </h4>
 <p>Information is obtained from the tables <em>PCRegenera</em> of IFN
 3-4 or <em>PIESME</em> of IFN2</p>
@@ -386,8 +406,8 @@ the species that corresponds to the <em>sp_code</em>.</p>
 </table>
 <p>The regeneration data is sampled differently in the IFN3-4 compared
 to the IFN2, thus the processing is also different:</p>
-<p><strong><em>For IFN2 :</em></strong></p>
-<p>Original variables</p>
+<p><strong>IFN2</strong></p>
+<p>Original variables are:</p>
 <table style="width:99%;" class="table">
 <colgroup>
 <col width="13%">
@@ -425,23 +445,24 @@ mm in the 5m radius</td>
 </tr>
 </tbody>
 </table>
-<p>To uniform all information and separate each record in a different
+<p>To harmonize all information and separate each record in a different
 row some assumptions are made. Additionally, new variables are added
-(dbh, density_factor, n).</p>
+(<em>dbh</em>, <em>density_factor</em> and <em>n</em>).</p>
 <ul>
-<li>n ( actual density in trees/ ha ) is calculated by multiplying nº
-trees * <em>density_factor.</em><br>
+<li>
+<em>n</em> ( actual density in trees/ ha ) is calculated as the
+product of the number of trees and the density_factor.<br>
 For those records with REGENA codes, the mid point of the interval is
 assumed to be the actual number of species .</li>
 </ul>
-<table style="width:96%;" class="table">
+<table style="width:97%;" class="table">
 <colgroup>
-<col width="16%">
 <col width="15%">
-<col width="12%">
-<col width="15%">
-<col width="15%">
-<col width="22%">
+<col width="14%">
+<col width="11%">
+<col width="14%">
+<col width="14%">
+<col width="26%">
 </colgroup>
 <thead><tr class="header">
 <th>Category</th>
@@ -464,7 +485,7 @@ assumed to be the actual number of species .</li>
 <p>Regena 3 = 20</p>
 </td>
 <td>
-<em>Numero</em> * <em>DENSITY.</em>
+<em>Numero</em> * <em>density_factor</em>
 </td>
 </tr>
 <tr class="even">
@@ -474,13 +495,13 @@ assumed to be the actual number of species .</li>
 <td>127.3239546</td>
 <td>Numero</td>
 <td>
-<em>Numero</em> * <em>DENSITY.</em>
+<em>Numero</em> * <em>density_factor</em>
 </td>
 </tr>
 </tbody>
 </table>
-<p><strong>For IFN3 - 4</strong></p>
-<p>Original variables are</p>
+<p><strong>IFN3 - 4</strong></p>
+<p>Original variables are:</p>
 <table style="width:99%;" class="table">
 <colgroup>
 <col width="18%">
@@ -549,49 +570,66 @@ following scale:</p>
 </tr>
 </tbody>
 </table>
-<p>For development category 4, “NumPies” contains the number of
-individuals by species present in the 5 m radius subplot and “Hm”
-contains the average total height of each group.</p>
+<p>For development category 4, <em>NumPies</em> contains the number of
+individuals by species present in the 5-m radius subplot and <em>Hm</em>
+contains the average total height of each group (in cm).</p>
 <p>Additionally, new variables are added and some assumptions are made
 to uniform the information:</p>
 <ul>
-<li><p>density_factor= FAC Expansion Factor per hectare which is always
-127.3239546</p></li>
-<li><p>dbh <em>=</em> diameter at breast height in cm</p></li>
-<li><p>height = for CatDes 1,2 and 3 in cm</p></li>
-<li><p>n = density in individuals per ha calculated as density_factor*
-NumPies</p></li>
+<li><p><em>density_factor</em>: Expansion Factor per hectare which is
+always 127.3239546</p></li>
+<li><p><em>dbh</em>: Diameter at breast height in cm</p></li>
+<li><p><em>height</em>: Height, for CatDes 1,2 and 3 in cm</p></li>
+<li><p><em>n</em>: Density in individuals per ha calculated as the
+product of <em>density_factor</em> and <em>NumPies</em></p></li>
 </ul>
-<table style="width:98%;" class="table">
+<table style="width:97%;" class="table">
 <colgroup>
 <col width="3%">
-<col width="60%">
+<col width="59%">
 <col width="4%">
 <col width="5%">
 <col width="5%">
 <col width="7%">
 <col width="10%">
+<col width="0%">
 </colgroup>
-<thead><tr class="header">
-<th>CatDes</th>
-<th>Description</th>
-<th>DBH (cm)</th>
-<th>Height (cm)</th>
-<th>NumPies</th>
-<th>density_factor</th>
-<th>n</th>
-</tr></thead>
 <tbody>
 <tr class="odd">
-<td>1</td>
-<td>Trees with height less than 30 cm.</td>
-<td>0.1</td>
-<td>10</td>
-<td>2.5</td>
-<td>127.3239546</td>
-<td>2.5 * 127.3239546</td>
+<td rowspan="2">
+<h2 id="catdes">CatDes</h2>
+<p>1</p>
+</td>
+<td rowspan="2">
+<h2 id="description-1">Description</h2>
+<p>Trees with height less than 30 cm.</p>
+</td>
+<td rowspan="2">
+<h2 id="dbh-cm">DBH (cm)</h2>
+<p>0.1</p>
+</td>
+<td rowspan="2">
+<h2 id="height-cm">Height (cm)</h2>
+<p>10</p>
+</td>
+<td rowspan="2">
+<h2 id="numpies">NumPies</h2>
+<p>2.5</p>
+</td>
+<td rowspan="2">
+<h2 id="density_factor">density_factor</h2>
+<p>127.3239546</p>
+</td>
+<td rowspan="2">
+<h2 id="n">n</h2>
+<p>2.5 * 127.3239546</p>
+</td>
+<td></td>
 </tr>
 <tr class="even">
+<td></td>
+</tr>
+<tr class="odd">
 <td>2</td>
 <td>Trees with height between 30 and 130 cm.</td>
 <td>0.5</td>
@@ -599,8 +637,9 @@ NumPies</p></li>
 <td>10</td>
 <td>127.3239546</td>
 <td>10 * 127.3239546</td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>3</td>
 <td>Trees with height between 30 and 130 cm.</td>
 <td>1.5</td>
@@ -608,8 +647,9 @@ NumPies</p></li>
 <td>20</td>
 <td>127.3239546</td>
 <td>20 * 127.3239546</td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>4</td>
 <td>Trees with height greater than 130 cm and normal diameter between
 2.5 and 7.5 cm. This corresponds to smaller trees (PIESMENORES) in
@@ -618,20 +658,22 @@ IFN2.</td>
 <td><em>Hm</em></td>
 <td><em>NumPies</em></td>
 <td>127.3239546</td>
-<td>NumPies * 127.3239546</td>
+<td colspan="2">
+<em>NumPies</em> * 127.3239546</td>
 </tr>
 </tbody>
 </table>
-<p>The final variables given are: “id_unique_code”, “province_code”,
-“class”, “subclass”, “plot”, “sp_code”, “sp_name”, “dbh”, “height”, “n”,
-“density_factor”</p>
+<p>The final variables given are <em>id_unique_code</em>,
+<em>province_code</em>, <em>class</em>, <em>subclass</em>,
+<em>plot</em>, <em>sp_code</em>, <em>sp_name</em>, <em>dbh</em>,
+<em>height</em>, <em>n</em> and <em>density_factor</em></p>
 </div>
 <div class="section level4">
-<h4 id="ifn-plot-tables-process">IFN PLOT TABLES PROCESS<a class="anchor" aria-label="anchor" href="#ifn-plot-tables-process"></a>
+<h4 id="ifn-plot-tables-processing">IFN PLOT TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#ifn-plot-tables-processing"></a>
 </h4>
-<p>Information os obtained from tables DATEST of IFN2 and
+<p>Information is obtained from tables <em>DATEST</em> of IFN2 and
 <em>PCDatosMap</em>, <em>PCParcelas</em> of IFN3-4</p>
-<p>Note that coordinates are approximated.<br></p>
+<p>Note that coordinates are only approximate.<br></p>
 <p>Firstly, names are harmonized.</p>
 <table style="width:98%;" class="table">
 <colgroup>
@@ -693,11 +735,11 @@ IFN2.</td>
 </table>
 <p>Additionally, two variables are added to indicate coordinate system
 (<em>coord_sys)</em> and CRS - ESPG code (<em>crs</em>). They are called
-and <em>crs</em>. We also add a variable indicaruing version of IFN
-(<em>version</em>).<br><strong><br>
-For IFN2:</strong><br><br>
-Coordinates are corrected where letters refer to numbers .</p>
-<p>slope is assigned following IFN categories:<br></p>
+and <em>crs</em>. We also add a variable indicating version of IFN
+(<em>version</em>).<br></p>
+<p><strong>IFN2</strong></p>
+<p>Coordinates are corrected where letters refer to numbers .</p>
+<p><em>slope</em> is assigned following IFN categories:<br></p>
 <table class="table">
 <thead><tr class="header">
 <th>Value at IFN</th>
@@ -738,10 +780,11 @@ between 0 and 100 meters, it’s indicated as 100; if it’s between 100 and
 200, it’s indicated as 100, and so on.</p>
 <p><em>Huso</em> (UTM zone) is not recorded in IFN2. Therefore, a
 default value of 28 is assigned for the Canary Islands, and for the rest
-of the peninsula, the default value is 30. Similarly , for variable
+of the peninsula, the default value is 30. Similarly, for variable
 <em>coord_sys</em> default values ar set as follows: ” WGS84” for Canary
 Islands and “ED50” for the rest of peninsula.</p>
-<p><strong>IFN3 -4</strong></p>
+<p><strong>IFN3-4</strong></p>
+<p><em>slope</em> is assigned following IFN categories:<br></p>
 <table class="table">
 <thead><tr class="header">
 <th>Description at IFN : E20 ESCALE</th>
@@ -770,16 +813,19 @@ Islands and “ED50” for the rest of peninsula.</p>
 </tr>
 </tbody>
 </table>
-<p>Aspect (ORIENTA2) :<br>
+<p><em>aspect</em> (ORIENTA2) :<br>
 It is measured in the field. We have transformed aspect from centesimal
 degrees to sexagesimal degrees by multiplying by 0.9.</p>
 <p>Values of variables <em>coord_sys</em> and <em>huso</em> are assigned
-following the technical documents of IFN. Crs is obtained from both.
-When <em>huso</em> is missing (IFN3) , it is assumed that its value is
-Huso = 30. (This will be corrected in near future).<br><br>
-Final variables are “id_unique_plot”, “country”, “ca_name_original”,
-“province_code”, “province_name_original”, “plot”, “class”, “subclass”,
-“coord_sys”, “year”, “version”, “type”, “aspect”, “slope”<br></p>
+following the technical documents of IFN. EPSG code of the coordinate
+reference system (<em>crs</em>) is obtained from both. When
+<em>huso</em> is missing (IFN3) , it is assumed that its value is Huso =
+30. (This will be corrected in near future).<br><br>
+Final variables are <em>id_unique_plot</em>, <em>country</em>,
+<em>ca_name_original</em>, <em>province_code</em>,
+<em>province_name_original</em>, <em>plot</em>, <em>class</em>,
+<em>subclass</em>, <em>coord_sys</em>, <em>year</em>, <em>version</em>,
+<em>type</em>, <em>aspect</em> and <em>slope</em>.<br></p>
 </div>
 </div>
 </div>
@@ -787,7 +833,7 @@ Final variables are “id_unique_plot”, “country”, “ca_name_original”,
 <h2 id="ffi-france-data-processing">FFI (FRANCE): data processing<a class="anchor" aria-label="anchor" href="#ffi-france-data-processing"></a>
 </h2>
 <p>Since 2005, an adaptable statistical sampling method has been used
-annually across metropolitan territories In France. This method combines
+annually across metropolitan territories in France. This method combines
 data from <strong>five yearly campaigns</strong> to generate precise
 national and regional results. Sampling is optimized by revisiting
 points every five years, creating a grid system that enhances logistical
@@ -816,8 +862,8 @@ documentation in a PDF format.</p>
 <li><p>metadonnees.csv</p></li>
 <li><p>IGN_DB_documentation_generale_20xx.doc</p></li>
 </ul>
-<p>Version of the first 2 files are saved in the package but note that
-they were downloaded in October 2023.</p>
+<p>Version of the first two files are included in the package but note
+that they were downloaded in October 2023.</p>
 </div>
 <div class="section level3">
 <h3 id="individual-functions-for-ffi-tables">Individual functions for FFI tables<a class="anchor" aria-label="anchor" href="#individual-functions-for-ffi-tables"></a>
@@ -853,23 +899,24 @@ they were downloaded in October 2023.</p>
 </tbody>
 </table>
 <div class="section level4">
-<h4 id="ffi-tree-tables-process">FFI TREE TABLES PROCESS<a class="anchor" aria-label="anchor" href="#ffi-tree-tables-process"></a>
+<h4 id="ffi-tree-tables-processing">FFI TREE TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#ffi-tree-tables-processing"></a>
 </h4>
 <p>Information is obtained from a table (<em>ARBRE.CSV</em>)</p>
-<p>In general, only trees deemed “measurable” (“<em>RECENSABLE</em>”)
-are considered in the inventory, with a circumference at 1.30 m equal to
-or greater than 23.5 cm (7.5 cm in diameter).</p>
+<p>In general, only trees deemed <strong>censusable</strong>
+(<em>RECENSABLE</em>) are considered in the inventory, with a
+circumference at 1.30 m equal to or greater than 23.5 cm (7.5 cm in
+diameter).</p>
 <p>The radius of the measurement plot varies according to the diameter
 of the trees to be measured.</p>
 <p><img src="images/clipboard-821718553.png" width="281"></p>
-<p><strong>2nd visite:</strong></p>
-<p>Case of “second visit” points Raw data is also provided on “second
-visit” points. The trees and plots concerned are present in the raw data
-files with those collected on the first visit. The VISIT data present in
-the placette.csv file allows you to know whether the point is subject to
-the first or second visit protocol.</p>
+<p><strong>2nd visit</strong></p>
+<p>Case of “second visit” points, raw data is also provided on “second
+visit” locations. The trees and plots concerned are present in the raw
+data files with those collected on the first visit. The VISIT data
+present in the placette.csv file allows you to know whether the point is
+subject to the first or second visit protocol.</p>
 <p><strong>From 2010 to 2014</strong>, the forest inventory carried out
-a revisit of the points seen 5 campaigns previously. This revisit was
+a revisit of the locations seen 5 campaigns previously. This revisit was
 solely intended to <strong>quantify forest harvesting</strong>. It was
 only carried out on inventory plots containing at least one censusable
 tree during the first visit. On these plots, the cutting (or not) of the
@@ -878,12 +925,12 @@ trees present on the first visit was mainly noted.</p>
 richer on this type of plot. All the trees measured during the first
 pass are <strong>remeasured</strong> (or noted as cut or dead) and the
 new censusable trees present on a 5 m plot are inventoried.</p>
-<p>From 2016, <strong>all the point</strong>s visited in the field for
-the first time are the <strong>subject of a second visit</strong>. In
-addition to observations and measurements made on the trees, field
+<p>From 2016 on, <strong>all the points</strong> visited in the field
+for the first time are the <strong>subject of a second visit</strong>.
+In addition to observations and measurements made on the trees, field
 agents carry out new observations such as those of land cover and use,
 collect data relating to the evolution of the population (planting,
-cutting, etc.) . The data collected during the 2nd visit are therefore
+cutting, etc.). The data collected during the 2nd visit are therefore
 generally less numerous (especially before 2016) and some are not taken
 (ecological data in particular).</p>
 <p><strong>IMPORTANT NOTE:</strong></p>
@@ -892,14 +939,14 @@ the specific documentation of each source file (ARBRE, ECOLOGIE,
 PLACETTE, COUVERT, FLORE…) to understand if the variable is static of
 have changed over time, also to see if units (codes ) are the same each
 year or not. You may need to check on that for example for the meaning
-of status (veget) or veget5 (revisit) , as there have been some adding
+of status (veget) or veget5 (revisit), as there have been some adding
 and changes in the units.</p>
 <p>Example:</p>
 <p><img src="images/clipboard-875035234.png"></p>
-<p>Same happens with ESPAR. In the package we give as default last
+<p>The same happens with ESPAR. In the package we give as default last
 version of correspondence between ESPAR, CD_ref and LATIN NAME
-(espar-cdref13.csv) ( OCTOBER 2023). This is based on TAXREF V13 (<a href="https://inpn.mnhn.fr/telechargement/referentielEspece/taxref/13.0/menu" class="external-link uri">https://inpn.mnhn.fr/telechargement/referentielEspece/taxref/13.0/menu</a>)
-, as indicated in the french documentation , but could change in the
+(espar-cdref13.csv) (OCTOBER 2023). This is based on TAXREF V13 (<a href="https://inpn.mnhn.fr/telechargement/referentielEspece/taxref/13.0/menu" class="external-link uri">https://inpn.mnhn.fr/telechargement/referentielEspece/taxref/13.0/menu</a>),
+as indicated in the french documentation, but could change in the
 future.<br></p>
 <table style="width:99%;" class="table">
 <colgroup>
@@ -934,8 +981,8 @@ future.<br></p>
 </tr>
 <tr class="even">
 <td>height (m)</td>
-<td>HTOT (m?)</td>
-<td>Total height Not recorded in revisited plots.</td>
+<td colspan="2">HTOT (m) | Total height, not recorded in revisited
+plots.</td>
 </tr>
 <tr class="odd">
 <td>density_factor</td>
@@ -952,14 +999,15 @@ See documentation for code.</td>
 </table>
 <p>To transform C13 in m to dbh in cm:</p>
 <pre><code><span><span class="va">dbh</span> <span class="op">=</span> <span class="op">(</span><span class="va">C13</span> <span class="op">/</span> <span class="va">pi</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span></code></pre>
-<p>Final variables are “id_unique_plor”, “plot”, “dep”, “year”, “tree”,
-“espar”, “sp_code”, “sp_name”, “status”, “status5”, “dbh”, “height”,
-“density_factor”</p>
+<p>Final variables are <em>id_unique_plot</em>, <em>plot</em>,
+<em>dep</em>, <em>year</em>, <em>tree</em>, <em>espar</em>,
+<em>sp_code</em>, <em>sp_name</em>, <em>status</em>, <em>status5</em>,
+<em>dbh</em>, <em>height</em> and <em>density_factor</em>.</p>
 <p>Note that <em>status5</em> is <em>status</em> in 2nd visit (after 5
 year).</p>
 </div>
 <div class="section level4">
-<h4 id="ffi-shrub-tables-process">FFI SHRUB TABLES PROCESS<a class="anchor" aria-label="anchor" href="#ffi-shrub-tables-process"></a>
+<h4 id="ffi-shrub-tables-processing">FFI SHRUB TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#ffi-shrub-tables-processing"></a>
 </h4>
 <p>Information is obtained from a table (<em>FLORE.CSV</em>) that
 contains information for all kind of species, trees shrub and herbs but
@@ -970,12 +1018,12 @@ Therefore, in the table a variable called <em>growth_form</em> is used
 to inform about whether it is a tree, a shrub or herbs.</p>
 <p>If a species record is not in the GIFT package, automatic
 classification cannot be done. Therefore, all NA are included in the
-shrub table ( same happens for regen table) .</p>
+shrub table ( same happens for regen table).</p>
 <table style="width:99%;" class="table">
 <colgroup>
-<col width="22%">
-<col width="25%">
-<col width="51%">
+<col width="21%">
+<col width="24%">
+<col width="52%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Harmonized name</th>
@@ -991,7 +1039,7 @@ shrub table ( same happens for regen table) .</p>
 <tr class="even">
 <td align="center">cover</td>
 <td align="center">ABOND</td>
-<td>% of cover of a species within a plot</td>
+<td>Percent cover of a species within a plot</td>
 </tr>
 </tbody>
 </table>
@@ -1034,17 +1082,18 @@ shrub table ( same happens for regen table) .</p>
 </tr>
 </tbody>
 </table>
-<p>Final variables are “id_unique_code”, “plot”, “dep”, “year”,
-“sp_code”, “sp_name”, “cover”, “height”, “growth_form”</p>
+<p>Final variables are <em>id_unique_code</em>, <em>plot</em>,
+<em>dep</em>, <em>year</em>, <em>sp_code</em>, <em>sp_name</em>,
+<em>cover</em>, <em>height</em> and <em>growth_form</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="ffi-regen-tables-process">FFI REGEN TABLES PROCESS<a class="anchor" aria-label="anchor" href="#ffi-regen-tables-process"></a>
+<h4 id="ffi-regen-tables-processing">FFI REGEN TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#ffi-regen-tables-processing"></a>
 </h4>
 <p>Table for regeneration is obtained via two ways depending on the year
 because the protocol changed in 2015 - as it is explained in the IGN
-documentation . Before 2015, table <em>COUVERT.CSV</em> is used and
-after <em>FLORE.CSV</em> is used. (The same as shrub table process.)</p>
-<p><em>“Starting from the 2015 campaign, the unmeasurable stratum no
+documentation. Before 2015, table <em>COUVERT.CSV</em> is used and after
+<em>FLORE.CSV</em> is used (the same as in shrub table process).</p>
+<p><em>“Starting from the 2015 campaign, the non-measurable stratum no
 longer undergoes determination of coverage rate through TCL and TCA data
 from the COUVERT.csv file. Instead, this information is replaced by the
 ABOND data (from the FLORE.csv file). Consequently, STRATE only has one
@@ -1087,17 +1136,19 @@ dbh present is 7.4 cm).</p>
 <p>Final variables are “id_unique_code”, “plot”, “dep”, “year”,
 “sp_code”, “sp_name”, “cover”, “dbh”, “height”, “growth_form”</p>
 <p><strong>Process for <em>FLORE.CSV. (AFTER 2015)</em></strong></p>
-<p>Here same process of SHURB table process is performed but in the end
-only those with a <em>growth_form</em> of “<em>tree</em>” are selected.
+<p>Here same process of SHRUB table process is performed but in the end
+only those with a <em>growth_form</em> equal to “tree” are selected.
 Note that this data does not have dbh, therefore, dbh = NA.</p>
 <p>If a species record is not in the GIFT package, automatic
 classification cannot be done. Therefore, all NA are included in the
 regen table .</p>
-<p>Final variables are “id_unique_code”, “plot”, “dep”, “year”,
-“sp_code”, “sp_name”, “cover”, “dbh”, “height”, “growth_form”</p>
+<p>Final variables are <em>id_unique_code</em>, <em>plot</em>,
+<em>dep</em>, <em>year</em>, <em>sp_code</em>, <em>sp_name</em>,
+<em>cover</em>, <em>dbh</em>, <em>height</em> and
+<em>growth_form</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="ffi-plot-tables-process">FFI PLOT TABLES PROCESS<a class="anchor" aria-label="anchor" href="#ffi-plot-tables-process"></a>
+<h4 id="ffi-plot-tables-processing">FFI PLOT TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#ffi-plot-tables-processing"></a>
 </h4>
 <p>Information is obtained from two tables: <em>PLACETTE.csv,</em> that
 contains basic information about the plot (VIST, COORDINATES), and
@@ -1166,10 +1217,12 @@ plants to the total area of the description plot.</td>
 (multiplying by 0.9) .<br>
 Additionally, we add new variables: <em>coord_sys</em> with the
 coordinate system employed (LAMBERT) and its CRS .</p>
-<p>Variables regarding to herb or woody vegetation (LIGN ) are collected
-it undersatory table.<br><br>
-The final variables provided are: “id_unique_code”, “province_code”,
-“class”, “subclass”, “plot”, “sp_name”, “sp_code”, “height”, “cover”</p>
+<p>Variables regarding to herb (HERB) or woody vegetation (LIGN) are
+collected in the understory table.<br><br>
+The final variables provided are <em>id_unique_code</em>,
+<em>province_code</em>, <em>class</em>, <em>subclass</em>,
+<em>plot</em>, <em>sp_name</em>, <em>sp_code</em>, <em>height</em> and
+<em>cover</em>.</p>
 </div>
 </div>
 </div>
@@ -1186,7 +1239,7 @@ with periodic inventories conducted across different regions of the
 United States. These inventories typically occur on <strong>a 5 to
 10-year cycle</strong>, although frequency may vary depending on the
 specific objectives and resource availability.</p>
-<p>Data collection involves <strong>field measurements,</strong> remote
+<p>Data collection involves <strong>field measurements</strong>, remote
 sensing technologies, and statistical sampling methods to gather
 information on forested lands. Field crews collect data on tree species,
 size, density, growth, mortality, and other ecological attributes.
@@ -1285,7 +1338,7 @@ can provide an updated table.</p>
 </tbody>
 </table>
 <div class="section level4">
-<h4 id="fia-tree-tables-process">FIA TREE TABLES PROCESS<a class="anchor" aria-label="anchor" href="#fia-tree-tables-process"></a>
+<h4 id="fia-tree-tables-processing">FIA TREE TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#fia-tree-tables-processing"></a>
 </h4>
 <p>This table provides information for each tree 1 inch in diameter
 (2.54cm) and larger that are found on a microplot, subplot, or core
@@ -1345,12 +1398,12 @@ field guides for more information).</p></li>
 <p><em>height</em> from feet to m by multiplying by 0.3048</p>
 <p><em>density_factor</em> from acres to hectares by multiplying by
 0.4046856422</p>
-<p>Final variables provided are : “id_unique_code”, “year”,
-“state_code”, “county_code”, “plot”, “tree_id”, “status”, “dbh”,
-“height”, “sp_name”, “sp_code”, “density_factor”.</p>
+<p>Final variables provided are <em>tree_id</em>, <em>status</em>,
+<em>dbh</em>, <em>height</em>, <em>sp_name</em>, <em>sp_code</em> and
+<em>density_factor</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="fia-shurb-tables-process">FIA SHURB TABLES PROCESS<a class="anchor" aria-label="anchor" href="#fia-shurb-tables-process"></a>
+<h4 id="fia-shrub-tables-processing">FIA SHRUB TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#fia-shrub-tables-processing"></a>
 </h4>
 <p>Shrub data is obtained from two different sources of information :
 “_VEG_SUBPLOT_SPP.csv” in case that there is available information in
@@ -1449,9 +1502,9 @@ forms (<em>growth_form</em>), we use the <em>REF_PLANT_DICTIONARY</em>
 to select data from shrubs ( code = “Shrub”).</p>
 <p>Information about herbs is collected in a separated table (Herbs),
 <em>growth_form=</em> (“Forb/herb”, “Graminoids”) for these records.</p>
-<p>Final variables provided are : “id_unique_code”, “year”,
-“state_code”, “county_code”, “plot”, “subplot”, “sp_name”, “height”,
-“cover”, “growth_form”, “sp_code”</p>
+<p>Final variables provided are <em>subplot</em>, <em>sp_name</em>,
+<em>height</em>, <em>cover</em>, <em>growth_form</em> and
+<em>sp_code</em>.</p>
 <ul>
 <li><strong>Process for <em>P2VEG_SUBPLOT_SPP.csv
 (P2)</em></strong></li>
@@ -1532,12 +1585,12 @@ Height is approximated by using the LAYER info.</caption>
 <p>If there is data in both files ( <em>P2VEG_SUBPLOT_SPP and
 _VEG_SUBPLOT_SPP)</em> , P3 data is prioritized and P2 data is added if
 gives additional information on certain species.</p>
-<p>Final variables provided are : “id_unique_code”, “year”,
-“state_code”, “county_code”, “plot”, “subplot”, “sp_name”, “height”,
-“cover”, “growth_form”,“growth_form_code”, “sp_code”</p>
+<p>Final variables provided are <em>subplot</em>, <em>sp_name</em>,
+<em>height</em>, <em>cover</em>, <em>growth_form</em>,
+<em>growth_form_code</em> and <em>sp_code</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="fia-regen-tables-process">FIA REGEN TABLES PROCESS<a class="anchor" aria-label="anchor" href="#fia-regen-tables-process"></a>
+<h4 id="fia-regen-tables-processing">FIA REGEN TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#fia-regen-tables-processing"></a>
 </h4>
 <p>Regeneration data (seedling) is obtained from : “_SEEDLING.csv” .</p>
 <p><strong>Seedling</strong>: live trees of a species found on a
@@ -1587,17 +1640,20 @@ TREECOUNT_CALC</p></li>
 <li><p>height = 15 cm (default value)</p></li>
 <li><p>dbh = 2.54 cm (default value)</p></li>
 </ul>
+<p>Final variables provided are <em>subplot</em>, <em>sp_name</em>,
+<em>treecount_calc</em>, <em>density_factor</em>, <em>n</em>,
+<em>height</em>, <em>dbh</em> and <em>sp_code</em>.</p>
 </div>
 <div class="section level4">
-<h4 id="fia-plot-tables-process">FIA PLOT TABLES PROCESS<a class="anchor" aria-label="anchor" href="#fia-plot-tables-process"></a>
+<h4 id="fia-plot-tables-processing">FIA PLOT TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#fia-plot-tables-processing"></a>
 </h4>
-<p>Plot data (seedling) is obtained from : “<em>PLOT.csv” ,
-”SURVEY.csv”, and ”COND</em>.csv”</p>
+<p>Plot data (seedling) is obtained from : “PLOT.csv” , “SURVEY.csv”,
+and “COND.csv”</p>
 <p>Data is obtained from both the last available year with the required
-information for the plot and the year of interest. If data for quered
+information for the plot and the year of interest. If data for queried
 year is not available, we provide the last recorded value. Note that in
 most cases information on plot condition is collected once, when the
-plot is set.</p>
+plot is established.</p>
 <table style="width:100%;" class="table">
 <colgroup>
 <col width="7%">
@@ -1776,7 +1832,7 @@ proxy we use CONDID= 1 , that it is normally designated by the condition
 class at plot center (center of subplot 1)</p>
 </div>
 <div class="section level4">
-<h4 id="fia-subplot-tables-process">FIA SUBPLOT TABLES PROCESS<a class="anchor" aria-label="anchor" href="#fia-subplot-tables-process"></a>
+<h4 id="fia-subplot-tables-processing">FIA SUBPLOT TABLES PROCESSING<a class="anchor" aria-label="anchor" href="#fia-subplot-tables-processing"></a>
 </h4>
 <p>Subplot data is obtained from : “<em>SUBPLOT.csv”</em></p>
 <table style="width:100%;" class="table">
@@ -1844,10 +1900,10 @@ subplot was sampled for P2 vegetation.</p>
 </tr>
 </tbody>
 </table>
-<p>“id_unique_code”, “year”, “state_code”, “county_code”, “plot”,
-“subplot”, “slope_subplot”, “aspect_subplot”, “macro_cond”,
-“subplot_cond”, “micro_cond”, “subplot_status”,
-“psveg_subplot_status”</p>
+<p>Final variables are <em>subplot</em>, <em>slope_subplot</em>,
+<em>aspect_subplot</em>, <em>macro_cond</em>, <em>subplot_cond</em>,
+<em>micro_cond</em>, <em>subplot_status</em> and
+<em>psveg_subplot_status</em>.</p>
 </div>
 <div class="section level4">
 <h4 id="appendix-1">

@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Making Forest Inventory Data Tidy">
 <meta name="description" content="The `forestables` package converts raw forest inventory files from the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and the USA Forest Inventory (FIA) into tidy tables to be used in analyses and modelling.">
 <meta property="og:description" content="The `forestables` package converts raw forest inventory files from the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and the USA Forest Inventory (FIA) into tidy tables to be used in analyses and modelling.">
+<meta property="og:image" content="https://emf-creaf.github.io/forestables/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">forestables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +36,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/documentacion.html">Description of functions</a></li>
+<li><a class="dropdown-item" href="articles/documentacion.html">Inventory data ingestion process</a></li>
     <li><a class="dropdown-item" href="articles/inventory_data_tibble.html">Inventory data output</a></li>
     <li><a class="dropdown-item" href="articles/selecting_plots.html">Selecting plots</a></li>
   </ul>
@@ -54,9 +55,12 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="forestables">forestables<a class="anchor" aria-label="anchor" href="#forestables"></a>
-</h1></div>
-<p><a href="https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml" class="external-link"><img src="https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check-main.yaml/badge.svg" alt="R-CMD-check"></a></p>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="forestables">forestables<a class="anchor" aria-label="anchor" href="#forestables"></a>
+</h1>
+</div>
+<p><a href="https://emf-creaf.github.io/forestables/"><img src="reference/figures/logo.png" align="right" height="139" alt="forestables website"></a></p>
+<p><a href="https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml" class="external-link"><img src="https://github.com/emf-creaf/forestables/actions/workflows/R-CMD-check_main.yaml/badge.svg" alt="R-CMD-check"></a></p>
 <p>Read and uniformize forest inventories data from the FIA (USA forest inventory), FFI (France forest inventory) and IFN (Spain forest inventory).</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -96,9 +100,8 @@ Download functions are offered as helpers for programmatically approaches, but u
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://emf-creaf.github.io/forestables/">forestables</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cargando paquete requerido: data.table</span></span>
-<span><span class="co">#&gt; Cargando paquete requerido: dtplyr</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Cargando paquete requerido: dtplyr</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Adjuntando el paquete: 'dplyr'</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:data.table':</span></span>
@@ -109,17 +112,15 @@ Download functions are offered as helpers for programmatically approaches, but u
 <span><span class="co">#&gt;     filter, lag</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span></span>
 <span><span class="co">## Downloading all FFI data (if not already)</span></span>
 <span><span class="va">ffi_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"FFI"</span>, destination <span class="op">=</span> <span class="va">ffi_path</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Downloading FFI available data</span></span>
-<span><span class="co">#&gt; ℹ Unzipping downloaded data in '/tmp/RtmpYhyCQr'</span></span>
-<span><span class="co">#&gt; ✔ Done!</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="co">#&gt; ℹ Unzipping downloaded data in '/tmp/Rtmp6r5gue'</span></span>
+<span><span class="co">#&gt; ✔ Done!</span></span>
+<span></span>
 <span><span class="co">## Get the plots</span></span>
 <span><span class="va">ffi_filter_list</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="reference/show_plots_from.html">show_plots_from</a></span><span class="op">(</span><span class="st">"FFI"</span>, folder <span class="op">=</span> <span class="va">ffi_path</span>, departments <span class="op">=</span> <span class="st">"42"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -143,9 +144,8 @@ Download functions are offered as helpers for programmatically approaches, but u
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; The following object is masked from 'package:data.table':</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     transpose</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="co">#&gt;     transpose</span></span>
+<span></span>
 <span><span class="co">## Explore the plots</span></span>
 <span><span class="va">loire_plots_2015</span></span>
 <span><span class="co">#&gt; Simple feature collection with 50 features and 15 fields</span></span>
