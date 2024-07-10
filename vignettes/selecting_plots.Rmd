@@ -48,8 +48,8 @@ Workflows with all three inventories (FFI, FIA and IFN) are shown below
 
 ## FFI workflow
 
-For the French forest inventory (FFI), we are gonna select all mediterranean plots
-sampled in 2012. First step is to select de departments the plots we want are in.
+For the French forest inventory (FFI), we are going to select all forest plots of the Mediterranean area
+sampled in 2012. First step is to select the departments corresponding to the Mediterranean area.
 
 ```{r ffi_mediterranean_deps}
 # choose the departments, those in the mediterranean area
@@ -88,7 +88,7 @@ mediterranean_plots_2012 <- mediterranean_plots |>
 mediterranean_plots_2012
 ```
 
-Now we can visualize the plots selected:
+Now we can visualize the geographic distribution of plots selected:
 
 ```{r ffi_plots_loc, fig.width=6, fig.align="center"}
 ggplot(mediterranean_plots_2012) +
@@ -99,7 +99,7 @@ ggplot(mediterranean_plots_2012) +
   scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
 ```
 
-Seems like we have the plots we need, so we are going to create a *filter list*
+It seems like we have the plots that we need, so we are going to create a *filter list*
 to use it to retrieve those plots data from the inventory files:
 
 ```{r ffi_filter_list_creation}
@@ -184,7 +184,7 @@ hawaii_plots_2019 <- show_plots_from(
 hawaii_plots_2019
 ```
 
-We can visualize the plots:
+We can visualize the geographic distribution of the plots:
 
 ```{r fia_states_polygons, fig.width=6, fig.align="center"}
 # USA map for plotting
@@ -194,7 +194,7 @@ ggplot(hawaii_plots_2019) +
   scale_color_manual(values = hcl.colors(1, palette = "Zissou 1"))
 ```
 
-Now that we have the inventory plots selected, we can obtain the *filter list*
+Now that we have the forest inventory plots selected, we can create a *filter list*
 to retrieve the data only from those plots:
 
 ```{r fia_filter_list}
@@ -209,8 +209,8 @@ fia_filter_list <- hawaii_plots_2019 |>
 ```
 
 And now we have everything we need for retrieving the data with
-`fia_to_tibble()`. For that we need the state codes, the year, the filter list
-we obtained before and the path to the folder containing the inventory files.
+`fia_to_tibble()`. For that we need to provide the state codes, the year, the filter list
+we obtained before and the path to the folder containing the forest inventory files.
 
 ```{r fia_data_2019, cache=TRUE}
 ## We can parallelize the process with the future package.
@@ -227,7 +227,7 @@ fia_data_2019 <- fia_to_tibble(
 )
 ```
 
-As we did with the French inventory, we can now explore the data,
+As we did with the French forest inventory, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
 ```{r, fig.height=8, fig.width=7, fig.align="center"}
@@ -260,10 +260,10 @@ fia_data_2019 |>
 
 ## IFN workflow
 
-For the Spanish forest inventory (IFN) we will explore the Cantabric coast inventory
-plots. The IFN, differently from other inventories, doesn't offer the data by years, but by
+For the Spanish forest inventory (IFN) we will explore the Cantabric coast forest
+plots. The IFN, differently from other national inventories, doe not offer the plot data by years, but by
 *versions*. We have *"ifn2"* (early 90s), *"ifn3" (early 00s)* and *"ifn4"* (2014-15).  
-We are going o retrive the plots for the early 00s version (*"ifn3"*):
+We are going o retrieve the plots for the early 00s version (*"ifn3"*):
 
 ```{r ifn_selection}
 # choose the provinces, those in the Cantabric area
@@ -283,7 +283,7 @@ north_spain_plots <- show_plots_from(
 north_spain_plots
 ```
 
-To visualize the plots:
+To visualize the geographic distribution plots we can use:
 
 ```{r ifn_plots_visualization, fig.width=6, fig.align="center"}
 ggplot(north_spain_plots) +
@@ -326,7 +326,7 @@ ifn_data <- ifn_to_tibble(
 )
 ```
 
-As we did with the French and USA inventories, we can now explore the data,
+As we did with the French and USA national forest inventories, we can now explore the data,
 for example, the most abundant species and their mean diameter:
 
 ```{r, fig.height=7, fig.width=9, fig.align="center"}

@@ -16,9 +16,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Inventories outputs
+## Forest inventory data outputs
 
-`forestables` tries to uniformize, when possible, the outputs of different inventories. This makes
+`forestables` tries to harmonize, to some extent, the data of different forest inventories. This makes
 easier to design workflows that work with different inventories. This vignette shows and explains
 the `forestables` output tibble.
 
@@ -40,11 +40,11 @@ ffi_output_example
 ifn_output_example
 ```
 
-We are going to use these examples to explain the estructure of the output.
+We are going to use these examples to explain the structure of the output.
 
-### Output estructure
+### Output structure
 
-Inventories outputs are dataframes (tibbles) in which each row is a plot/year combination
+Forest inventory data outputs in `forestables` are data frames (tibbles) in which each row is a plot/year combination
 (plot/version in the IFN). Metadata for the plot is presented in the first columns (plot IDs,
 coordinates info, topography...). The last three columns are always nested columns with the
 `tree` table for that plot/year, `understory` table for that plot/year and `regen` table for that
@@ -52,7 +52,7 @@ plot/year.
 
 ![]("inventory_row.svg")
 
-  * Common metadata among different inventories:  
+  * Common metadata among different national forest inventories is:  
     `id_unique_code`, `year`, `plot`, `coordx`, `coordy`, `coord_sys`, `crs`, `elev`, `aspect`,
     `slope`, `country`.
   
@@ -67,10 +67,10 @@ plot/year.
   * FFI unique metadata:  
     `dep`, `dep_name`, `visite`.
   
-  * Nested columns common to all inventories:  
+  * Nested columns common to all national forest inventories:  
     `tree`, `understory`, `regen`
 
-To know more about each variable, you can check the ????? vignette.
+To know more about each variable, you can check the *Description of functions* vignette.
 
 ### Post-processing outputs
 
@@ -105,9 +105,9 @@ ifn_output_example |>
 
 `tree` is a *nested column*, meaning that each cell contain the tree data table for that row
 (i.e. the tree data table for that plot that year/version). As with the plot metadata, an effort to
-uniformize the data between inventories has been done.
+harmonize tree data between national forest inventories has been done.
 
-  * Common tree variables among different inventories:  
+  * Common tree variables among different national forest inventories:  
     `tree`, `sp_code`, `sp_name`, `status`, `density_factor`, `dia`, `height`.
   
   * IFN unique tree variables:  
@@ -164,19 +164,19 @@ ffi_unique_names <- ffi_tree_names |>
 
 ### `understory` column
 
-`understory` is also a *nested* column. It contains the data tables for shrubs and for herbs if
-found in the inventory plot.
+`understory` is also a *nested* column. It contains data tables for shrubs and for herbs, if
+found in the forest inventory plot.
 
-  * Common understory variables among different inventories:  
-    `shrub`, `herbs`. Both are also nested columns, as each kindo of understory has different data
-    estructure.
+  * Common understory variables among different national forest inventories:  
+    `shrub`, `herbs`. Both are also nested columns, as each kind of understory has different data
+    structure.
   
   * FFI unique understory variables:  
     `lign1_pct`, `lign2_pct`.
 
 #### `shrub` column
 
-  * Common shrub variables among different inventories:  
+  * Common shrub variables among different national forest inventories:  
     `sp_code`, `sp_name`, `cover`, `height`, `growth_form`
   
   * FIA unique shrub variables:  
@@ -250,11 +250,11 @@ ffi_unique_names <- ffi_understory_names |>
 
 ### `regen` column
 
-`regen` is a *nested column*, meaning that each cell contain the regen data table for that row
-(i.e. the regen data table for that plot that year/version). As with the plot metadata, an effort to
-uniformize the data between inventories has been done.
+`regen` is a *nested column*, meaning that each cell contains the (tree) regeneration data table for that row
+(i.e. the regeneration data table for that plot that year/version). As with the plot metadata, an effort to
+harmonize regeneration data between inventories has been done.
 
-  * Common regen variables among different inventories:  
+  * Common regen variables among different national forest inventories:  
     `sp_code`, `sp_name`, `density_factor`, `dbh`, `height`, `n`.
   
   * FIA unique regen variables:  
