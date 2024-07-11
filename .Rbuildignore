@@ -12,3 +12,4 @@ _files$
 ^docs$
 ^pkgdown$
 ^metadata\.yml$
+^featured.png$
