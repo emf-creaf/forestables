@@ -307,3 +307,14 @@ fia_unique_names <- fia_regen_names |>
 ffi_unique_names <- ffi_regen_names |>
   magrittr::extract(! ffi_regen_names %in% common_regen_names)
 ```
+
+## Combining different inventories
+
+Harmonization of inventories data is done in a way that allows to combine different
+countries data in one table:
+
+```{r combining_inventories}
+ffi_output_example |>
+  bind_rows(ifn_output_example) |>
+  bind_rows(fia_output_example)
+```

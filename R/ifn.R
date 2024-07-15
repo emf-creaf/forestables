@@ -999,6 +999,9 @@ ifn_plot_table_process <- function(
       dplyr::mutate(
         country = "ES",
         province_code = .data$PROVINCIA,
+        year = lubridate::as_date(.data$year, format = c("%y", "%Y")) |>
+          lubridate::year() |>
+          as.integer(),
         elev = as.numeric(.data$elev) * 100,
         slope = as.numeric(stringr::str_replace(.data$slope, ",", ".")),
         slope = dplyr::case_when(
@@ -1009,16 +1012,6 @@ ifn_plot_table_process <- function(
           .data$slope == 5 ~ 40
         ),
         aspect = as.numeric(.data$aspect),
-        # COORDEX = dplyr::if_else(
-        #   province_code %in% c("07"),
-        #   as.numeric(.data$COORDEX),
-        #   as.numeric(.data$COORDEX) * 1000
-        # ),
-        # COORDEY = dplyr::if_else(
-        #   province_code %in% c("07"),
-        #   as.numeric(.data$COORDEY),
-        #   as.numeric(.data$COORDEY) * 1000
-        # ),
         COORDEX = as.numeric(.data$COORDEX) * 1000,
         COORDEY = as.numeric(.data$COORDEY) * 1000,
         version = version,
@@ -1126,7 +1119,7 @@ ifn_plot_table_process <- function(
     plot_filtered_data <- plot_filtered_data |>
       dplyr::rename(year = "Ano", plot = "Estadillo", Clase = "Cla", type = "Tipo") |>
       dplyr::mutate(
-        year = as.character(.data$year),
+        year = suppressWarnings(as.integer(.data$year)),
         Subclase = .ifn_subclass_fixer(.data$Subclase), # Subclass fixes
         version = version,
         province_code = as.character(province)
