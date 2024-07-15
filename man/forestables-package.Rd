@@ -6,6 +6,8 @@
 \alias{forestables-package}
 \title{forestables: Making Forest Inventory Data Tidy}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 The `forestables` package converts raw forest inventory files from the Spanish Forest Inventory (IFN), the French Forest Inventory (FFI) and the USA Forest Inventory (FIA) into tidy tables to be used in analyses and modelling.
 }
 \seealso{
