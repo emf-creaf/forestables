@@ -30,17 +30,15 @@ the official websites from each inventory:
     (*accdb* are be used)
   - [IFN4](https://www.miteco.gob.es/es/biodiversidad/temas/inventarios-nacionales/inventario-forestal-nacional/cuarto_inventario.html)
 
-This sometimes fails due to the pages being unavailable for one reason
-or another. We recommend to manually download and unzip the data in the
-desired folder.  
-Download functions are offered as helpers for programmatically
+We recommend to manually download and unzip the data in the desired
+folder. Download functions are offered as helpers for programmatically
 approaches, but users should be careful as data can be missing due to
-connection errors, pages updates…
+connection errors, link changes…
 
 ## Example
 
-Download FFI (France forest inventory) and extract all plots in the
-Loire department from 2015:
+Download FFI (France forest inventory) and extract all plots from the
+Loire department for 2015:
 
 ``` r
 library(forestables)
@@ -63,19 +61,13 @@ library(dplyr)
 ffi_path <- tempdir()
 download_inventory("FFI", destination = ffi_path)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in '/tmp/Rtmp0uxJrv'
+#> ℹ Unzipping downloaded data in '/tmp/RtmpFvaco9'
 #> ✔ Done!
 
 ## Get the plots
-ffi_filter_list <-
-  show_plots_from("FFI", folder = ffi_path, departments = "42") |>
-  filter(CAMPAGNE == 2015) |>
-  create_filter_list()
-
 loire_plots_2015 <- ffi_to_tibble(
   "42",
   years = 2015,
-  filter_list = ffi_filter_list,
   folder = ffi_path
 ) |>
   clean_empty(c("tree", "shrub", "regen")) |>
