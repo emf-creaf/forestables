@@ -151,24 +151,24 @@ ffi_to_tibble <- function(
   )
 
   # filter_list
-  if (is.null(filter_list)) {
-    if (interactive()) {
-      cli::cli_inform(c(
-        "You haven't specified any plots in the {.arg filter_list} argument.",
-        "x" = "This will cause to retrieve {.strong ALL} plots for the selected
-        departments and years",
-        "!" = "This will use a lot of memory and time, as hundred of thousands plots
-        will potentially be evaluated",
-        "TODO: add info about how to create the filter list",
-        ""
-      ))
+  # if (is.null(filter_list)) {
+  #   if (interactive()) {
+  #     cli::cli_inform(c(
+  #       "You haven't specified any plots in the {.arg filter_list} argument.",
+  #       "x" = "This will cause to retrieve {.strong ALL} plots for the selected
+  #       departments and years",
+  #       "!" = "This will use a lot of memory and time, as hundred of thousands plots
+  #       will potentially be evaluated",
+  #       "TODO: add info about how to create the filter list",
+  #       ""
+  #     ))
 
-      user_auth <- utils::menu(c("Yes", "No"), title = "Do you wish to continue anyway?")
-      if (user_auth == 2L) {
-        cli::cli_abort("Aborting per user request")
-      }
-    }
-  }
+  #     user_auth <- utils::menu(c("Yes", "No"), title = "Do you wish to continue anyway?")
+  #     if (user_auth == 2L) {
+  #       cli::cli_abort("Aborting per user request")
+  #     }
+  #   }
+  # }
 
   # parallel options
   assertthat::assert_that(
