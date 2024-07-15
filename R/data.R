@@ -21,10 +21,10 @@
 
 #' IFN example output
 #'
-#' A subset of plots from the *León* province for the IFN2, IFN3 and IFN4 versions.
+#' A subset of plots from *Barcelona* province for the IFN2, IFN3 and IFN4 versions.
 #'
 #' @format ## `ifn_output_example`
-#' A nested dataframe with the IFN plots for the selected versions in *León* province
+#' A nested dataframe with the IFN plots for the selected versions in *Barcelona* province
 #'
 #' @source IFN raw data obtained from
 #'   <https://www.miteco.gob.es/es/biodiversidad/temas/inventarios-nacionales/inventario-forestal-nacional/cuarto_inventario.html>

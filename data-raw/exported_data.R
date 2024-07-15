@@ -1,9 +1,9 @@
 ## output examples (external exported data)
 
-# IFN (León)
+# IFN (Barcelona)
 future::plan(future::multisession)
 ifn_output_example <- ifn_to_tibble(
-  provinces = "24",
+  provinces = "08",
   versions = c("ifn2", "ifn3", "ifn4"),
   folder = Sys.getenv("ifn_path")
 )

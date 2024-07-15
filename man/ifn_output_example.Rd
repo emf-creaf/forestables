@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{ifn_output_example}}{
 
-A nested dataframe with the IFN plots for the selected versions in \emph{León} province
+A nested dataframe with the IFN plots for the selected versions in \emph{Barcelona} province
 }
 }
 \source{
@@ -18,6 +18,6 @@ IFN raw data obtained from
 ifn_output_example
 }
 \description{
-A subset of plots from the \emph{León} province for the IFN2, IFN3 and IFN4 versions.
+A subset of plots from \emph{Barcelona} province for the IFN2, IFN3 and IFN4 versions.
 }
 \keyword{datasets}
