@@ -1,4 +1,8 @@
-# forestables (development version)
+# forestables 0.0.6
+
+* Fixed inventory output. Now all inventories and their nested columns can be
+  joined
+* Updated vignettes to better explain the filter list argument and when is needed
 
 # forestables 0.0.5
 
