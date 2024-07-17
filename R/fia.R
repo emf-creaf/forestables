@@ -392,7 +392,7 @@ fia_plot_table_process <- function(
       county, plot, year, .soil_mode = FALSE
     ) |>
     dplyr::mutate(
-      PLOT  = plot, INVYR  = year, COUNTYCD = county,
+      PLOT = plot, INVYR = year, COUNTYCD = county,
       # possible missing vars, fill with original if necessary
       RSCD = dplyr::if_else(
         is.na(.data$RSCD), .data$RSCD_last_recorded, .data$RSCD
@@ -546,7 +546,8 @@ fia_plot_table_process <- function(
     dplyr::left_join(data_cond, by = c("PLOT", "INVYR", "COUNTYCD")) |>
     dplyr::mutate(
       id_unique_code = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
-      COUNTRY = "US"
+      COUNTRY = "US",
+      PLOT = as.character(PLOT)
     ) |>
     dplyr::select(
       year = "INVYR",
@@ -631,6 +632,7 @@ fia_tree_table_process <- function(
     dplyr::mutate(
       # unique inner code
       id_unique_code = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
+      TREE = suppressWarnings(as.character(.data$TREE)),
       DIA = .data$DIA * 2.54, # INCHES TO CM
       Height = .data$HT * 0.3048, # FEET TO M
       DENSITY = .data$TPA_UNADJ / 0.4046856422 # acre to ha
@@ -641,7 +643,10 @@ fia_tree_table_process <- function(
         dplyr::select("SPCD", "GENUS", "SPECIES", "SPECIES_SYMBOL"),
       by = "SPCD"
     ) |>
-    dplyr::mutate(SP_NAME = (paste(.data$GENUS, .data$SPECIES, sep = " "))) |>
+    dplyr::mutate(
+      SP_NAME = (paste(.data$GENUS, .data$SPECIES, sep = " ")),
+      SPCD = suppressWarnings(as.character(.data$SPCD))
+    ) |>
     dplyr::arrange(.data$SP_NAME) |>
     dplyr::select(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD", "PLOT",
@@ -847,10 +852,11 @@ fia_p3_understory_table_process <- function(
     ) |>
     dplyr::rename(
       year = "INVYR", state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
-      subplot = "SUBP", sp_name = "SP_NAME", height = "Height",
+      subplot_id = "SUBP", sp_name = "SP_NAME", height = "Height",
       cover = "COVER_PCT", growth_form = "GROWTH_HABIT", sp_code = "SPECIES_SYMBOL"
     ) |>
     dplyr::distinct() |>
+    dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
     dplyr::as_tibble()
 
   # Return understory
@@ -974,10 +980,11 @@ fia_p2_understory_table_process <- function(
     ) |>
     dplyr::rename(
       year = "INVYR", state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
-      subplot = "SUBP", sp_name = "SP_NAME",
+      subplot_id = "SUBP", sp_name = "SP_NAME",
       height = "Height", cover = "COVER_PCT", growth_form = "GROWTH_HABIT",
       growth_form_code = "GROWTH_HABIT_CD", sp_code = "SPECIES_SYMBOL"
     ) |>
+    dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
     # We have repeated rows after the selection because we summarised shrubs species. We remove with
     # distinct
     dplyr::distinct() |>
@@ -1062,11 +1069,14 @@ fia_seedling_table_process <- function(
       "id_unique_code", "INVYR", "STATECD", "COUNTYCD", "PLOT", "SUBP", "SPCD",
       "SP_NAME", "TREECOUNT_CALC", "TPA_UNADJ", "N", "Height", "DBH"
     ) |>
-    dplyr::rename(year = "INVYR", sp_code = "SPCD", density_factor = "TPA_UNADJ",
-                  state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
-                  subplot = "SUBP", sp_name = "SP_NAME", treecount_calc = "TREECOUNT_CALC",
-                  n = "N", dbh = "DBH", height = "Height") |>
-    # # We have repeated rows after the selection because we summarised shrubs species.
+    dplyr::rename(
+      year = "INVYR", sp_code = "SPCD", density_factor = "TPA_UNADJ",
+      state_code = "STATECD", county_code = "COUNTYCD", plot = "PLOT",
+      subplot_id = "SUBP", sp_name = "SP_NAME", treecount_calc = "TREECOUNT_CALC",
+      n = "N", dbh = "DBH", height = "Height"
+    ) |>
+    dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
+    # We have repeated rows after the selection because we summarised shrubs species.
     # We remove with distinct
     dplyr::distinct() |>
     dplyr::as_tibble()
@@ -1134,7 +1144,7 @@ fia_subplot_table_process <- function(
       "P2VEG_SUBP_STATUS_CD"
     ) |>
     dplyr::rename(
-      year = "INVYR", subplot = "SUBP", slope_subplot = "SLOPE", aspect_subplot = "ASPECT",
+      year = "INVYR", subplot_id = "SUBP", slope_subplot = "SLOPE", aspect_subplot = "ASPECT",
       state_code = "STATECD", county_code = "COUNTYCD", plot =  "PLOT",
       subplot_cond = "SUBPCOND", micro_cond =  "MICRCOND", macro_cond = "MACRCOND",
       subplot_status = "SUBP_STATUS_CD",  psveg_subplot_status = "P2VEG_SUBP_STATUS_CD"

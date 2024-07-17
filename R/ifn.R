@@ -366,7 +366,7 @@ ifn_tree_table_process <- function(
       # transformations and filters
       dplyr::rename(
         province_code = "PROVINCIA", plot = "ESTADILLO", SP_CODE = "ESPECIE",
-        tree = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA"
+        tree_id = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA"
       ) |>
       dplyr::mutate(
         plot = as.character(.data$plot),
@@ -383,7 +383,7 @@ ifn_tree_table_process <- function(
           .data$dia >= 22.5 & .data$dia < 42.5 ~ 14.14710607,
           .data$dia >= 42.5 ~ 5.092958185
         ),
-        tree = as.character(.data$tree),
+        tree_id = as.character(.data$tree_id),
         FORMA = as.character(.data$FORMA),
         CALIDAD = as.character(.data$CALIDAD)
       )  |>
@@ -395,13 +395,13 @@ ifn_tree_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(
-        tree_id = "tree",
         dbh = "dia",
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "CALIDAD",
         cubing_form = "FORMA"
       ) |>
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
         "id_unique_code", "province_code", "plot", "sp_code", "sp_name",
         "tree_id",
@@ -430,7 +430,7 @@ ifn_tree_table_process <- function(
     ) |>
       dplyr::filter(.data$id_unique_code == plot) |>
       dplyr::rename(dplyr::any_of(c(
-        tree = "nArbol",
+        tree_id = "nArbol",
         tree_ifn2 = "OrdenIf2",
         tree_ifn4 = "OrdenIf4",
         tree_ifn3 = "OrdenIf3"
@@ -475,7 +475,7 @@ ifn_tree_table_process <- function(
           .data$dia >= 22.5 & .data$dia < 42.5 ~ 14.14710607,
           .data$dia >= 42.5 ~ 5.092958185
         ),
-        tree = as.character(.data$tree),
+        tree_id = as.character(.data$tree_id),
         Forma = as.character(.data$Forma),
         Calidad = as.character(.data$Calidad)
       ) |>
@@ -487,13 +487,13 @@ ifn_tree_table_process <- function(
       ) |>
       dplyr::arrange(.data$SP_CODE) |>
       dplyr::rename(
-        tree_id = "tree",
         dbh = "dia",
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "Calidad",
         cubing_form = "Forma"
       ) |>
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
         dplyr::any_of(c(
           "id_unique_code", "province_code", "Clase", "Subclase",
@@ -587,8 +587,11 @@ ifn_shrub_table_process <- function(
         sp_name  = "SP_NAME",
         sp_code = "SP_CODE"
       ) |>
-      dplyr::select("id_unique_code", "province_code", "plot", "sp_name",
-                    "sp_code", "height", "cover")
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
+      dplyr::select(
+        "id_unique_code", "province_code", "plot", "sp_name",
+        "sp_code", "height", "cover"
+      )
     # Return shrub
     return(shrub)
   }
@@ -657,6 +660,7 @@ ifn_shrub_table_process <- function(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME"
       ) |>
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
         "id_unique_code", "province_code", "Clase", "Subclase",
         "plot", "sp_name", "sp_code", "height", "cover"
@@ -761,6 +765,7 @@ ifn_regen_table_process <- function(
         "id_unique_code", "province_code", "plot", sp_code = "SP_CODE",
         "sp_name", "dbh", "height", "density_factor", "n"
       ) |>
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::filter(stats::complete.cases(.data$dbh, .data$height, .data$n))
 
     # Return regen
@@ -849,6 +854,7 @@ ifn_regen_table_process <- function(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
       ) |>
+      dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
         "id_unique_code", "province_code", "Clase", "Subclase", "plot",
         "sp_code", "sp_name", "dbh", "height", "n", "density_factor"

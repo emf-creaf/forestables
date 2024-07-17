@@ -314,6 +314,8 @@ Harmonization of inventories data is done in a way that allows to combine differ
 countries data in one table:
 
 ```{r combining_inventories}
+library(dplyr)
+
 ffi_output_example |>
   bind_rows(ifn_output_example) |>
   bind_rows(fia_output_example)

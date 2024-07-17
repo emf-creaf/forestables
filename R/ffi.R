@@ -749,6 +749,7 @@ ffi_tree_table_process <- function(
     unnest(cols = c(".extracted_metadata")) |>
     dplyr::mutate(
       YEAR = year,
+      TREE = suppressWarnings(as.character(.data$TREE)),
       espar = dplyr::if_else(is.na(.data$ESPAR), .data$ESPAR_last_recorded, .data$ESPAR),
       sp_code = dplyr::if_else(is.na(.data$SP_CODE), .data$SP_CODE_last_recorded, .data$SP_CODE),
       sp_name = dplyr::if_else(is.na(.data$SP_NAME), .data$SP_NAME_last_recorded, .data$SP_NAME),

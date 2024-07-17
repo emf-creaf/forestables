@@ -59,7 +59,7 @@ test_that("fia_plot_table_process works as intended", {
   expect_length(unique(test_res$county_code), 1)
 
   expect_identical(unique(test_res$year), test_year)
-  expect_identical(unique(test_res$plot), test_input$plots[1])
+  expect_identical(unique(test_res$plot), as.character(test_input$plots[1]))
   expect_identical(unique(test_res$county_code) |> as.character(), test_input$county[1])
 
   # errors
@@ -183,7 +183,7 @@ test_that("fia_tree_table_process works as intended", {
 test_that("fia_p3_understory_table_process works as intended", {
 
   expected_names <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
     "sp_name", "height", "cover", "growth_form", "sp_code"
   )
 
@@ -294,8 +294,8 @@ test_that("fia_p2_understory_table_process works as intended", {
     .build_fia_input_with(test_year, test_states, test_plots[-6], test_folder, .verbose = FALSE)
 
   expected_names <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
-    "sp_name",  "height", "cover", "growth_form", "growth_form_code","sp_code"
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
+    "sp_name",  "height", "cover", "growth_form", "growth_form_code", "sp_code"
   )
 
   # shrub object
@@ -403,11 +403,11 @@ test_that("fia_understory_table_process works as intended", {
   test_input <-
     .build_fia_input_with(test_year, test_states, test_plots[-6], test_folder, .verbose = FALSE)
   expected_names_p2 <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
     "sp_name", "height", "cover", "growth_form", "growth_form_code", "sp_code"
   )
   expected_names_p3 <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
     "sp_name", "height", "cover", "growth_form", "sp_code"
   )
   # p2 shrubs
@@ -525,7 +525,7 @@ test_that("fia_understory_table_process works as intended", {
 test_that("fia_seedling_table_process works as intended", {
 
   expected_names <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
     "sp_code", "sp_name", "n", "treecount_calc", "density_factor", "height", "dbh"
   )
 
@@ -588,7 +588,7 @@ test_that("fia_seedling_table_process works as intended", {
 test_that("fia_subplot_table_process works as intended", {
 
   expected_names <- c(
-    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot",
+    "id_unique_code", "year", "state_code", "county_code", "plot", "subplot_id",
     "slope_subplot", "aspect_subplot", "macro_cond", "subplot_cond", "micro_cond",
     "subplot_status", "psveg_subplot_status"
   )
