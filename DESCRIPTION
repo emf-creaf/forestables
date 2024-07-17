@@ -1,6 +1,6 @@
 Package: forestables
 Title: Making Forest Inventory Data Tidy
-Version: 0.0.6
+Version: 0.0.6.9000
 Authors@R:
     c(
         person(
