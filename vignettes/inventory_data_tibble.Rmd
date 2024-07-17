@@ -318,5 +318,7 @@ library(dplyr)
 
 ffi_output_example |>
   bind_rows(ifn_output_example) |>
-  bind_rows(fia_output_example)
+  bind_rows(fia_output_example) |>
+  clean_empty("tree") |>
+  unnest("tree")
 ```
