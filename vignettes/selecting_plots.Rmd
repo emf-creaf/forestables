@@ -146,7 +146,7 @@ plan("multisession", workers = 4)
 
 # get the data for the selected plots
 ffi_data_2012 <- ffi_to_tibble(
-  departments = mediterranean_deps,
+  departments = c("66", "11"),
   years = 2012,
   filter_list = ffi_filter_list,
   folder = ffi_folder
