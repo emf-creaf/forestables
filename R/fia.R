@@ -547,7 +547,7 @@ fia_plot_table_process <- function(
     dplyr::mutate(
       id_unique_code = paste("US", .data$STATECD, .data$COUNTYCD, .data$PLOT, sep = "_"),
       COUNTRY = "US",
-      PLOT = as.character(PLOT)
+      PLOT = as.character(.data$PLOT)
     ) |>
     dplyr::select(
       year = "INVYR",

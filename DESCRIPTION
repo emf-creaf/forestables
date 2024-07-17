@@ -47,7 +47,8 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    utils
+    utils,
+    lubridate
 Depends: 
     data.table,
     dtplyr,
