@@ -286,13 +286,13 @@ plots. The IFN, differently from other national inventories, doe not offer the p
 We are going o retrieve the plots for the early 00s version (*"ifn3"*):
 
 ```{r ifn_selection}
-# choose the provinces, those in the Cantabric area
-north_spain_provinces <- c("33", "15", "27", "39", "48", "20")
-
 # download the IFN data if not already (In this example the data is downloaded
 # in a temporal folder and is removed after the R session ends)
 ifn_folder <- tempdir()
 download_inventory("IFN", ifn_folder)
+
+# choose the provinces, those in the Cantabric area
+north_spain_provinces <- c("33", "15", "27", "39", "48", "20")
 
 # get the plots for those departments
 north_spain_plots <- show_plots_from(
@@ -315,10 +315,16 @@ ggplot(north_spain_plots) +
 ```
 
 Now that we have the inventory plots selected, we can obtain the *filter list*
-to retrieve the data only from those plots:
+to retrieve the data only from the cantabric area:
 
 ```{r ifn_filter_list}
+cantabric_area <- st_bbox(
+  c(xmin = -1, xmax = -8.5, ymax = 44, ymin = 43.2),
+  crs = st_crs(4326)
+) |>
+  sf::st_as_sfc()
 ifn_filter_list <- north_spain_plots |>
+  st_filter(cantabric_area) |>
   create_filter_list()
 
 ## we can do all in one pipe:
@@ -364,10 +370,10 @@ ifn_data |>
     province_name_original = unique(province_name_original), n = n()
   ) |>
   dplyr::filter(!is.nan(dbh), !is.na(sp_name)) |>
-  # filter species with 100 or less entries (plots)
+  # filter species with 5 or less entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 500) |>
+  dplyr::filter(n > 80) |>
   # let's plot
   ggplot() +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
