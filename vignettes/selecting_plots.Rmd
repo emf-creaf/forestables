@@ -48,74 +48,95 @@ Workflows with all three inventories (FFI, FIA and IFN) are shown below
 
 ## FFI workflow
 
-For the French forest inventory (FFI), we are going to select all forest plots of the Mediterranean area
-sampled in 2012. First step is to select the departments corresponding to the Mediterranean area.
+In this example for the French forest inventory (FFI) we will explore the plots in the
+Eastern Pyrenees and Aude departments (codes "66" and "11") in the year 2012.  
+First step is to download the inventory if we haven't done it yet. As this is a
+vignette, we will download the data to a temporary folder that is removed after the R session
+ends. But is heavily recommended to download the data to a permanent folder in your project/analysis.
 
-```{r ffi_mediterranean_deps}
-# choose the departments, those in the mediterranean area
-mediterranean_deps <- c(
-  "04", "06", "11", "13", "30",
-  "34", "66", "83", "84"
-)
-```
-
-Now we can use the department codes to obtain some basic metadata (plot codes,
-coordinates and campaign year) with `show_plots_from()`.
-For this we need the inventory we want plots from, the folder containing the
-downloaded inventory files and a vector with the department codes (as created
-above):
-
-```{r ffi_selection}
-# download the FFI data if not already (In this example the data is downloaded
+```{r ffi_download}
+# Download the FFI data if not already (In this example the data is downloaded
 # in a temporal folder and is removed after the R session ends)
 ffi_folder <- tempdir()
 download_inventory("FFI", ffi_folder)
+```
+
+If we don't want to perform any selection of plots and we need all plots for 2012,
+then we can just retrieve all data:
+
+```{r ffi_all, eval=FALSE}
+ffi_2012_all_plots <- ffi_to_tibble(
+  departments = c("66", "11"),
+  years = 2012,
+  folder = ffi_folder,
+  clean_empty = "tree"
+)
+```
+
+But in some cases we need to perform some plots selection, to reduce the number of
+plots or simply to focus in the interesting plots for our goal.  
+For this, we can use the department codes to obtain some basic metadata (plot codes,
+coordinates and campaign year) with `show_plots_from()`.  
+We need the inventory we want plots from, the folder containing the
+downloaded inventory files and a vector with the department codes:
+
+```{r ffi_selection}
 # get the plots for those departments
-mediterranean_plots <- show_plots_from(
+ffi_selected_plots <- show_plots_from(
   inventory = "FFI",
   folder = ffi_folder,
-  departments = mediterranean_deps
+  departments = c("66", "11")
 )
-mediterranean_plots
+ffi_selected_plots
 ```
 
 These are all the plots present in those departments for all
 years, but we want 2012 plots, so we filter the results by campaign year:
 
 ```{r ffi_selection_2012}
-mediterranean_plots_2012 <- mediterranean_plots |>
+ffi_selected_plots <- ffi_selected_plots |>
   filter(CAMPAGNE == 2012)
-mediterranean_plots_2012
+ffi_selected_plots
 ```
 
-Now we can visualize the geographic distribution of plots selected:
+We can visualize the geographic distribution of plots selected:
 
 ```{r ffi_plots_loc, fig.width=6, fig.align="center"}
-ggplot(mediterranean_plots_2012) +
+ggplot(ffi_selected_plots) +
   geom_sf(
     aes(color = DEP), alpha = 0.4,
     show.legend = FALSE
   ) +
-  scale_color_manual(values = hcl.colors(9, palette = "Zissou 1"))
+  scale_color_manual(values = hcl.colors(2, palette = "Zissou 1"))
 ```
 
-It seems like we have the plots that we need, so we are going to create a *filter list*
+For further selection we can filter by plot identifier (IDP) if we know them or use an
+spatial polygon to filter by coordinates. Let's say we are interested in these departments, but
+only in the mediterranean part. We can then select those plots and create a *filter list*
 to use it to retrieve those plots data from the inventory files:
 
 ```{r ffi_filter_list_creation}
-ffi_filter_list <- mediterranean_plots_2012 |>
+# the area we want the plots in:
+mediterranean_area <- st_bbox(
+  c(xmin = 2.6, xmax = 3.2, ymax = 42, ymin = 44),
+  crs = st_crs(4326)
+) |>
+  sf::st_as_sfc()
+
+# create the filter list
+ffi_filter_list <- ffi_selected_plots |>
+  st_filter(mediterranean_area) |>
   create_filter_list()
 
 ## we can do all in one pipe:
 # ffi_filter_list <-
-#   show_plots_from("FFI", folder = ffi_folder, departments = mediterranean_deps) |>
+#   show_plots_from("FFI", folder = ffi_folder, departments = c("66", "11")) |>
 #   filter(CAMPAGNE == 2012) |>
+#   st_filter(mediterranean_area) |>
 #   create_filter_list()
 ```
 
-And we are ready for retrieving the data from the plots with `ffi_to_tibble()`. For
-that we need the department codes, the year, the filter list we obtained before and
-the path to the folder containing the inventory files.
+And now we can just modify the `ffi_to_tibble` call we did above to add the filter list:
 
 ```{r ffi_data_2012, cache=TRUE}
 ## We can parallelize the process with the future package.
@@ -149,15 +170,15 @@ ffi_data_2012 |>
   dplyr::group_by(id_unique_code, sp_name) |>
   dplyr::summarise(dbh = mean(dbh, na.rm = TRUE), dep = unique(dep), n = n()) |>
   dplyr::filter(!is.nan(dbh)) |>
-  # filter species with 25 or less entries (plots)
+  # filter species with 2 or more entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 15) |>
+  dplyr::filter(n > 1) |>
   # let's plot
   ggplot() +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~sp_name, ncol = 3) +
+  facet_wrap(~sp_name, ncol = 4) +
   theme_minimal()
 ```
 
@@ -194,18 +215,18 @@ ggplot(hawaii_plots_2019) +
   scale_color_manual(values = hcl.colors(1, palette = "Zissou 1"))
 ```
 
-Now that we have the forest inventory plots selected, we can create a *filter list*
-to retrieve the data only from those plots:
+Now that we have the all forest inventory plots selected, we can create a *filter list*
+to retrieve the data only from those we want, *i.e.* only the O'ahu island:
 
 ```{r fia_filter_list}
+oahu <- st_bbox(
+  c(xmin = -157.5, xmax = -158.5, ymax = 21, ymin = 22),
+  crs = st_crs(4326)
+) |>
+  sf::st_as_sfc()
 fia_filter_list <- hawaii_plots_2019 |>
+  st_filter(oahu) |>
   create_filter_list()
-
-## we can do all in one pipe:
-# fia_filter_list <-
-#   show_plots_from("FIA", folder = fia_folder, states = "HI") |>
-#   filter(INVYR == 2019) |>
-#   create_filter_list()
 ```
 
 And now we have everything we need for retrieving the data with
@@ -245,16 +266,15 @@ fia_data_2019 |>
     state_ab = unique(state_ab), n = n()
   ) |>
   dplyr::filter(!is.nan(dbh)) |>
-  # filter species with 100 or less entries (plots)
+  # filter species with 5 or more entries (plots)
   dplyr::group_by(sp_name) |>
   dplyr::mutate(n = n()) |>
-  dplyr::filter(n > 20) |>
+  dplyr::filter(n > 5) |>
   # let's plot
   ggplot() +
   geom_sf(aes(geometry = geometry, color = dbh), size = 2.2, alpha = 0.8) +
-  coord_sf(xlim = c(-160.6, -154.5), ylim = c(18.5, 22.5)) +
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
-  facet_wrap(~sp_name, ncol = 3) +
+  facet_wrap(~sp_name, ncol = 4) +
   theme_minimal()
 ```
 
@@ -267,7 +287,7 @@ We are going o retrieve the plots for the early 00s version (*"ifn3"*):
 
 ```{r ifn_selection}
 # choose the provinces, those in the Cantabric area
-north_spain_provinces <- c("24", "33", "15", "27", "39", "48", "20")
+north_spain_provinces <- c("33", "15", "27", "39", "48", "20")
 
 # download the IFN data if not already (In this example the data is downloaded
 # in a temporal folder and is removed after the R session ends)
