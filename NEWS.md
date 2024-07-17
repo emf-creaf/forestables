@@ -1,3 +1,5 @@
+# forestables (development version)
+
 # forestables 0.0.6
 
 * Fixed inventory output. Now all inventories and their nested columns can be
