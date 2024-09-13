@@ -220,7 +220,6 @@ ifn_tables_process <- function(
     .f = \(
       province, plots, version, tree_table, plot_table, shrub_table, regen_table, coord_table
     ) {
-
       plot_info <- ifn_plot_table_process(
         plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
       )
