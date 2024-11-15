@@ -45,7 +45,7 @@ The **Fourth cycle of the National Forest Inventory (IFN4)** **started in 2008**
 
 -   IFN 3: Field data bases (Access 2007 \*.accdb)
 
-    Data is organized in provinces and each province one has an access file. Within the access files there are thematic sheets with similar names.
+    Data is organized in provinces and each province has one "access" file. Within the access files there are thematic sheets with similar names.
 
     <https://www.miteco.gob.es/es/biodiversidad/servicios/banco-datos-naturaleza/informacion-disponible/ifn3_bbdd_descargas_htm.html>
 
@@ -60,19 +60,19 @@ The **Fourth cycle of the National Forest Inventory (IFN4)** **started in 2008**
 Variables have been harmonized between inventories.\
 Some variables may appear on multiple tables:
 
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| **Harmonized name** | **Original name IFN2**   | **Original name IFN3/ 4** | **Description**                                                                            |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| id_unique_code      | ES_ESTADILLO\_ PROVINCIA | ES_Estadillo_Provincia    | Code to identify plot                                                                      |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| province_code       | PROVINCIA                | Provincia                 | Territorial division                                                                       |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| plot                | ESTADILLO                | Estadillo                 | Plot ID                                                                                    |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| class               | *CLA*                    | Cla                       | Code that indicates when the plot was surveyed.                                            |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
-| subclass            | *Subclase*               | Subclase                  | Code that determines the type of plot based on the re-location of the metal rod ("rejon"). |         |
-+---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+---------+
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| **Harmonized name** | **Original name IFN2**   | **Original name IFN3/ 4** | **Description**                                                                            |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| id_unique_code      | ES_ESTADILLO\_ PROVINCIA | ES_Estadillo_Provincia    | Code to identify plot                                                                      |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| province_code       | PROVINCIA                | Provincia                 | Territorial division                                                                       |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| plot                | ESTADILLO                | Estadillo                 | Plot ID                                                                                    |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| class               | *CLA*                    | Cla                       | Code that indicates when the plot was surveyed.                                            |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
+| subclass            | *Subclase*               | Subclase                  | Code that determines the type of plot based on the re-location of the metal rod ("rejon"). |
++---------------------+--------------------------+---------------------------+--------------------------------------------------------------------------------------------+
 
 ### IFN TREE TABLE PROCESSING
 
@@ -103,13 +103,13 @@ Information is obtained from *PCMAYORES* table of IFN3-4 and *PIESMA* of IFN2\
 |                     |                    |                       | (see ifn3 documentation)                                   |
 +---------------------+--------------------+-----------------------+------------------------------------------------------------+
 
-The mean of diameters is calculated to obtain the variable dbh (diameter/DBH), and it is converted to cm.
+The mean of diameters is calculated to obtain the variable dbh (diameter), and it is converted to cm.
 
 ```         
   dbh = ((Dn1 + Dn2) / 2) * 0.1, # From mm to cm
 ```
 
-We add a new variable called *density_factor*, corresponding to the Expansion Factor per hectare of the unit values of different dendrometric parameters of the measured stem. IFN tree sampling follows a variable-radius plot sampling, where smaller trees are measured at smaller radii of the plot, while larger trees are measured within the larger radii as follows.
+We add a new variable called *density_factor*, corresponding to the Expansion Factor per hectare of the unit values of different dendrometric parameters of the measured stem. IFN tree sampling follows a **variable-radius plot sampling**, where smaller trees are measured at smaller radii of the plot, while larger trees are measured within the larger radii as follows.
 
 ![](images/clipboard-3909002882.png){width="529"}
 
@@ -122,7 +122,7 @@ We add a new variable called *density_factor*, corresponding to the Expansion Fa
 
 We also add a new variable: sp_name , with the scientific name of the species that corresponds to the sp_code.\
 \
-The final variables provided are *id_unique_code*, *province_code*, *class*, *subclass*, *plot*, *sp_code*, *sp_name*, *tree*, *wood_quality*, *cubing_form*, *tree_ifn2*, *tree_ifn3*, *tree_ifn4*, *dbh*, *height* and *density_factor*.
+The final variables provided are *id_unique_code*, *province_code*, *class*, *subclass*, *plot*, *sp_code*, *sp_name*, *tree_id*, *wood_quality*, *cubing_form*, *tree_ifn2*, *tree_ifn3*, *tree_ifn4*, *dbh*, *height* and *density_factor*.
 
 ### IFN SHRUB TABLE PROCESSING
 
@@ -255,7 +255,7 @@ The final variables given are *id_unique_code*, *province_code*, *class*, *subcl
 
 Information is obtained from tables *DATEST* of IFN2 and *PCDatosMap*, *PCParcelas* of IFN3-4
 
-Note that coordinates are only approximate.\
+Note that coordinates are only approximate.
 
 Firstly, names are harmonized.
 
