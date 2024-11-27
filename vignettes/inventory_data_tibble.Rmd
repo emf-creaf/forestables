@@ -111,7 +111,7 @@ harmonize tree data between national forest inventories has been done.
     `tree`, `sp_code`, `sp_name`, `status`, `density_factor`, `dia`, `height`.
   
   * IFN unique tree variables:  
-    `tree_ifn2`, `tree_ifn3`, `tree_ifn4` `cubing_form`, `quality_wood`. Also, IFN lack the `status`
+    `tree_ifn2`, `tree_ifn3`, `tree_ifn4` `cubing_form`, `quality_wood` , `bearing`, `distance` . Also, IFN lack the `status`
     variable.
   
   * FFI unique tree variables:  
