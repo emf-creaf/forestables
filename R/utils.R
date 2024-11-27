@@ -450,11 +450,12 @@ reorder_inventory_output <- function(inventory, inventory_cols = "metadata") {
     ),
     tree = c(
       # common vars
+      
       "tree_id", "sp_code", "sp_name", "status", "density_factor", "dbh", "height",
       # fia unique
       # none
       # ifn unique
-      "cubing_form", "quality_wood",
+      "cubing_form", "quality_wood","distance", "bearing",
       # ffi unique
       "height_last_recorded", "status5", "espar"
     )
