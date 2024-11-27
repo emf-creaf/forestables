@@ -110,7 +110,9 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "ARBOL",
     "DIAMETRO1",
     "DIAMETRO2",
-    "ALTURA"
+    "ALTURA",
+    "DISTANCI",
+    "RUMBO"
   )
   expect_s3_class(
     test_res_ifn2 <- .read_inventory_data(
@@ -137,7 +139,10 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "Dn2",
     "Ht",
     "Calidad",
-    "Forma"
+    "Forma",
+    "Distanci",
+    "Rumbo"
+    
   )
   expect_s3_class(
     test_res_ifn3 <- .read_inventory_data(
@@ -165,7 +170,9 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     "Dn2",
     "Ht",
     "Calidad",
-    "Forma"
+    "Forma",
+    "Distanci",
+    "Rumbo"
   )
 
   expect_s3_class(

@@ -335,7 +335,8 @@ ifn_tree_table_process <- function(
     tree_filtered_data <- .read_inventory_data(
       tree_data,
       colnames = c(
-        "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1", "DIAMETRO2", "ALTURA", "FORMA", "CALIDAD"
+        "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1",
+        "DIAMETRO2", "ALTURA", "FORMA", "CALIDAD", "RUMBO", "DISTANCI"
       ),
       version = version,
       province = province,
@@ -365,7 +366,8 @@ ifn_tree_table_process <- function(
       # transformations and filters
       dplyr::rename(
         province_code = "PROVINCIA", plot = "ESTADILLO", SP_CODE = "ESPECIE",
-        tree_id = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA"
+        tree_id = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA",
+        distance = "DISTANCI", bearing = "RUMBO"
       ) |>
       dplyr::mutate(
         plot = as.character(.data$plot),
@@ -408,7 +410,9 @@ ifn_tree_table_process <- function(
         "height", # height in m
         "density_factor",
         "cubing_form",
-        "quality_wood"
+        "quality_wood",
+        "distance",
+        "bearing"
       ) |>
       reorder_inventory_output(inventory_cols = "tree")
 
@@ -421,7 +425,7 @@ ifn_tree_table_process <- function(
       tree_data,
       colnames = c(
         "Provincia", "Estadillo", "Cla", "Subclase", "Especie", "nArbol", "OrdenIf3",
-        "OrdenIf2", "OrdenIf4", "Dn1", "Dn2", "Ht", "Calidad", "Forma"
+        "OrdenIf2", "OrdenIf4", "Dn1", "Dn2", "Ht", "Calidad", "Forma", "Distanci", "Rumbo"
       ),
       version = version,
       province = province,
@@ -490,7 +494,9 @@ ifn_tree_table_process <- function(
         sp_code = "SP_CODE",
         sp_name = "SP_NAME",
         quality_wood = "Calidad",
-        cubing_form = "Forma"
+        cubing_form = "Forma",
+        distance = "Distanci",
+        bearing = "Rumbo"
       ) |>
       dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
@@ -508,7 +514,9 @@ ifn_tree_table_process <- function(
           #diameter in cm
           "dbh",
           #height in cm
-          "height", "density_factor"
+          "height", "density_factor",
+          "distance",
+          "bearing"
         ))
       ) |>
       reorder_inventory_output(inventory_cols = "tree")
