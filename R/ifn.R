@@ -315,7 +315,6 @@ NULL
 ifn_tree_table_process <- function(
   tree_data, version, plot, province, species_ifn_internal, .call = rlang::caller_env()
 ) {
-
   # Assertions  and checks/validations
   files_validation <- assertthat::validate_that(!any(is.na(c(tree_data))))
 
@@ -386,7 +385,9 @@ ifn_tree_table_process <- function(
         ),
         tree_id = as.character(.data$tree_id),
         FORMA = as.character(.data$FORMA),
-        CALIDAD = as.character(.data$CALIDAD)
+        CALIDAD = as.character(.data$CALIDAD),
+        bearing = as.character(.data$bearing),
+        distance = as.character(.data$distance),
       )  |>
       # add species info ---> WHAT REFERENCE SHOULD I USEE???
       dplyr::left_join(
@@ -480,7 +481,9 @@ ifn_tree_table_process <- function(
         ),
         tree_id = as.character(.data$tree_id),
         Forma = as.character(.data$Forma),
-        Calidad = as.character(.data$Calidad)
+        Calidad = as.character(.data$Calidad),
+        Distanci = as.character(.data$Distanci),
+        Rumbo = as.character(.data$Rumbo),
       ) |>
       # add species info
       dplyr::left_join(
