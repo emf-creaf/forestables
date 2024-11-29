@@ -207,10 +207,8 @@ ifn_tables_process <- function(
   provinces, version, filter_list, folder,
   .parallel_options, .verbose, .call = rlang::caller_env(), ...
 ) {
-
   # Create input df for year
   input_df <- .build_ifn_input_with(version, provinces, filter_list, folder, .verbose, .call)
-
   ## Debugging needs purrr maps, as future maps are in other R processes and we
   ## can't access the objects.
   # temp_res <- purrr::pmap(
@@ -223,14 +221,12 @@ ifn_tables_process <- function(
       plot_info <- ifn_plot_table_process(
         plot_table, coord_table, version, plots, province, ifn_provinces_dictionary, .call
       )
-
       redundant_vars <- c(
         "id_unique_code", "country", "year", "ca_name_original",
         "province_code", "province_name_original", "plot", "Clase",
         "Subclase", "version", "type", "aspect", "slope", "crs",
         "coord_sys", "COORDEX",  "COORDEY", "sheet_ntm", "huso"
       )
-
       tree <- ifn_tree_table_process(
         tree_table, version, plots, province, species_ifn_internal, .call
       ) |>
@@ -246,15 +242,12 @@ ifn_tables_process <- function(
         regen_table, version, plots, province, species_ifn_internal, .call
       ) |>
         dplyr::select(!dplyr::any_of(redundant_vars))
-
       # check if there are rows
       if (nrow(plot_info) < 1) {
         return(tibble::tibble())
       }
-
       # we put together all tables in a data frame
       understory <- tibble::tibble(shrub = list(shrub), herbs = list(herbs))
-
       plot_info |>
         dplyr::rename(coordx = "COORDEX", coordy = "COORDEY") |>
         dplyr::mutate(
@@ -335,7 +328,7 @@ ifn_tree_table_process <- function(
       tree_data,
       colnames = c(
         "PROVINCIA", "ESTADILLO", "ESPECIE", "NUMORDEN", "ARBOL", "DIAMETRO1",
-        "DIAMETRO2", "ALTURA", "FORMA", "CALIDAD", "RUMBO", "DISTANCI"
+        "DIAMETRO2", "ALTURA", "FORMA", "CALIDAD", "RUMBO", "DISTANCI", "DISTANCIA"
       ),
       version = version,
       province = province,
@@ -364,9 +357,12 @@ ifn_tree_table_process <- function(
     tree <- tree_filtered_data |>
       # transformations and filters
       dplyr::rename(
+        dplyr::any_of(c(
         province_code = "PROVINCIA", plot = "ESTADILLO", SP_CODE = "ESPECIE",
         tree_id = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA",
-        distance = "DISTANCI", bearing = "RUMBO"
+        distance = "DISTANCI", bearing = "RUMBO", distance = "DISTANCIA"
+        )
+        )
       ) |>
       dplyr::mutate(
         plot = as.character(.data$plot),
@@ -374,6 +370,8 @@ ifn_tree_table_process <- function(
         Dn1 = as.numeric(.data$Dn1),
         Dn2 = as.numeric(.data$Dn2),
         height = as.numeric(stringr::str_replace(.data$height, ",", ".")),
+        distance = as.numeric(stringr::str_replace(.data$distance, ",", ".")),
+        bearing = as.numeric(stringr::str_replace(.data$bearing, ",", ".")),
         SP_CODE = as.numeric(.data$SP_CODE),
         dia = ((.data$Dn1 + .data$Dn2) / 2) * 0.1, # From mm to cm
         height = .data$height, # in meters
@@ -385,9 +383,7 @@ ifn_tree_table_process <- function(
         ),
         tree_id = as.character(.data$tree_id),
         FORMA = as.character(.data$FORMA),
-        CALIDAD = as.character(.data$CALIDAD),
-        bearing = as.character(.data$bearing),
-        distance = as.character(.data$distance),
+        CALIDAD = as.character(.data$CALIDAD)
       )  |>
       # add species info ---> WHAT REFERENCE SHOULD I USEE???
       dplyr::left_join(
@@ -422,11 +418,12 @@ ifn_tree_table_process <- function(
   }
 
   if (version %in% c("ifn3", "ifn4")) {
-    tree_filtered_data <-  .read_inventory_data(
+    tree_filtered_data <- .read_inventory_data(
       tree_data,
       colnames = c(
         "Provincia", "Estadillo", "Cla", "Subclase", "Especie", "nArbol", "OrdenIf3",
-        "OrdenIf2", "OrdenIf4", "Dn1", "Dn2", "Ht", "Calidad", "Forma", "Distanci", "Rumbo"
+        "OrdenIf2", "OrdenIf4", "Dn1", "Dn2", "Ht", "Calidad", "Forma", "Distanci", "Rumbo",
+        "Distancia"
       ),
       version = version,
       province = province,
@@ -437,7 +434,8 @@ ifn_tree_table_process <- function(
         tree_id = "nArbol",
         tree_ifn2 = "OrdenIf2",
         tree_ifn4 = "OrdenIf4",
-        tree_ifn3 = "OrdenIf3"
+        tree_ifn3 = "OrdenIf3",
+        Distanci = "Distancia"
       ))
       ) |>
       tibble::as_tibble()
@@ -482,8 +480,8 @@ ifn_tree_table_process <- function(
         tree_id = as.character(.data$tree_id),
         Forma = as.character(.data$Forma),
         Calidad = as.character(.data$Calidad),
-        Distanci = as.character(.data$Distanci),
-        Rumbo = as.character(.data$Rumbo),
+        Distanci = as.numeric(.data$Distanci),
+        Rumbo = as.numeric(.data$Rumbo),
       ) |>
       # add species info
       dplyr::left_join(
