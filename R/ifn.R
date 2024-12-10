@@ -360,7 +360,7 @@ ifn_tree_table_process <- function(
         dplyr::any_of(c(
         province_code = "PROVINCIA", plot = "ESTADILLO", SP_CODE = "ESPECIE",
         tree_id = "ARBOL", Dn1 = "DIAMETRO1", Dn2 = "DIAMETRO2", height = "ALTURA",
-        distance = "DISTANCI", bearing = "RUMBO", distance = "DISTANCIA"
+        distance = "DISTANCI", azimuth = "RUMBO", distance = "DISTANCIA"
         )
         )
       ) |>
@@ -371,7 +371,7 @@ ifn_tree_table_process <- function(
         Dn2 = as.numeric(.data$Dn2),
         height = as.numeric(stringr::str_replace(.data$height, ",", ".")),
         distance = as.numeric(stringr::str_replace(.data$distance, ",", ".")),
-        bearing = as.numeric(stringr::str_replace(.data$bearing, ",", ".")),
+        azimuth = as.numeric(stringr::str_replace(.data$azimuth, ",", ".")),
         SP_CODE = as.numeric(.data$SP_CODE),
         dia = ((.data$Dn1 + .data$Dn2) / 2) * 0.1, # From mm to cm
         height = .data$height, # in meters
@@ -409,7 +409,7 @@ ifn_tree_table_process <- function(
         "cubing_form",
         "quality_wood",
         "distance",
-        "bearing"
+        "azimuth"
       ) |>
       reorder_inventory_output(inventory_cols = "tree")
 
@@ -497,7 +497,7 @@ ifn_tree_table_process <- function(
         quality_wood = "Calidad",
         cubing_form = "Forma",
         distance = "Distanci",
-        bearing = "Rumbo"
+        azimuth = "Rumbo"
       ) |>
       dplyr::mutate(sp_code = suppressWarnings(as.character(.data$sp_code))) |>
       dplyr::select(
@@ -517,7 +517,7 @@ ifn_tree_table_process <- function(
           #height in cm
           "height", "density_factor",
           "distance",
-          "bearing"
+          "azimuth"
         ))
       ) |>
       reorder_inventory_output(inventory_cols = "tree")

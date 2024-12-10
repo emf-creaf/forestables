@@ -66,7 +66,6 @@ verbose_msg <- function(msg, .verbose) {
 #'
 #' @export
 show_plots_from <- function(inventory = c("FIA", "FFI", "IFN"), folder = ".", ...) {
-
   # General Assertions
   # grep
   assertthat::assert_that(
@@ -454,7 +453,7 @@ reorder_inventory_output <- function(inventory, inventory_cols = "metadata") {
       # fia unique
       # none
       # ifn unique
-      "cubing_form", "quality_wood","distance", "bearing",
+      "cubing_form", "quality_wood","distance", "azimuth",
       # ffi unique
       "height_last_recorded", "status5", "espar"
     )

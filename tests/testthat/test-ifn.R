@@ -172,7 +172,7 @@ test_that("ifn_tree_table_process for ifn2 works as intended", {
     "cubing_form",
     "quality_wood",
     "distance",
-    "bearing"
+    "azimuth"
   )
 
   expect_s3_class(
@@ -270,7 +270,7 @@ test_that("ifn_tree_table_process for ifn3 works as intended", {
     "height",
     "density_factor",
     "distance",
-    "bearing"
+    "azimuth"
   )
 
 
@@ -371,7 +371,7 @@ test_that("ifn_tree_table_process for ifn4 works as intended", {
     "height",
     "density_factor",
     "distance",
-    "bearing"
+    "azimuth"
   )
 
 

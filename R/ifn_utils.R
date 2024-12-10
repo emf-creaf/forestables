@@ -124,7 +124,6 @@
 #'
 #' @noRd
 .get_plots_from_province <- function(province, folder, version, .call = rlang::caller_env()) {
-
   plot_path <- .build_ifn_file_path(province, "plot", version, folder, .call = .call)
 
   coord_path <- ifelse(
@@ -416,7 +415,6 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
 .build_ifn_file_path <- function(
   province, type, version, folder = ".", .call = rlang::caller_env()
 ) {
-
   # Ok, so here we need to do some things. Depending on .version (the IFN version) we need to
   # provide different things.
   res <- purrr::pmap_chr(
