@@ -8,7 +8,7 @@ skip_if(
 # leads to missing data. This causes tests to fail, so we get the plots really
 # present at the folder to do the tests
 ifn_4_plots_at_folder <- suppressWarnings(show_plots_from(
-  "IFN", Sys.getenv("ifn_path"), provinces = 1:55 |> as.character(), versions = "ifn4"
+  "IFN", Sys.getenv("ifn_path"), provinces = stringr::str_pad(1:55, width = 2, pad = "0"), versions = "ifn4"
 )) |>
   dplyr::filter(
     province_code %in% c("06", "07", "10", "30", "31", "33", "40", "49"),
@@ -637,7 +637,7 @@ test_that(".get_plots_from_province works as intended for ifn4", {
 
   ## wrong province
   expect_error(
-    suppressWarnings(.get_plots_from_province(test_provinces[3], test_folder, test_version)),
+    suppressWarnings(.get_plots_from_province(test_provinces[9], test_folder, test_version)),
     "aborting"
   )
 })
