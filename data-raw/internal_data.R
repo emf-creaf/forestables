@@ -190,7 +190,7 @@ ifn4_links_raw <- c(
   ), "a"), "href")
 )
 
-ifn4_links <- ifn4_links_raw[ifn4_links_raw |> stringr::str_detect("ifn4_")] |>
+ifn4_links <- ifn4_links_raw[ifn4_links_raw |> stringr::str_detect("ifn4[-_]|Ifn4p")] |>
   purrr::discard(.p = is.na)
 
 # use internal data ---------------------------------------------------------------------------
