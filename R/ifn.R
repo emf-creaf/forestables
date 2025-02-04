@@ -1223,10 +1223,18 @@ ifn_plot_table_process <- function(
         "i" = "These records will be removed from the results"
       ), call = .call)
     }
+    if (any(is.na(coords_filtered_data$Huso), is.na(coords_filtered_data$Hoja50))) {
+      cli::cli_warn(c(
+        "File {.file {plot_data}} has some errors in the coordinates
+        (missing huso , missing hoja ... ).",
+        "i" = "These records will be removed from the results"
+      ), call = .call)
+    }
 
     # remove bad formatted or missing coordinates
     coords_fixed_data <- coords_filtered_data |>
-      dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY))
+      dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY),
+                    !is.na(.data$Huso), !is.na(.data$Hoja50))
 
     coords_data <- coords_fixed_data |>
       dplyr::rename(

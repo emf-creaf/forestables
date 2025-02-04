@@ -15,7 +15,6 @@
 .build_ifn_input_with <- function(
   version, provinces, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
-
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
     get_plots_safe <- purrr::safely(
