@@ -482,6 +482,10 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
           file_name <- fs::dir_ls(folder, regexp = "Ifn4_Castell")
         }
 
+        if (province %in% c("26")) {
+          file_name <- fs::dir_ls(folder, regexp = "Rioja\\.accdb")
+        }
+
         table_name <- switch(
           type,
           "tree" = "PCMayores",
