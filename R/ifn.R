@@ -1226,8 +1226,7 @@ ifn_plot_table_process <- function(
 
     # remove bad formatted or missing coordinates
     coords_fixed_data <- coords_filtered_data |>
-      dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY),
-                    !is.na(.data$Huso), !is.na(.data$Hoja50))
+      dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY))
 
     coords_data <- coords_fixed_data |>
       dplyr::rename(
