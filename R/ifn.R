@@ -1224,9 +1224,25 @@ ifn_plot_table_process <- function(
       ), call = .call)
     }
 
+    # check for bad formatted or missing coords to inform the user
+    if ( version == "ifn4"){
+      if (any(is.na(coords_filtered_data$Huso), is.na(coords_filtered_data$Hoja50))) {
+        cli::cli_warn(c(
+          "File {.file {plot_data}} has some errors in the coordinates
+        (missing coordinates, bad format...).",
+          "i" = "These records will be removed from the results"
+        ), call = .call)
+      }
+      # remove bad formatted or missing coordinates
+      coords_fixed_data <- coords_filtered_data |>
+        dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY),
+                      !is.na(.data$Huso), !is.na(.data$Hoja50))
+
+    } else {
     # remove bad formatted or missing coordinates
     coords_fixed_data <- coords_filtered_data |>
       dplyr::filter(!is.na(.data$CoorX), !is.na(.data$CoorY))
+    }
 
     coords_data <- coords_fixed_data |>
       dplyr::rename(
