@@ -9,3 +9,4 @@ inst/doc
 vignettes/*_cache
 vignettes/*_files
 docs
+ifn4_tests/
