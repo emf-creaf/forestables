@@ -15,6 +15,7 @@
 .build_ifn_input_with <- function(
   version, provinces, filter_list, folder, .verbose, .call = rlang::caller_env()
 ) {
+  
   # first, if is null filter list, create it
   if (is.null(filter_list)) {
     get_plots_safe <- purrr::safely(
@@ -449,41 +450,38 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
 
       if (version == "ifn4") {
 
-        # this is a little trickier. We don't always have provinces so, we need to translate the
-        # province code to the correct ifn4 label
-        ifn4_province <- .ifn4_prov_code_translator(province)
-        file_name <- fs::path(folder, glue::glue("Ifn4_{ifn4_province}.accdb"))
-        # here comes the IFN4 conundrum. Some files have different names depending if
-        # the file has been manually downloaded and unzipped, or using the download methods,
-        # and also the name changes based on OS, so lets find which one
+        .find_ifn4_filename <- function(folder, province) {
 
-        if (province %in% c("08", "17", "25", "43")) {
-          file_name <- fs::dir_ls(folder, regexp = "Ifn4_Catalu")
+          ifn4_avail_files <- fs::dir_ls(folder, regexp = "[Ii]fn4") |>
+            purrr::keep(~ stringr::str_detect(.x, "accdb$|mdb$"))
+
+          # look for province code
+          ifn4_filename <- ifn4_avail_files |>
+            purrr::keep(~ stringr::str_detect(.x, glue::glue("p{province}")))
+
+          # if no code, look for province name
+          if (!length(ifn4_filename)) {
+            ifn4_filename <- ifn4_avail_files |>
+              purrr::keep(~ stringr::str_detect(.x, .ifn4_prov_code_translator(province)))
+          }
+
+          # if no province code or name, then the special cases
+          if (!length(ifn4_filename)) {
+            if (province %in% c("08", "17", "25", "43")) {
+              ifn4_filename <- fs::dir_ls(folder, regexp = "[Cc]atalu[дnñ]a\\.accdb$")
+            }
+            if (province %in% c("13")) {
+              ifn4_filename <- fs::dir_ls(folder, regexp = "[Cc]iudad[Rr]eal\\.accdb$")
+            }
+            if (province %in% c("01", "20", "48")) {
+              ifn4_filename <- fs::dir_ls(folder, regexp = "[Vv]asco\\.accdb$")
+            }
+          }
+
+          return(ifn4_filename)
         }
 
-        if (province %in% c("15")) {
-          file_name <- fs::dir_ls(folder, regexp = "Ifn4_A Coru")
-        }
-
-        if (province %in% c("01", "20", "48")) {
-          file_name <- fs::dir_ls(folder, regexp = "Vasco\\.accdb")
-        }
-
-        if (province %in% c("05")) {
-          file_name <- fs::dir_ls(folder, regexp = "vila\\.accdb")
-        }
-
-        if (province %in% c("24")) {
-          file_name <- fs::dir_ls(folder, regexp = "Ifn4_Le")
-        }
-
-        if (province %in% c("12")) {
-          file_name <- fs::dir_ls(folder, regexp = "Ifn4_Castell")
-        }
-
-        if (province %in% c("26")) {
-          file_name <- fs::dir_ls(folder, regexp = "Rioja\\.accdb")
-        }
+        file_name <- .find_ifn4_filename(folder, province)
 
         table_name <- switch(
           type,

@@ -4,6 +4,7 @@
 *.Rproj
 .Rhistory
 data-raw/27398.txt
+data-raw/test_ifn
 inst/doc
 .vscode
 vignettes/*_cache
