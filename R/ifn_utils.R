@@ -301,6 +301,13 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
         Estadillo = as.character(.data$Estadillo),
         Subclase = .ifn_subclass_fixer(.data$Subclase)
       ) |>
+      .ifn_unique_id_creator(...),
+    "mdb" = .read_mdb_data(input, table_name) |>
+      dplyr::select(dplyr::any_of(colnames)) |>
+      dplyr::mutate(
+        Estadillo = as.character(.data$Estadillo),
+        Subclase = .ifn_subclass_fixer(.data$Subclase)
+      ) |>
       .ifn_unique_id_creator(...)
   )
 
@@ -339,10 +346,11 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
       cli::cli_abort("Aborting")
     }
 
+    # NO NEED WITH NEW FILENAMES (JUNE 2025)
     # in linux, space characters must be escaped
-    if (stringr::str_detect(input, "(Ifn4_.* .*\\.accdb)$")) {
-      input <- stringr::str_replace(input, "(Ifn4_.* .*\\.accdb)$", "'\\1'")
-    }
+    # if (stringr::str_detect(input, "(Ifn4_.* .*\\.accdb)$")) {
+    #   input <- stringr::str_replace(input, "(Ifn4_.* .*\\.accdb)$", "'\\1'")
+    # }
 
     # read the table. Hmisc have some harcoded print statements that can not be muted. So we use a
     # combination of invisible and capture.output to remove them, as they clutter the console, logs
@@ -365,6 +373,27 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
     res <- file_conn |>
       RODBC::sqlFetch(table_name)
   }
+
+  return(res)
+}
+
+#' Read IFN mdb data
+#'
+#' Read the IFN db data from IFN 4 in some provinces (mdb files)
+#'
+#' This functions calls the corresponding reading function based on the OS of the user.
+#'
+#' @param input file to read as it appears in the input data frame.
+#' @param table_name character with the table name to read from the accdb file.
+#'
+#' @return A data.frame with the inventory table
+#'
+#' @noRd
+.read_mdb_data <- function(input, table_name) {
+
+  invisible(utils::capture.output(
+    res <- Hmisc::mdb.get(input, tables = table_name)
+  ))
 
   return(res)
 }
