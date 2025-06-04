@@ -1318,6 +1318,10 @@ ifn_plot_table_process <- function(
           # Province 24, some unidentified plots are in Huso 29 in ifn4
           province_code == "24" & .data$huso == 29 &
             .data$coord_sys == "ETRS89" & .data$COORDEX < 5e+05 ~ 25830,
+          ## error in IFN4 Navarra data, where huso is 0
+          province_code == "31" & .data$huso == 0 &
+            .data$coord_sys == "ETRS89" ~ 25830,
+          # others
           is.na(.data$huso) & .data$coord_sys == "ED50" ~ 23030,
           .data$huso == 30 & .data$coord_sys == "ED50" ~ 23030,
           .data$huso == 31 & .data$coord_sys == "ED50" ~ 23031,
