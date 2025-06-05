@@ -1225,7 +1225,7 @@ ifn_plot_table_process <- function(
     }
 
     # check for bad formatted or missing coords to inform the user
-    if ( version == "ifn4"){
+    if (version == "ifn4") {
       if (any(is.na(coords_filtered_data$Huso), is.na(coords_filtered_data$Hoja50))) {
         cli::cli_warn(c(
           "File {.file {plot_data}} has some errors in the coordinates
@@ -1293,6 +1293,9 @@ ifn_plot_table_process <- function(
           province_code %in% c(
             "15", "21", "32", "36"
           ) & is.na(.data$huso) & .data$coord_sys == "ED50" ~ 23029,
+          province_code %in% c(
+            "15", "21", "32", "36"
+          ) & .data$huso == 0 & .data$coord_sys == "ED50" ~ 23029,
           # provinces ok in 23028
           province_code %in% c(
             "35", "38"
