@@ -155,7 +155,7 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
   expect_true(nrow(test_res_ifn3) > 0)
 
   # IFN4
-  test_file_ifn4 <- fs::path(Sys.getenv("ifn_path"), "Ifn4_Lugo.accdb")
+  test_file_ifn4 <- fs::path(Sys.getenv("ifn_path"), "Ifn4p27-lugo.accdb")
   test_input_ifn4 <- glue::glue("{test_file_ifn4}|PCMayores")
   test_colnames_ifn4 <- c(
     "Provincia",
@@ -179,6 +179,37 @@ test_that(".read_inventory_data returns lazy_dt for ifn", {
     test_res_ifn4 <- .read_inventory_data(
       test_input_ifn4, test_colnames_ifn4,
       version = "ifn4", province = "27",
+      .ifn = TRUE
+    ),
+    "dtplyr_step_first"
+  )
+  expect_true(nrow(test_res_ifn4) > 0)
+
+  # IFN4 mdb
+  test_file_ifn4 <- fs::path(Sys.getenv("ifn_path"), "Ifn4p44_Teruel.mdb")
+  test_input_ifn4 <- glue::glue("{test_file_ifn4}|PCMayores")
+  test_colnames_ifn4 <- c(
+    "Provincia",
+    "Estadillo",
+    "Cla",
+    "Subclase",
+    "Especie",
+    "nArbol",
+    "OrdenIf3",
+    "OrdenIf4",
+    "Dn1",
+    "Dn2",
+    "Ht",
+    "Calidad",
+    "Forma",
+    "Distanci",
+    "Rumbo"
+  )
+
+  expect_s3_class(
+    test_res_ifn4 <- .read_inventory_data(
+      test_input_ifn4, test_colnames_ifn4,
+      version = "ifn4", province = "44",
       .ifn = TRUE
     ),
     "dtplyr_step_first"

@@ -484,14 +484,16 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
           ifn4_avail_files <- fs::dir_ls(folder, regexp = "[Ii]fn4") |>
             purrr::keep(~ stringr::str_detect(.x, "accdb$|mdb$"))
 
+          province_name <- .ifn4_prov_code_translator(province)
+
           # look for province code
           ifn4_filename <- ifn4_avail_files |>
             purrr::keep(~ stringr::str_detect(.x, glue::glue("p{province}")))
 
-          # if no code, look for province name
-          if (!length(ifn4_filename)) {
+          # if no code, look for province name (only if province is correct)
+          if (!length(ifn4_filename) & province_name != "") {
             ifn4_filename <- ifn4_avail_files |>
-              purrr::keep(~ stringr::str_detect(.x, glue::glue("{forestables:::.ifn4_prov_code_translator(province)}")))
+              purrr::keep(~ stringr::str_detect(.x, province_name))
           }
 
           # if no province code or name, then the special cases
@@ -507,8 +509,8 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
             }
           }
 
-          # special case when filename is NA
-          if (is.na(ifn4_filename)) {
+          # special case when filename is NA (bad province) or character 0 (bad folder)
+          if (!length(ifn4_filename) || is.na(ifn4_filename)) {
             ifn4_filename <- ""
           }
 
