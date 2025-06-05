@@ -391,7 +391,10 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
 #' @noRd
 .read_mdb_data <- function(input, table_name) {
 
-   # unix or windows?
+  # first thing check the SO
+  so <- .Platform$OS.type
+
+  # unix or windows?
   if (so == "unix") {
     if (isFALSE(
       .sys_cmd_warning("mdb-tables", c(
