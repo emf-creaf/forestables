@@ -651,8 +651,10 @@ test_that("fia_table_process works as intended", {
 
   # tests config
   test_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # tests data
   expected_names <- c(
@@ -831,8 +833,10 @@ test_that("fia_to_tibble works as intended", {
 
   # tests config
   test_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # tests data
   expected_names <- c(

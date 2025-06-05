@@ -1264,8 +1264,10 @@ test_that("ifn_tables_process ifn2 works as intended", {
 
   # tests config
   test_ifn2_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
@@ -1343,8 +1345,10 @@ test_that("ifn_tables_process ifn3 works as intended", {
 
   # tests config
   test_ifn3_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
@@ -1423,8 +1427,10 @@ test_that("ifn_tables_process ifn4 works as intended", {
 
   # tests config
   test_ifn4_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # we have 1000 plots in ifn2_plots, so we do reduce a little, because it takes around
   # 4 minutes.
@@ -1500,8 +1506,10 @@ test_that("ifn_to_tibble  ifn 2-3-4 works as intended", {
 
   # tests config
   test_ifn234_parallel_conf <- furrr::furrr_options(scheduling = 1L, stdout = TRUE)
-  future::plan(future::multisession, workers = 3)
-  withr::defer(future::plan(future::sequential))
+  if (!Sys.info()["sysname"] %in% c("darwin", "Darwin", "DARWIN")) {
+    future::plan(future::multisession, workers = 3)
+    withr::defer(future::plan(future::sequential))
+  }
 
   # we have 16000 plots in test_ifn234_plots, so we do reduce a little, because it takes around
   # 4 minutes.
