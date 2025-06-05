@@ -32,6 +32,13 @@ This function tries to download the available files for the especified inventory
 from the official repositories of the inventory. It can fail as can be connection
 problems or files missing temporary (This usually happens for the version 4 of the IFN)
 }
+\section{Warning}{
+
+IFN version 4 data is not stable. Links change and data formats and content
+can also change. No warning is given of these changes beforehand, so this
+function can sometimes not retrieve all available data for IFN version 4.
+}
+
 \examples{
 \donttest{
 \dontrun{

@@ -339,6 +339,11 @@
 #'   is selected.
 #' @param .verbose Logical indicating if progress messages should be shown.
 #'
+#' @section Warning:
+#'  IFN version 4 data is not stable. Links change and data formats and content
+#'  can also change. No warning is given of these changes beforehand, so this
+#'  function can sometimes not retrieve all available data for IFN version 4.
+#'
 #' @return Invisible TRUE if the download and unzip was succesful, an error otherwise.
 #'
 #' @examples
