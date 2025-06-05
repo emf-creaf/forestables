@@ -391,9 +391,46 @@ show_plots_from_ifn <- function(folder, provinces, versions, .call = rlang::call
 #' @noRd
 .read_mdb_data <- function(input, table_name) {
 
-  invisible(utils::capture.output(
-    res <- Hmisc::mdb.get(input, tables = table_name)
-  ))
+   # unix or windows?
+  if (so == "unix") {
+    if (isFALSE(
+      .sys_cmd_warning("mdb-tables", c(
+        "x" = "{.emph mdbtools} system utility not found.",
+        "i" = "{.emph mdbtools} is needed to read Spanish inventory (IFN) data versions 3 and 4.",
+        "i" = "Please check your package manager (apt, brew, port...) to install it.",
+        "i" = "More info at https://github.com/mdbtools/mdbtools"
+      ))
+    )) {
+      cli::cli_abort("Aborting")
+    }
+
+    # NO NEED WITH NEW FILENAMES (JUNE 2025)
+    # in linux, space characters must be escaped
+    # if (stringr::str_detect(input, "(Ifn4_.* .*\\.accdb)$")) {
+    #   input <- stringr::str_replace(input, "(Ifn4_.* .*\\.accdb)$", "'\\1'")
+    # }
+
+    # read the table. Hmisc have some harcoded print statements that can not be muted. So we use a
+    # combination of invisible and capture.output to remove them, as they clutter the console, logs
+    # or documents when ran with lot of provinces
+    invisible(utils::capture.output(
+      res <- Hmisc::mdb.get(input, tables = table_name)
+    ))
+  } else {
+    file_conn <- RODBC::odbcConnectAccess(input)
+    # If drivers are not found in the system file_conn will be -1 (numeric)
+    if (fs::file_exists(input) && is.numeric(file_conn) && file_conn < 0) {
+      cli::cli_warn(c(
+        "x" = "Driver for {.emph mdb} files not found",
+        "i" = "If both R and Microsoft Access are installed, ensure they are in the same architecture (32 or 64 bits)",
+        "i" = "If no installation of Microsoft Access is desired, check {.link https://www.microsoft.com/en-us/download/details.aspx?id=54920} to install only the necessary drivers",
+        "x" = "Aborting"
+      ))
+    }
+
+    res <- file_conn |>
+      RODBC::sqlFetch(table_name)
+  }
 
   return(res)
 }
