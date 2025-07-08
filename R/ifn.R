@@ -161,7 +161,7 @@ ifn_to_tibble <- function(
   ## inform the user
   verbose_msg(
     cli::cli_inform(
-      c("Start", "i" = "Processing {length(versions)} cicle{?s}")
+      c("Start", "i" = "Processing {length(versions)} versions{?s}")
     ),
     .verbose
   )
@@ -179,6 +179,9 @@ ifn_to_tibble <- function(
     .progress = FALSE
   ) |>
     purrr::list_rbind() |>
+    ## TODO: check nrows before clean_empty step to give a more meaningful error
+    ## when no data can be retrieved (usually queries with only provinces with
+    ## no IFN4 and no other IFN version queried)
     clean_empty(clean_empty) |>
     # dplyr::relocate(dplyr::any_of(c("tree", "understory", "regen")), .after = dplyr::last_col())
     reorder_inventory_output()
@@ -209,6 +212,10 @@ ifn_tables_process <- function(
 ) {
   # Create input df for year
   input_df <- .build_ifn_input_with(version, provinces, filter_list, folder, .verbose, .call)
+
+  if (nrow(input_df) < 1) {
+    return(tibble::tibble())
+  }
   ## Debugging needs purrr maps, as future maps are in other R processes and we
   ## can't access the objects.
   # temp_res <- purrr::pmap(
