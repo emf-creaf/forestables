@@ -183,7 +183,18 @@ plots_ifn4 <- plot_paths_ifn4 |>
 ## IFN3 in both, IFN2 and 3
 ifn3_both <- plots_ifn3 |>
   dplyr::filter(Cla == "A", Subclase %in% c("1", "3C")) |>
-  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_NN_{Cla}{Subclase}_"))
+  dplyr::mutate(id_code = glue::glue("{PROVINCIA}_{ESTADILLO}_NN_{Cla}{Subclase}_")) |>
+  ## individual fixes
+  dplyr::mutate(
+    ESTADILLO = dplyr::case_when(
+      ESTADILLO == "0228" & PROVINCIA == "04" & Cla == "A" & Subclase == "3C" ~ "0229",
+      .default = ESTADILLO
+    ),
+    id_code = dplyr::case_when(
+      ESTADILLO == "0229" & PROVINCIA == "04" & Cla == "A" & Subclase == "3C" ~ "04_0229_NN_A3C_",
+      .default = id_code
+    )
+  )
 
 ## Only in IFN3 but estadillo number in IFN2 also
 ifn3_only_conflict <- plots_ifn3 |>
