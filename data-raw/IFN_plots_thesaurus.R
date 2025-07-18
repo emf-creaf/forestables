@@ -220,6 +220,10 @@ ifn2_codes_temp <- ifn3_both |>
     ESTADILLO = dplyr::case_when(
       ESTADILLO == "0228" & PROVINCIA == "04" & Cla == "A" & Subclase == "3C" ~ "0229",
       .default = ESTADILLO
+    ),
+    id_code = dplyr::case_when(
+      ESTADILLO == "0229" & PROVINCIA == "04" & Cla == "A" & Subclase == "3C" ~ "04_0229_NN_A3C_",
+      .default = id_code
     )
   ) |>
   ## rest of the process
