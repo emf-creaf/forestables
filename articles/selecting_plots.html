@@ -8,8 +8,8 @@
 <title>Selecting plots • forestables</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Selecting plots">
 </head>
 <body>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.6.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/documentacion.html">Inventory data ingestion process</a></li>
+<li><a class="dropdown-item" href="../articles/inventory_data_ingestion_process.html">Inventory data ingestion process</a></li>
     <li><a class="dropdown-item" href="../articles/inventory_data_tibble.html">Inventory data output</a></li>
     <li><a class="dropdown-item" href="../articles/selecting_plots.html">Selecting plots</a></li>
   </ul>
@@ -86,7 +86,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Linking to GEOS 3.10.2, GDAL 3.4.1, PROJ 8.2.1; sf_use_s2() is TRUE</span></span>
+<span><span class="co">#&gt; Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span></span></code></pre></div>
@@ -112,7 +112,7 @@ download the data to a permanent folder in your project/analysis.</p>
 <span><span class="va">ffi_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"FFI"</span>, <span class="va">ffi_folder</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading FFI available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/Rtmp05Xh8A</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpST1xgi</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Done!</span></span></code></pre></div>
 <p>If we don’t want to perform any selection of plots and we need all
 plots for 2012, then we can just retrieve all data:</p>
@@ -191,7 +191,7 @@ but we want 2012 plots, so we filter the results by campaign year:</p>
 <span>    show.legend <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">hcl.colors</a></span><span class="op">(</span><span class="fl">2</span>, palette <span class="op">=</span> <span class="st">"Zissou 1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/ffi_plots_loc-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/ffi_plots_loc-1.png" class="r-plt" width="576" style="display: block; margin: auto;"></p>
 <p>For further selection we can filter by plot identifier (IDP) if we
 know them or use an spatial polygon to filter by coordinates. Let’s say
 we are interested in these departments, but only in the mediterranean
@@ -233,23 +233,23 @@ above to add the filter list:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Start</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Processing 1 year</span></span>
-<span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">67</span> plots for <span style="color: #0000BB;">2012</span></span></span>
+<span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">208</span> plots for <span style="color: #0000BB;">2012</span></span></span>
 <span></span>
 <span><span class="va">ffi_data_2012</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 67 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 208 × 16</span></span></span>
 <span><span class="co">#&gt;    id_unique_code  year plot  coordx coordy coord_sys   crs aspect slope country</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> FR_11_201585    <span style="text-decoration: underline;">2</span>012 2015… 6.73<span style="color: #949494;">e</span>5 6.23<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   <span style="color: #BB0000;">NA</span>       0 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> FR_11_212649    <span style="text-decoration: underline;">2</span>012 2126… 6.75<span style="color: #949494;">e</span>5 6.21<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  333      94 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> FR_11_221571    <span style="text-decoration: underline;">2</span>012 2215… 6.73<span style="color: #949494;">e</span>5 6.21<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   97.2    23 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> FR_11_223894    <span style="text-decoration: underline;">2</span>012 2238… 6.89<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  279      36 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> FR_11_227770    <span style="text-decoration: underline;">2</span>012 2277… 7.15<span style="color: #949494;">e</span>5 6.23<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154    9      20 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> FR_11_239436    <span style="text-decoration: underline;">2</span>012 2394… 6.77<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  246.     25 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> FR_11_245118    <span style="text-decoration: underline;">2</span>012 2451… 6.79<span style="color: #949494;">e</span>5 6.23<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  198      15 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> FR_11_245683    <span style="text-decoration: underline;">2</span>012 2456… 6.71<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  299.     28 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> FR_11_253438    <span style="text-decoration: underline;">2</span>012 2534… 6.91<span style="color: #949494;">e</span>5 6.20<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   72      45 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> FR_11_257965    <span style="text-decoration: underline;">2</span>012 2579… 6.91<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   40.5    30 FR     </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 57 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> FR_11_200809    <span style="text-decoration: underline;">2</span>012 2008… 6.67<span style="color: #949494;">e</span>5 6.21<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  162      15 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> FR_11_201113    <span style="text-decoration: underline;">2</span>012 2011… 6.63<span style="color: #949494;">e</span>5 6.23<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   22.5    40 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> FR_11_201971    <span style="text-decoration: underline;">2</span>012 2019… 6.61<span style="color: #949494;">e</span>5 6.25<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  151.     10 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> FR_11_202180    <span style="text-decoration: underline;">2</span>012 2021… 6.51<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  236.     52 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> FR_11_202822    <span style="text-decoration: underline;">2</span>012 2028… 6.47<span style="color: #949494;">e</span>5 6.21<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  176.     25 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> FR_11_203283    <span style="text-decoration: underline;">2</span>012 2032… 6.43<span style="color: #949494;">e</span>5 6.26<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  311.      8 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> FR_11_204589    <span style="text-decoration: underline;">2</span>012 2045… 6.23<span style="color: #949494;">e</span>5 6.22<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  279      16 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> FR_11_209775    <span style="text-decoration: underline;">2</span>012 2097… 6.61<span style="color: #949494;">e</span>5 6.21<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   19.8    36 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> FR_11_213434    <span style="text-decoration: underline;">2</span>012 2134… 6.57<span style="color: #949494;">e</span>5 6.20<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154  328.      7 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> FR_11_217286    <span style="text-decoration: underline;">2</span>012 2172… 6.41<span style="color: #949494;">e</span>5 6.25<span style="color: #949494;">e</span>6 LAMBERT    <span style="text-decoration: underline;">2</span>154   <span style="color: #BB0000;">NA</span>       0 FR     </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 198 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: dep &lt;chr&gt;, dep_name &lt;chr&gt;, visite &lt;int&gt;, tree &lt;list&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   understory &lt;list&gt;, regen &lt;list&gt;</span></span></span></code></pre></div>
 <p>Now we can explore the data, for example the most abundant species
@@ -278,7 +278,7 @@ and their mean diameter for each plot they are in:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `summarise()` has grouped output by 'id_unique_code'. You can override using</span></span>
 <span><span class="co">#&gt; the `.groups` argument.</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="fia-workflow">FIA workflow<a class="anchor" aria-label="anchor" href="#fia-workflow"></a>
@@ -293,7 +293,7 @@ the desired year, 2019:</p>
 <span><span class="va">fia_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"FIA"</span>, <span class="va">fia_folder</span>, states <span class="op">=</span> <span class="st">"HI"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading FIA available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/Rtmp05Xh8A</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpST1xgi</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Done!</span></span>
 <span></span>
 <span><span class="co"># get the plots for those departments</span></span>
@@ -330,7 +330,7 @@ the desired year, 2019:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">STATEAB</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">coord_sf</a></span><span class="op">(</span>xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">160.6</span>, <span class="op">-</span><span class="fl">154.5</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18.5</span>, <span class="fl">22.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">hcl.colors</a></span><span class="op">(</span><span class="fl">1</span>, palette <span class="op">=</span> <span class="st">"Zissou 1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/fia_states_polygons-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/fia_states_polygons-1.png" class="r-plt" width="576" style="display: block; margin: auto;"></p>
 <p>Now that we have the all forest inventory plots selected, we can
 create a <em>filter list</em> to retrieve the data only from those we
 want, <em>i.e.</em> only the O’ahu island:</p>
@@ -393,7 +393,7 @@ diameter:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `summarise()` has grouped output by 'id_unique_code'. You can override using</span></span>
 <span><span class="co">#&gt; the `.groups` argument.</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="ifn-workflow">IFN workflow<a class="anchor" aria-label="anchor" href="#ifn-workflow"></a>
@@ -411,13 +411,7 @@ We are going o retrieve the plots for the early 00s version
 <span><span class="va">ifn_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/download_inventory.html">download_inventory</a></span><span class="op">(</span><span class="st">"IFN"</span>, <span class="va">ifn_folder</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Downloading IFN available data</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/Rtmp05Xh8A</span></span></span>
-<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> The following files failed to be downloaded:</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_avila_tcm30-536598.zip</span>, <span style="color: #0000BB;">ifn4_cantabria_tcm30-536602.zip</span>,</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_leon_tcm30-536581.zip</span>, <span style="color: #0000BB;">ifn4_murcia_tcm30-536584.zip</span>,</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_navarra_tcm30-536585.zip</span>, <span style="color: #0000BB;">ifn4_paisvasco_tcm30-536587.zip</span>,</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_palencia_tcm30-536588.zip</span>, <span style="color: #0000BB;">ifn4_segovia_tcm30-536591.zip</span>,</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ifn4_valladolid_tcm30-536593.zip</span>, and <span style="color: #0000BB;">ifn4_zamora_tcm30-536594.zip</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Unzipping downloaded data in <span style="color: #0000BB;">/tmp/RtmpST1xgi</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Done!</span></span>
 <span></span>
 <span><span class="co"># choose the provinces, those in the Cantabric area</span></span>
@@ -433,7 +427,7 @@ We are going o retrieve the plots for the early 00s version
 <span><span class="co">#&gt; Simple feature collection with 12849 features and 6 fields</span></span>
 <span><span class="co">#&gt; Geometry type: POINT</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
-<span><span class="co">#&gt; Bounding box:  xmin: -9.271574 ymin: 42.33748 xmax: -1.743428 ymax: 43.7598</span></span>
+<span><span class="co">#&gt; Bounding box:  xmin: -9.271574 ymin: 42.33747 xmax: -1.743428 ymax: 43.7598</span></span>
 <span><span class="co">#&gt; Geodetic CRS:  WGS 84</span></span>
 <span><span class="co">#&gt; First 10 features:</span></span>
 <span><span class="co">#&gt;      crs   id_unique_code version province_code province_name_original plot</span></span>
@@ -448,16 +442,16 @@ We are going o retrieve the plots for the early 00s version
 <span><span class="co">#&gt; 9  23029 33_0009_xx_NN_A1    ifn3            33               Asturias 0009</span></span>
 <span><span class="co">#&gt; 10 23029 33_0010_xx_NN_A1    ifn3            33               Asturias 0010</span></span>
 <span><span class="co">#&gt;                      geometry</span></span>
-<span><span class="co">#&gt; 1  POINT (-6.921473 43.55714)</span></span>
-<span><span class="co">#&gt; 2  POINT (-6.946525 43.54859)</span></span>
-<span><span class="co">#&gt; 3  POINT (-6.897041 43.54769)</span></span>
-<span><span class="co">#&gt; 4    POINT (-6.859929 43.547)</span></span>
-<span><span class="co">#&gt; 5    POINT (-6.9592 43.53981)</span></span>
-<span><span class="co">#&gt; 6  POINT (-6.922401 43.53015)</span></span>
-<span><span class="co">#&gt; 7    POINT (-6.860566 43.529)</span></span>
-<span><span class="co">#&gt; 8  POINT (-6.947441 43.52159)</span></span>
-<span><span class="co">#&gt; 9  POINT (-6.910344 43.52092)</span></span>
-<span><span class="co">#&gt; 10 POINT (-6.860884 43.52001)</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  POINT (-6.921532 43.55715)</span></span>
+<span><span class="co">#&gt; 2   POINT (-6.946584 43.5486)</span></span>
+<span><span class="co">#&gt; 3   POINT (-6.897099 43.5477)</span></span>
+<span><span class="co">#&gt; 4  POINT (-6.859986 43.54701)</span></span>
+<span><span class="co">#&gt; 5  POINT (-6.959259 43.53982)</span></span>
+<span><span class="co">#&gt; 6  POINT (-6.922459 43.53015)</span></span>
+<span><span class="co">#&gt; 7  POINT (-6.860623 43.52901)</span></span>
+<span><span class="co">#&gt; 8     POINT (-6.9475 43.5216)</span></span>
+<span><span class="co">#&gt; 9  POINT (-6.910402 43.52093)</span></span>
+<span><span class="co">#&gt; 10 POINT (-6.860941 43.52001)</span></span></code></pre></div>
 <p>To visualize the geographic distribution plots we can use:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">north_spain_plots</span><span class="op">)</span> <span class="op">+</span></span>
@@ -466,7 +460,7 @@ We are going o retrieve the plots for the early 00s version
 <span>    show.legend <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">hcl.colors</a></span><span class="op">(</span><span class="fl">9</span>, palette <span class="op">=</span> <span class="st">"Zissou 1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/ifn_plots_visualization-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/ifn_plots_visualization-1.png" class="r-plt" width="576" style="display: block; margin: auto;"></p>
 <p>Now that we have the inventory plots selected, we can obtain the
 <em>filter list</em> to retrieve the data only from the cantabric
 area:</p>
@@ -501,8 +495,8 @@ area:</p>
 <span>  folder <span class="op">=</span> <span class="va">ifn_folder</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Start</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Processing 1 cicle</span></span>
-<span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">4834</span> plots for <span style="color: #0000BB;">"ifn3"</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Processing 1 versions</span></span>
+<span><span class="co">#&gt; Getting ready to retrieve <span style="font-weight: bold;">8015</span> plots for <span style="color: #0000BB;">"ifn3"</span></span></span></code></pre></div>
 <p>As we did with the French and USA national forest inventories, we can
 now explore the data, for example, the most abundant species and their
 mean diameter:</p>
@@ -533,7 +527,7 @@ mean diameter:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `summarise()` has grouped output by 'id_unique_code'. You can override using</span></span>
 <span><span class="co">#&gt; the `.groups` argument.</span></span></code></pre></div>
-<p><img src="selecting_plots_files/figure-html/unnamed-chunk-3-1.png" width="864" style="display: block; margin: auto;"></p>
+<p><img src="selecting_plots_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="864" style="display: block; margin: auto;"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -546,7 +540,7 @@ mean diameter:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
