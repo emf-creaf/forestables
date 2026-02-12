@@ -5,7 +5,7 @@ articles:
   inventory_data_ingestion_process: inventory_data_ingestion_process.html
   inventory_data_tibble: inventory_data_tibble.html
   selecting_plots: selecting_plots.html
-last_built: 2025-11-26T08:42Z
+last_built: 2026-02-12T12:04Z
 urls:
   reference: https://emf-creaf.github.io/forestables/reference
   article: https://emf-creaf.github.io/forestables/articles

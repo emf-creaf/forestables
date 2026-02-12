@@ -48,7 +48,7 @@ download the data to a permanent folder in your project/analysis.
 ffi_folder <- tempdir()
 download_inventory("FFI", ffi_folder)
 #> ℹ Downloading FFI available data
-#> ℹ Unzipping downloaded data in /tmp/RtmpST1xgi
+#> ℹ Unzipping downloaded data in /tmp/RtmpVkVFPT
 #> ✔ Done!
 ```
 
@@ -234,8 +234,12 @@ ffi_data_2012 |>
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 4) +
   theme_minimal()
-#> `summarise()` has grouped output by 'id_unique_code'. You can override using
-#> the `.groups` argument.
+#> `summarise()` has regrouped the output.
+#> ℹ Summaries were computed grouped by id_unique_code and sp_name.
+#> ℹ Output is grouped by id_unique_code.
+#> ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+#> ℹ Use `summarise(.by = c(id_unique_code, sp_name))` for per-operation grouping
+#>   (`?dplyr::dplyr_by`) instead.
 ```
 
 ![](selecting_plots_files/figure-html/unnamed-chunk-1-1.png)
@@ -253,7 +257,7 @@ the desired year, 2019:
 fia_folder <- tempdir()
 download_inventory("FIA", fia_folder, states = "HI")
 #> ℹ Downloading FIA available data
-#> ℹ Unzipping downloaded data in /tmp/RtmpST1xgi
+#> ℹ Unzipping downloaded data in /tmp/RtmpVkVFPT
 #> ✔ Done!
 
 # get the plots for those departments
@@ -280,8 +284,8 @@ hawaii_plots_2019
 #>  6  2019      15        1  2140 HI      (-155.8627 20.23504)
 #>  7  2019      15        1  2143 HI      (-155.8276 20.23026)
 #>  8  2019      15        1  2146 HI      (-155.7559 20.21695)
-#>  9  2019      15        1  2149 HI      (-155.7324 20.21962)
-#> 10  2019      15        1  2150 HI      (-155.9376 20.22124)
+#>  9  2019      15        1  2150 HI      (-155.9376 20.22124)
+#> 10  2019      15        1  2152 HI      (-155.6671 20.21019)
 #> # ℹ 1,167 more rows
 ```
 
@@ -364,8 +368,12 @@ fia_data_2019 |>
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 4) +
   theme_minimal()
-#> `summarise()` has grouped output by 'id_unique_code'. You can override using
-#> the `.groups` argument.
+#> `summarise()` has regrouped the output.
+#> ℹ Summaries were computed grouped by id_unique_code and sp_name.
+#> ℹ Output is grouped by id_unique_code.
+#> ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+#> ℹ Use `summarise(.by = c(id_unique_code, sp_name))` for per-operation grouping
+#>   (`?dplyr::dplyr_by`) instead.
 ```
 
 ![](selecting_plots_files/figure-html/unnamed-chunk-2-1.png)
@@ -385,7 +393,7 @@ We are going o retrieve the plots for the early 00s version (*“ifn3”*):
 ifn_folder <- tempdir()
 download_inventory("IFN", ifn_folder)
 #> ℹ Downloading IFN available data
-#> ℹ Unzipping downloaded data in /tmp/RtmpST1xgi
+#> ℹ Unzipping downloaded data in /tmp/RtmpVkVFPT
 #> ✔ Done!
 
 # choose the provinces, those in the Cantabric area
@@ -511,8 +519,12 @@ ifn_data |>
   scale_color_gradientn(colors = hcl.colors(360, "PinkYl", rev = TRUE)) +
   facet_wrap(~sp_name, ncol = 3) +
   theme_minimal()
-#> `summarise()` has grouped output by 'id_unique_code'. You can override using
-#> the `.groups` argument.
+#> `summarise()` has regrouped the output.
+#> ℹ Summaries were computed grouped by id_unique_code and sp_name.
+#> ℹ Output is grouped by id_unique_code.
+#> ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+#> ℹ Use `summarise(.by = c(id_unique_code, sp_name))` for per-operation grouping
+#>   (`?dplyr::dplyr_by`) instead.
 ```
 
 ![](selecting_plots_files/figure-html/unnamed-chunk-3-1.png)

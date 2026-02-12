@@ -12,14 +12,14 @@
 
 ## Citation
 
-Tovar A, Granda V (2025). *forestables: Making Forest Inventory Data
+Tovar A, Granda V (2026). *forestables: Making Forest Inventory Data
 Tidy*. R package version 0.0.6.9000,
 <https://emf-creaf.github.io/forestables/>.
 
     @Manual{,
       title = {forestables: Making Forest Inventory Data Tidy},
       author = {Adriana Tovar and Víctor Granda},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.0.6.9000},
       url = {https://emf-creaf.github.io/forestables/},
     }
